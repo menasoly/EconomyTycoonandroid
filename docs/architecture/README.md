@@ -58,3 +58,16 @@ Master index. Each document has one purpose and references the others instead of
 | [MODULE_TEMPLATE.md](MODULE_TEMPLATE.md) | Per-module spec template |
 | [TASK_TEMPLATE.md](TASK_TEMPLATE.md) | Task spec template |
 | [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) | Branches, PRs, gates |
+
+## Detailed specifications
+
+| Document | Purpose |
+|---|---|
+| [GAME_DESIGN_DOCUMENT.md](GAME_DESIGN_DOCUMENT.md) | Core loop, modes, progression |
+| [INDUSTRY_MODEL.md](INDUSTRY_MODEL.md) | Data-driven industry schema |
+| [COMMAND_CATALOG.md](COMMAND_CATALOG.md) | Commands and rejection rules |
+| [EVENT_CATALOG.md](EVENT_CATALOG.md) | Events, producers, consumers |
+| [modules/](modules/) | One specification per module |
+| [SCREEN_SPECS.md](SCREEN_SPECS.md) | Per-screen specifications |
+| [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) | Room schema |
+| [GOLDEN_SCENARIOS.md](GOLDEN_SCENARIOS.md) | Golden test scenarios |
