@@ -40,3 +40,8 @@
 ## Documents to keep in the repository
 
 All files under `docs/architecture/` in this volume.
+
+## Update after the remaining volumes
+
+- Open question 3 is resolved in ECONOMIC_MODEL.md (money scale 1/10,000, quantity scale 1/1,000, rates in ppm).
+- Remaining open: 1, 2, 4, 5, 6, and the DI framework choice; each is revisited at the start of the phase that needs it.
