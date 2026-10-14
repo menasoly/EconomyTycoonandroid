@@ -1,0 +1,42 @@
+# Machine-readable architecture manifest. Authoritative for module ids and dependencies.
+version: 1
+base_package: app.many.economytycoon
+rules:
+  - no_cycles
+  - simulation_domains_must_not_import_android
+  - dependencies_only_as_listed
+modules:
+  core:        { path: core,          depends_on: [],                                         owner: engine-core,   priority: 1 }
+  infra:       { path: infra,         depends_on: [],                                         owner: platform,      priority: 1 }
+  content:     { path: content,       depends_on: [core],                                     owner: content,       priority: 2 }
+  finance:     { path: finance,       depends_on: [core],                                     owner: economy,       priority: 2 }
+  world:       { path: world,         depends_on: [core, content],                            owner: world,         priority: 3 }
+  workforce:   { path: workforce,     depends_on: [core, finance],                            owner: operations,    priority: 3 }
+  production:  { path: production,    depends_on: [core, content, workforce],                 owner: operations,    priority: 3 }
+  markets:     { path: markets,       depends_on: [core, content, world, finance],            owner: economy,       priority: 3 }
+  logistics:   { path: logistics,     depends_on: [core, world, production, markets],         owner: operations,    priority: 4 }
+  companies:   { path: companies,     depends_on: [core, content, finance],                   owner: economy,       priority: 4 }
+  macro:       { path: macro,         depends_on: [core, markets, finance, world],            owner: economy,       priority: 5 }
+  competitors: { path: competitors,   depends_on: [core, companies, markets, production, logistics], owner: ai,    priority: 5 }
+  simulation:  { path: simulation,    depends_on: [core, finance, world, workforce, production, markets, logistics, companies, macro, competitors], owner: engine-core, priority: 4 }
+  persistence: { path: persistence,   depends_on: [core, simulation, infra],                  owner: data,         priority: 4 }
+  session:     { path: session,       depends_on: [simulation, persistence, infra],           owner: app,          priority: 5 }
+  ui:          { path: ui,            depends_on: [session, infra],                           owner: app,          priority: 5 }
+  visualization: { path: visualization, depends_on: [session],                                owner: app,          priority: 6 }
+tick_phases:
+  - begin_tick
+  - scheduled_events
+  - decisions
+  - command_application
+  - resource_availability
+  - procurement_and_shipments
+  - production
+  - demand
+  - market_clearing
+  - fulfillment
+  - financial_settlement
+  - workforce_update
+  - macro_update
+  - invariant_checks
+  - publish
+adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006]
