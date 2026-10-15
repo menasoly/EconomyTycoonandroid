@@ -47,6 +47,7 @@ fun MoreMenuScreen(ui: GameUi, onQuit: () -> Unit) {
             val base: List<Triple<String, String, Route>> = listOf(
                 Triple("Alerts", if (alertCount == 0) "Nothing needs you" else "$alertCount to look at", Route.Alerts),
                 Triple("Tutorial", "Step-by-step lessons", Route.Tutorial),
+                Triple("Managers", "Hand routine jobs to managers", Route.Managers),
                 Triple("Goals", "What to aim for", Route.Goals),
                 Triple("Advisor", "Suggestions from your books", Route.Advisor),
                 Triple("News", "What is happening in the world", Route.News),
