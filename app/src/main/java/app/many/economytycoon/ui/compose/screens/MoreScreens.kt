@@ -139,6 +139,8 @@ fun SettingsScreen(ui: GameUi, host: AppHost) {
             item { SectionHeader("Display") }
             item { Text("Currency symbol", style = Type.Label, color = Theme.tokens.textSecondary) }
             item { ChoiceChips(CurrencyStyle.values().toList(), s.currency, { if (it == CurrencyStyle.PLAIN) "None" else when (it) { CurrencyStyle.DOLLAR -> "$"; CurrencyStyle.EURO -> "€"; else -> "£" } }, { change(s.copy(currency = it)) }) }
+            item { Text("Language", style = Type.Label, color = Theme.tokens.textSecondary) }
+            item { ChoiceChips(app.many.economytycoon.i18n.GameLocale.values().toList(), s.language, { it.nativeName }, { change(s.copy(language = it)) }) }
             item { SwitchRow("Short numbers", s.compactNumbers, { change(s.copy(compactNumbers = it)) }, hint = "Show 1.2M instead of 1,200,000.00") }
             item { SwitchRow("Reduce motion", s.reduceMotion, { change(s.copy(reduceMotion = it)) }) }
             item { Text("Text size ${s.uiScalePercent}%", style = Type.Label, color = Theme.tokens.textSecondary) }
