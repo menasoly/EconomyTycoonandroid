@@ -135,6 +135,14 @@ class GameSession(
     /** Looks up text in the language chosen in the settings. */
     val translator: app.many.economytycoon.i18n.Translator get() = app.many.economytycoon.i18n.Translator(settings.language)
 
+    private val valuationReader = app.many.economytycoon.valuation.ValuationReader(simulation.economy)
+
+    /** What the selected company is worth under the given assumptions, from several angles. */
+    fun valuation(assumptions: app.many.economytycoon.valuation.ValuationAssumptions = app.many.economytycoon.valuation.ValuationAssumptions.DEFAULT): app.many.economytycoon.valuation.ValuationSummary? =
+        selectedCompany?.let { valuationReader.summary(it, assumptions) }
+
+    fun valuationInput(): app.many.economytycoon.valuation.ValuationInput? = selectedCompany?.let { valuationReader.input(it) }
+
     private val chainPlanner by lazy { app.many.economytycoon.planner.ChainPlanner(simulation.content) }
 
     /** Goods some recipe can make, by name. */
