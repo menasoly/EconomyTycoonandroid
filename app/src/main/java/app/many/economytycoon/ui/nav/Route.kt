@@ -27,6 +27,7 @@ sealed class Route(val tab: Tab, val name: String) {
     object Alerts : Route(Tab.OVERVIEW, "alerts") { override val args = emptyList<String>() }
 
     object Facilities : Route(Tab.OPERATIONS, "facilities") { override val args = emptyList<String>() }
+    object FacilityProfit : Route(Tab.OPERATIONS, "profit") { override val args = emptyList<String>() }
     data class FacilityDetail(val facility: Long) : Route(Tab.OPERATIONS, "facility") { override val args = listOf(facility.toString()) }
     data class Build(val region: Long) : Route(Tab.OPERATIONS, "build") { override val args = listOf(region.toString()) }
     object People : Route(Tab.OPERATIONS, "people") { override val args = emptyList<String>() }
@@ -112,6 +113,7 @@ sealed class Route(val tab: Tab, val name: String) {
                 "news" -> News
                 "alerts" -> Alerts
                 "facilities" -> Facilities
+                "profit" -> FacilityProfit
                 "facility" -> number(0)?.let { FacilityDetail(it) }
                 "build" -> number(0)?.let { Build(it) }
                 "people" -> People
