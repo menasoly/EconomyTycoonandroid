@@ -84,7 +84,7 @@ class NavStateTest {
         val routes = listOf<Route>(
             Route.Overview, Route.Goals, Route.Guide, Route.Advisor, Route.News, Route.Alerts, Route.Facilities, Route.FacilityDetail(5), Route.Build(3), Route.People,
             Route.Research, Route.Logistics, Route.Market, Route.Good("iron_ore"), Route.Orders, Route.Rules, Route.Contracts, Route.Tenders, Route.Government, Route.Exchange, Route.Stock(7), Route.Insurance, Route.Bonds, Route.Unions, Route.Futures, Route.Property, Route.Finance, Route.Loans,
-            Route.Statements, Route.CashForecast, Route.FacilityProfit, Route.Tutorial, Route.Valuation, Route.Analysis, Route.Credit, Route.Outlook, Route.Grants, Route.Activity, Route.Agenda, Route.Export, Route.Glossary, Route.Group, Route.Sectors, Route.Trade, Route.Watch, Route.Planner, Route.Reports, Route.Ownership, Route.MoreMenu, Route.World, Route.Region(2), Route.Rivals, Route.Rival(8),
+            Route.Statements, Route.CashForecast, Route.FacilityProfit, Route.Tutorial, Route.Valuation, Route.Analysis, Route.Credit, Route.Outlook, Route.Grants, Route.Activity, Route.Agenda, Route.Export, Route.Glossary, Route.Group, Route.Sectors, Route.Trade, Route.Watch, Route.Managers, Route.Planner, Route.Reports, Route.Ownership, Route.MoreMenu, Route.World, Route.Region(2), Route.Rivals, Route.Rival(8),
             Route.Scenario, Route.Achievements, Route.Saves, Route.Settings, Route.Help,
         )
         for (r in routes) assertEquals(r, Route.parse(r.key))
