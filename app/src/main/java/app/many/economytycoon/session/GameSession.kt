@@ -149,6 +149,11 @@ class GameSession(
         return tutorial.view(facts)
     }
 
+    private val profitAnalyzer = app.many.economytycoon.facilityprofit.ProfitAnalyzer(simulation.economy)
+
+    /** What each of the selected company's facilities earns at today's prices, and where lines could earn more. */
+    fun facilityProfit(): app.many.economytycoon.facilityprofit.PortfolioPerformance? = selectedCompany?.let { profitAnalyzer.portfolio(it) }
+
     private val valuationReader = app.many.economytycoon.valuation.ValuationReader(simulation.economy)
 
     /** What the selected company is worth under the given assumptions, from several angles. */
