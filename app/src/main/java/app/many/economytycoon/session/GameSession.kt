@@ -132,6 +132,16 @@ class GameSession(
     fun tradeLegs(quantity: app.many.economytycoon.core.Quantity = app.many.economytycoon.trade.TradeFinder.DEFAULT_QUANTITY): List<app.many.economytycoon.trade.TradeLeg> =
         tradeFinder.scan(quantity)
 
+    private val chainPlanner by lazy { app.many.economytycoon.planner.ChainPlanner(simulation.content) }
+
+    /** Goods some recipe can make, by name. */
+    fun plannableGoods(): List<app.many.economytycoon.content.GoodDef> =
+        simulation.content.allGoods.filter { chainPlanner.recipeFor(it.id) != null }.sortedBy { it.name }
+
+    /** What it would take to make [perDay] units a day of [good], buying the goods in [buy] instead of making them. */
+    fun planChain(good: app.many.economytycoon.core.GoodId, perDay: app.many.economytycoon.core.Quantity, buy: Set<app.many.economytycoon.core.GoodId> = emptySet()): app.many.economytycoon.planner.ChainPlan? =
+        chainPlanner.plan(good, perDay, buy)
+
     private val exports = Exports(this)
 
     /** Spreadsheet files of the selected company's figures. */
