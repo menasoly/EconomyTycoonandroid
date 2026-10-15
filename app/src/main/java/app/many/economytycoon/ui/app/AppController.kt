@@ -27,6 +27,7 @@ class AppEnvironment(
     val settings: SettingsStore,
     val playerId: Long = 1L,
     val profile: ProfileStore = ProfileStore(MemorySaveStore()),
+    val rules: app.many.economytycoon.watch.WatchStore = app.many.economytycoon.watch.WatchStore(MemorySaveStore()),
 )
 
 /** The screen the whole app is showing, before any in-game navigation. */
@@ -134,6 +135,8 @@ class AppController(private val env: AppEnvironment, private val entropy: () -> 
     private fun attach(session: GameSession) {
         session.achievements.profile = profile
         session.profileSink = { env.profile.save(profile) }
+        session.watch = env.rules.load()
+        session.watchSink = { env.rules.save(session.watch) }
         session.scenarioSink = { ev ->
             when (ev) {
                 is ScenarioEvent.Won -> profile.won(ev.scenario, ev.medal, ev.days)
