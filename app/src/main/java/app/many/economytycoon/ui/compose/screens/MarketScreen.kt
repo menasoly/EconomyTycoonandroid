@@ -56,6 +56,7 @@ fun MarketScreen(ui: GameUi) {
                     SecondaryButton("Who makes what", { ui.open(Route.Sectors) }, Modifier.weight(1f))
                 }
             }
+            item { SecondaryButton("Trade finder", { ui.open(Route.Trade) }, Modifier.fillMaxWidth()) }
             if (model.inflation != null) {
                 item { Text("Inflation ${model.inflation}" + (model.cpi?.let { " · consumer prices index $it" } ?: ""), style = Type.Caption, color = Theme.tokens.textSecondary) }
             }

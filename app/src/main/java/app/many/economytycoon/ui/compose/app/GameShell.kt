@@ -35,6 +35,7 @@ import app.many.economytycoon.ui.compose.screens.GrantsScreen
 import app.many.economytycoon.ui.compose.screens.GuideScreen
 import app.many.economytycoon.ui.compose.screens.GroupScreen
 import app.many.economytycoon.ui.compose.screens.SectorsScreen
+import app.many.economytycoon.ui.compose.screens.TradeScreen
 import app.many.economytycoon.ui.compose.screens.ReportsScreen
 import app.many.economytycoon.ui.compose.screens.InsuranceScreen
 import app.many.economytycoon.ui.compose.screens.StockScreen
@@ -160,6 +161,7 @@ private fun Router(ui: GameUi, host: AppHost) {
         Route.Glossary -> GlossaryScreen(ui)
         Route.Group -> GroupScreen(ui)
         Route.Sectors -> SectorsScreen(ui)
+        Route.Trade -> TradeScreen(ui)
         Route.Reports -> ReportsScreen(ui)
         Route.Statements -> StatementsScreen(ui)
         Route.Ownership -> OwnershipScreen(ui)
