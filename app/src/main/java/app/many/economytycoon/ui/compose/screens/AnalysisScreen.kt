@@ -72,6 +72,7 @@ fun AnalysisScreen(ui: GameUi) {
             item { Card { FactList(model.breakEven) } }
             item { SectionHeader("Outlook") }
             item { Card { FactList(model.outlook) } }
+            item { app.many.economytycoon.ui.compose.components.SecondaryButton("Value the company", { ui.open(app.many.economytycoon.ui.nav.Route.Valuation) }, Modifier.fillMaxWidth()) }
             item { SectionHeader("Against other companies") }
             item { Text(model.peerNote, style = Type.Caption, color = Theme.tokens.textSecondary) }
             items(model.peers.size) { i ->
