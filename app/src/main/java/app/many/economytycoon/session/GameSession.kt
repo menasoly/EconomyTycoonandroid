@@ -135,6 +135,34 @@ class GameSession(
     /** Looks up text in the language chosen in the settings. */
     val translator: app.many.economytycoon.i18n.Translator get() = app.many.economytycoon.i18n.Translator(settings.language)
 
+    /** The player's watchlist rules. The app replaces this with the saved book when a game starts. */
+    var watch: app.many.economytycoon.watch.RuleBook = app.many.economytycoon.watch.RuleBook()
+
+    /** Called after rules fire, so the book's cooldowns can be saved. */
+    var watchSink: (() -> Unit)? = null
+
+    private val watchLog = ArrayDeque<app.many.economytycoon.watch.WatchHit>()
+
+    /** The most recent rule hits, newest first. */
+    fun watchHits(): List<app.many.economytycoon.watch.WatchHit> = watchLog.toList().reversed()
+
+    fun saveWatch() { watchSink?.invoke() }
+
+    private fun checkWatch(tickValue: Long) {
+        val company = selectedCompany ?: return
+        if (watch.size == 0) return
+        val e = simulation.economy
+        val hits = watch.evaluate(app.many.economytycoon.watch.EconomyWatchFacts(e, company), app.many.economytycoon.watch.EconomyWatchNames(e), settings::money)
+        if (hits.isEmpty()) return
+        for (h in hits) {
+            watchLog.addLast(h)
+            while (watchLog.size > WATCH_LOG_SIZE) watchLog.removeFirst()
+            news.post(app.many.economytycoon.core.Tick(tickValue), NewsKind.COMPANY, "Watch: " + h.message)
+        }
+        saveWatch()
+        if (settings.pauseOnCritical && speed != GameSpeed.PAUSED && hits.any { it.severity == app.many.economytycoon.watch.Severity.CRITICAL }) setSpeed(GameSpeed.PAUSED)
+    }
+
     /** The player's progress through the step-by-step tutorial. */
     val tutorial = app.many.economytycoon.tutorial.TutorialTracker()
 
@@ -266,6 +294,7 @@ class GameSession(
         for (a in earned) news.post(summary.tick, NewsKind.COMPANY, "Achievement unlocked: ${a.title} (${a.tier.label})")
         if (earned.isNotEmpty() || achievements.shouldSave()) { profileSink?.invoke(); achievements.markSaved() }
         for (company in playerCompanies()) for (o in objectives.newlyCompleted(company)) news.post(summary.tick, NewsKind.COMPANY, "Goal reached: ${o.title}")
+        checkWatch(summary.tick.value)
         if (settings.autosave) autosave()
         if (settings.pauseOnCritical && speed != GameSpeed.PAUSED && criticalAlerts().isNotEmpty()) setSpeed(GameSpeed.PAUSED)
         notify(SessionChange.TICK)
@@ -332,6 +361,7 @@ class GameSession(
 
     companion object {
         const val MAX_OUTCOMES = 100
+        const val WATCH_LOG_SIZE = 50
 
         /** Rebuilds a session around a loaded simulation. */
         fun resume(simulation: Simulation, playerId: Long, settings: GameSettings, saves: SaveManager?): GameSession =
