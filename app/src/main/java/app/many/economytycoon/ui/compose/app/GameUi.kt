@@ -39,7 +39,10 @@ class GameUi(val session: GameSession, initialNav: NavState = NavState()) : Sess
 
     fun dispose() { session.removeListener(this) }
 
-    fun open(route: Route) { nav = nav.open(route) }
+    fun open(route: Route) {
+        session.noteVisit(route.name)
+        nav = nav.open(route)
+    }
 
     fun select(tab: Tab) { nav = nav.select(tab) }
 
