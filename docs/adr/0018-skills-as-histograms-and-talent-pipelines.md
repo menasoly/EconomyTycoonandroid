@@ -62,3 +62,9 @@ A new package `talent` keeps skills as histograms and follows the workforce modu
 - Switching the workforce skill term to `SkillMatch` changes golden production and wage figures; this should be done
   in its own commit.
 - The snapshot gains a section, so all saved hashes change.
+
+## Integration notes
+
+The module is wired through a runner, a system-only establish command and a conditional snapshot section. The workforce
+skill term follows the module only once it is established, so games without it keep their numbers; games that establish
+it (new games do) differ from earlier ones by that term and by the extra snapshot section.
