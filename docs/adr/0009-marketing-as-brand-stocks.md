@@ -47,8 +47,28 @@ through sorted maps.
 
 - Advertising has a measurable, explainable effect, and a campaign that is stopped fades instead of vanishing.
 - The balance lives in `MarketingParams` and the channel table, so tuning needs no code change elsewhere.
-- Integration needs several shared-file edits (commands, executor, snapshot section, tick hook, demand coupling);
-  they are wired in the shared files.
-- The older company brand value and the marketing department budget overlap with this model. Until the integration
-  step reconciles them, only one of them may feed demand, or the effect is counted twice.
-- Adding the section changes the snapshot hash of every save, so golden hashes must be recomputed.
+- Integration touches commands (codec tags 81 to 90), the executor, a snapshot section, the tick pipeline, the standing
+  sell rules and the UI; see "Integration decisions" below.
+
+## Integration decisions
+
+- Brand and the department budget. The company-by-industry `Brand` premium only ever priced the PREMIUM sell strategy,
+  and the MARKETING department budget never fed demand (it was only booked as an expense). The effect on demand now
+  comes from campaign stocks alone, through a category multiplier on the household demand ladder. Where both a company
+  brand premium and a marketing pricing power exist the larger one applies, never the sum. The department budget is an
+  envelope: each day's campaign bills are netted against the `dept:marketing` intent and only the remainder is paid as
+  general marketing, so spend is never charged twice and the budget screen keeps its meaning.
+- Promotions change the shelf price only. The extra volume they cause is already captured by the elasticity of the
+  household ladder, so no separate demand multiplier is applied.
+- Brand damage is recorded from union strikes (labour dispute) and pollution fines (scandal, larger when the plant is
+  closed).
+- A game that never books a campaign has pristine marketing state: no snapshot section and no hash contribution, so
+  existing saves and hashes are unchanged. Computer competitors do book campaigns, which changes simulated worlds.
+- Campaign cancellation by a retiring company gives no refund.
+
+## Known limits
+
+Product quality is neutral until a production read model feeds `QualitySource`; ROI is a company-level estimate from
+sales revenue before and during a campaign; the computer competitors use no ROI history; the screen books by plan
+("Book this plan") and by per-campaign actions but has no manual per-channel booking form; per-seller appeal weighting
+is not applied because the market has anonymous sellers.
