@@ -95,6 +95,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "tourism", "Tourism", "What draws visitors, why price and occupancy pull apart, and how operators and allotments work.",
+            listOf(
+                "Visitors choose a town for its safety, access, culture, nature and nightlife, the weather and the season, and what it costs. Each kind of visitor weighs these differently: budget travellers look at price, families at safety, business travellers at access, luxury travellers at comfort. Reviews and marketing build a town's name slowly.",
+                "A full house is not always a good house. A low rate fills rooms and still earns less; a high rate earns more per room and leaves some empty. Dynamic pricing raises the rate for nights that fill early and cuts it for nights that stay empty. Overbooking covers cancellations, but guests who turn up with no room are walked to another hotel at your cost.",
+                "Online platforms and agencies send guests for a commission, so a single channel leaves rooms empty and several cost margin. A tour operator buys rooms in advance at a net rate: an allotment sets rooms aside, rooms the operator has not sold go back to you by the release date, and a committed share is paid for either way.",
+            ),
+        ),
+        HelpTopic(
             "multiplayer", "Playing with others", "The lobby, the connection banner, trades and what happens when the link drops.",
             listOf(
                 "Open Play with others from the More menu. In the lobby, mark yourself ready; the host starts the game once everyone is. Anyone who would rather not run a company can watch instead. Everybody then plays the same economy: orders travel between devices, not the whole game.",
