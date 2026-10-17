@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import app.many.economytycoon.content.IndustryFamily
+import app.many.economytycoon.core.Outcome
 import app.many.economytycoon.core.RegionId
 import app.many.economytycoon.ui.compose.app.GameUi
 import app.many.economytycoon.ui.compose.components.Card
@@ -29,6 +30,7 @@ import app.many.economytycoon.ui.compose.design.Spacing
 import app.many.economytycoon.ui.compose.design.Theme
 import app.many.economytycoon.ui.compose.design.Type
 import app.many.economytycoon.ui.nav.Route
+import app.many.economytycoon.ui.present.BlueprintLibraryPresenter
 import app.many.economytycoon.ui.present.BuildItem
 import app.many.economytycoon.ui.present.BuildPresenter
 import app.many.economytycoon.ui.present.Tone
@@ -40,6 +42,7 @@ fun BuildScreen(ui: GameUi, initialRegion: Long) {
     var onlyBuildable by remember { mutableStateOf(false) }
     var chosen by remember { mutableStateOf<BuildItem?>(null) }
     var siteName by remember { mutableStateOf("") }
+    var pickBlueprint by remember { mutableStateOf(false) }
     val regions = remember { ui.session.economy.world.regions().sortedBy { it.id } }
     val model = remember(ui.revision, region, family, onlyBuildable) { BuildPresenter.build(ui.session, region, family, onlyBuildable) }
 
@@ -54,6 +57,7 @@ fun BuildScreen(ui: GameUi, initialRegion: Long) {
             item { ChoiceChips(regions.map { it.id }, region, { id -> regions.first { it.id == id }.name }, { region = it }) }
             item { SectionHeader("Industry") }
             item { ChoiceChips(model.families, family, { BuildPresenter.familyLabel(it) }, { family = it }) }
+            item { SecondaryButton("Build from a blueprint", { pickBlueprint = true }, Modifier.fillMaxWidth()) }
             item { SwitchRow("Only what I can build now", onlyBuildable, { onlyBuildable = it }) }
             if (model.items.isEmpty()) item { EmptyState("Nothing to show", "Try another industry or switch the filter off.") }
             items(model.items.size) { i ->
@@ -65,6 +69,38 @@ fun BuildScreen(ui: GameUi, initialRegion: Long) {
                     for (reason in b.blockers) Text("• $reason", style = Type.Caption, color = Theme.tokens.warning)
                 }
             }
+        }
+        if (pickBlueprint) {
+            val library = BlueprintLibraryPresenter.build(ui.session.blueprints)
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { pickBlueprint = false },
+                containerColor = Theme.tokens.surface,
+                title = { Text("Build from a blueprint", style = Type.Title, color = Theme.tokens.textPrimary) },
+                text = {
+                    androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        val rows = library?.rows.orEmpty()
+                        if (rows.isEmpty()) Text(library?.empty ?: "Start or load a game first.", style = Type.Body, color = Theme.tokens.textSecondary)
+                        for (r in rows) ListRow(r.name, subtitle = r.subtitle, badge = r.status, badgeTone = r.statusTone, onClick = {
+                            pickBlueprint = false
+                            val controller = ui.session.blueprints
+                            val company = ui.session.selectedCompany
+                            when (val began = controller.beginNew(r.id, region)) {
+                                is Outcome.Rejected -> ui.showMessage(began.rejection.message)
+                                is Outcome.Ok -> {
+                                    val step = began.value.plan.steps.firstOrNull()
+                                    val cmd = if (company == null || step == null) null else step.action.toCommand(company, null, emptyList())
+                                    if (cmd == null || !ui.issue(cmd, "Construction started. The set-up is applied when the building is finished.")) {
+                                        controller.pending.remove(began.value.pending.id)
+                                        controller.save()
+                                    } else ui.back()
+                                }
+                            }
+                        })
+                    }
+                },
+                confirmButton = {},
+                dismissButton = { LinkButton("Cancel", { pickBlueprint = false }) },
+            )
         }
         val pick = chosen
         if (pick != null) {
