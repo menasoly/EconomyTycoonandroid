@@ -65,6 +65,9 @@ class TickSummary(val tick: Tick) {
     var carbonEvents: List<app.many.economytycoon.carbon.CarbonEvent> = emptyList()
     var bankingEvents: List<app.many.economytycoon.banking.BankEvent> = emptyList()
     var ipEvents: List<app.many.economytycoon.ip.IpEvent> = emptyList()
+    /** What the tourist destinations did today, and the month's tourism bills on the last day of a month; null in a game without tourism. */
+    var tourismReport: app.many.economytycoon.tourism.DayReport? = null
+    var tourismSettlement: app.many.economytycoon.tourism.SettlementRun? = null
     var riskEvents: List<app.many.economytycoon.risk.RiskEvent> = emptyList()
     var contractEvents: List<app.many.economytycoon.contracts.ContractEvent> = emptyList()
     var closedBooks: Boolean = false
@@ -108,6 +111,7 @@ class TickPipeline(
     private val aiBargaining = AiBargaining(e, executor)
     private val aiHedging = AiHedging(e, executor)
     private val aiLandlords = AiLandlords(e, executor)
+    private val aiHoteliers = AiHoteliers(e)
     private val liquidator = Liquidator(e)
     private val generator = EventGenerator(e)
 
@@ -145,6 +149,7 @@ class TickPipeline(
             aiBargaining.run(tick)
             aiHedging.run(tick)
             aiLandlords.run(tick)
+            aiHoteliers.run(tick)
             e.insolvency.step(tick)
         }
         phase(Phase.COMMAND_APPLICATION) {
@@ -188,6 +193,7 @@ class TickPipeline(
             s.contractsDelivered = contractEvents.count { it is app.many.economytycoon.contracts.ContractEvent.Delivered || it is app.many.economytycoon.contracts.ContractEvent.Fulfilled }
             s.contractsMissed = contractEvents.count { it is app.many.economytycoon.contracts.ContractEvent.Missed }
             e.logistics.step(tick, e.random)
+            e.tourismRunner.advance(tick, s)
         }
         phase(Phase.PRODUCTION) {
             val ctx = TickContext(tick, e.random, e.labor, e.grid, e.resources, e.modifiers, e.prices)
@@ -218,7 +224,7 @@ class TickPipeline(
             for (c in e.world.countries()) {
                 val shift = e.macro.demandShiftPpm(c.id)
                 for (r in e.world.regionsOf(c.id)) for (p in e.content.allDemandProfiles) {
-                    val base = mulDiv(shift, events.demandShift(p.good), 1_000_000L)
+                    val base = e.tourismRunner.liftDemand(mulDiv(shift, events.demandShift(p.good), 1_000_000L), r.id)
                     e.markets.setDemandShift(app.many.economytycoon.markets.MarketKey(r.id, p.good), e.marketingRunner.scaleDemand(base, p.good, r.id))
                 }
             }
@@ -315,6 +321,8 @@ class TickPipeline(
         s.bankingEvents = bank.first
         // Royalties, patent fees, court awards and research credits: after every other group, so existing order is unchanged.
         intents += e.ipRunner.drain()
+        // The month's tourism bills close the batch, after every other group, so existing order is unchanged.
+        intents += e.tourismRunner.settlementIntents(tick, s)
 
         val results = e.finance.settleTick(tick, intents)
         for (draft in carbon.adjustments) e.finance.ledger.post(draft)

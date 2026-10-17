@@ -183,6 +183,8 @@ object CommandCodec {
             is Command.EstablishBanks -> tag(w, 117)
             is Command.EstablishIp -> tag(w, 120)
             is Command.Ip -> { tag(w, 121); co(w, c.command.actor); app.many.economytycoon.ip.IpCommandCodec.write(c.command, w) }
+            is Command.EstablishTourism -> tag(w, 122)
+            is Command.Tourism -> { tag(w, 123); co(w, c.command.company); TourismCommandCodec.write(c.command, w) }
             is Command.FoundBank -> { tag(w, 118); co(w, c.company); w.writeString(c.name); w.writeVarLong(c.country.value); w.writeMoney(c.capital) }
             is Command.BankDecision -> { tag(w, 119); co(w, c.company); app.many.economytycoon.banking.BankActionCodec.write(c.action, w) }
             is Command.BidCarbonAuction -> { tag(w, 106); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.quantity.raw); w.writeMoney(c.limit) }
@@ -259,6 +261,7 @@ object CommandCodec {
         if (t == 105) return Command.EstablishCarbonPolicies(r.readVarInt())
         if (t == 117) return Command.EstablishBanks
         if (t == 120) return Command.EstablishIp
+        if (t == 122) return Command.EstablishTourism
         if (t == 104) return Command.EscrowTransfer(r.readVarLong(), r.readVarLong(), r.readVarLong(), r.readMoney(), r.readVarInt())
         val company = CompanyId(r.readVarLong())
         return when (t) {
@@ -379,6 +382,7 @@ object CommandCodec {
                 if (inner.actor != company) throw ByteReader.CorruptDataException("intellectual property command for the wrong company")
                 Command.Ip(inner)
             }
+            123 -> Command.Tourism(TourismCommandCodec.read(r, company))
             73 -> Command.ListParcel(company, ParcelId(r.readVarLong()), r.readMoney())
             74 -> Command.DelistParcel(company, ParcelId(r.readVarLong()))
             75 -> Command.BuyListed(company, ParcelId(r.readVarLong()))

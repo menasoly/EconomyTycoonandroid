@@ -131,6 +131,11 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
     val ipSales = IpSalesLog()
     val ipContext = EconomyIpContext(this)
     val ipRunner = IpRunner(this)
+    /** Destinations, hotels, attractions, operators and booking channels; empty (and not saved, hashed or run) until [Command.EstablishTourism]. */
+    val tourism = app.many.economytycoon.tourism.TourismState()
+    val tourismService = app.many.economytycoon.tourism.TourismService(tourism)
+    val tourismExecutor = app.many.economytycoon.tourism.TourismCommandExecutor(tourismService)
+    val tourismRunner = TourismRunner(this)
     val banking = app.many.economytycoon.banking.BankingService()
     val bankingInputs = MacroBankingInputs(this)
     val bankingRunner = BankingRunner(this)
@@ -221,6 +226,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         ipRunner.forget(id, tick)
         riskRunner.forget(id, tick)
         tenderRunner.forget(id, tick)
+        tourismRunner.forget(id, tick)
         grantRunner.forget(id)
         marketingRunner.forget(id, tick)
         energyGridRunner.forget(id, tick)
@@ -266,6 +272,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         if (!carbonState.isPristine) carbonState.hashInto(h)
         if (!banking.isPristine) banking.hashInto(h)
         if (ipActive) { ip.state.hashInto(h); ipSales.hashInto(h) }
+        if (!tourism.isEmpty) tourism.hashInto(h)
         regulation.hashInto(h)
         bonds.hashInto(h)
         unions.hashInto(h)

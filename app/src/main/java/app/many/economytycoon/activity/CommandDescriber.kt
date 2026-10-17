@@ -46,6 +46,7 @@ enum class ActivityArea(val label: String) {
     CORPORATE("Takeovers"),
     MARKETING("Marketing"),
     ENERGY("Electricity"),
+    TOURISM("Tourism"),
 }
 
 /** Writes any command as a sentence a player would recognise, and says which part of the game it belongs to. */
@@ -143,6 +144,8 @@ object CommandDescriber {
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement ->
             app.many.economytycoon.simulation.GridCommandMap.of(cmd)?.let { app.many.economytycoon.energygrid.GridCommandExecutor.describe(it) } ?: "Changed the electricity grid"
         is Command.EstablishBanks -> "Opened the banks"
+        is Command.EstablishTourism -> "Set up the tourist destinations"
+        is Command.Tourism -> app.many.economytycoon.tourism.TourismCommandExecutor.describe(cmd.command)
         is Command.EstablishIp -> "Opened the patent office"
         is Command.Ip -> app.many.economytycoon.ip.IpCommandDescriber.describe(cmd.command)
         is Command.FoundBank -> "Founded bank ${cmd.name} with ${n.money(cmd.capital)}"
@@ -209,6 +212,7 @@ object CommandDescriber {
         is Command.EstablishGrids, is Command.ConnectFacilityToGrid, is Command.DisconnectFacilityFromGrid, is Command.ReclassifyGridLoad,
         is Command.SetGridLoadDraw, is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement -> ActivityArea.ENERGY
+        is Command.EstablishTourism, is Command.Tourism -> ActivityArea.TOURISM
         is Command.EstablishCarbonPolicies, is Command.BidCarbonAuction, is Command.CancelCarbonBid, is Command.PlacePermitOrder, is Command.CancelPermitOrder,
         is Command.SurrenderPermits, is Command.BuyCarbonOffsets, is Command.RetireCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement,
         is Command.CancelAbatement, is Command.SetCarbonPolicy -> ActivityArea.PUBLIC
@@ -222,6 +226,13 @@ object CommandDescriber {
         is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials, is Command.CreateCampaign,
         is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest, is Command.OrderGridUnit,
         is Command.TerminatePowerAgreement, is Command.EscrowTransfer, is Command.FoundBank, is Command.BuyCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement -> true
+        is Command.Tourism -> when (cmd.command) {
+            is app.many.economytycoon.tourism.TourismCommand.BuildProperty, is app.many.economytycoon.tourism.TourismCommand.ExpandProperty,
+            is app.many.economytycoon.tourism.TourismCommand.UpgradeProperty, is app.many.economytycoon.tourism.TourismCommand.RenovateProperty,
+            is app.many.economytycoon.tourism.TourismCommand.BuildAttraction, is app.many.economytycoon.tourism.TourismCommand.LaunchCampaign,
+            is app.many.economytycoon.tourism.TourismCommand.TerminateAllotment -> true
+            else -> false
+        }
         is Command.Ip -> when (cmd.command) {
             is app.many.economytycoon.ip.IpCommand.FilePatent, is app.many.economytycoon.ip.IpCommand.PayMaintenance, is app.many.economytycoon.ip.IpCommand.InvestInSecret,
             is app.many.economytycoon.ip.IpCommand.BuyPatent, is app.many.economytycoon.ip.IpCommand.StartDesignAround, is app.many.economytycoon.ip.IpCommand.FileSuit -> true
