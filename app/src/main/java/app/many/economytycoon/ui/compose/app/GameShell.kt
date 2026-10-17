@@ -36,6 +36,7 @@ import app.many.economytycoon.ui.compose.screens.ExportScreen
 import app.many.economytycoon.ui.compose.screens.GlossaryScreen
 import app.many.economytycoon.ui.compose.screens.EnergyGridScreen
 import app.many.economytycoon.ui.compose.screens.MultiplayerScreen
+import app.many.economytycoon.ui.compose.screens.CarbonScreen
 import app.many.economytycoon.ui.compose.screens.GrantsScreen
 import app.many.economytycoon.ui.compose.screens.MarketingScreen
 import app.many.economytycoon.ui.compose.screens.GuideScreen
@@ -170,6 +171,7 @@ private fun Router(ui: GameUi, host: AppHost) {
         Route.Credit -> CreditScreen(ui)
         Route.Outlook -> OutlookScreen(ui)
         Route.Grants -> GrantsScreen(ui)
+        Route.Carbon -> ui.session.carbonDesk()?.let { CarbonScreen(ui, it) }
         Route.Activity -> ActivityScreen(ui)
         Route.Agenda -> AgendaScreen(ui)
         Route.Export -> ExportScreen(ui)
