@@ -47,6 +47,7 @@ object Tips {
         Tip("price-behaviour", "A good whose price swings widely is risky to contract for at a fixed price. Check how it behaves on the good screen first.", "Trading", Route.Market),
         Tip("glossary", "Unsure what a word on a screen means? The glossary under help explains each one in the game's own terms.", "Playing", Route.Glossary),
         Tip("blueprints", "Set up one good bakery, save it as a blueprint, and build the next one in one step.", "Production", Route.Blueprints),
+        Tip("marketing", "Awareness builds with steady spending and fades when it stops. A modest campaign that runs for weeks beats a big one that ends in days.", "Marketing", Route.Marketing),
     )
 
     fun byId(id: String): Tip? = all.firstOrNull { it.id == id }
