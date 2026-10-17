@@ -175,6 +175,20 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
                 else -> Unit
             }
         }
+        for (ev in summary.marketingEvents) {
+            val company = e.companies.company(ev.company) ?: continue
+            val name = company.name
+            val own = company.kind == app.many.economytycoon.companies.CompanyKind.PLAYER
+            when (ev) {
+                is app.many.economytycoon.marketing.MarketingEvent.CampaignSuspended -> add(NewsItem(t, NewsKind.COMPANY, "$name's advertising was suspended: the bills went unpaid"))
+                is app.many.economytycoon.marketing.MarketingEvent.BrandDamaged -> add(NewsItem(t, NewsKind.COMPANY, "$name's brand takes a hit: ${ev.kind.label.lowercase()}"))
+                is app.many.economytycoon.marketing.MarketingEvent.CampaignFinished -> if (own) add(NewsItem(t, NewsKind.COMPANY, "An advertising campaign of $name has finished"))
+                is app.many.economytycoon.marketing.MarketingEvent.CreativeWornOut -> if (own) add(NewsItem(t, NewsKind.COMPANY, "An advertisement of $name has worn out; a fresh creative would work better"))
+                is app.many.economytycoon.marketing.MarketingEvent.TestDecided -> if (own) add(NewsItem(t, NewsKind.COMPANY, "A creative test of $name has a verdict"))
+                is app.many.economytycoon.marketing.MarketingEvent.PromotionEnded -> if (own) add(NewsItem(t, NewsKind.COMPANY, "A price promotion of $name has ended"))
+                else -> Unit
+            }
+        }
         if (summary.closedBooks) add(NewsItem(t, NewsKind.FINANCE, "Companies closed their books for the month"))
         if (summary.problems.isNotEmpty()) add(NewsItem(t, NewsKind.WORLD, "Ledger check found ${Formatting.plural(summary.problems.size.toLong(), "problem")}"))
     }
