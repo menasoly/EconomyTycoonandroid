@@ -55,7 +55,24 @@ No floating point in state, all iteration over `TreeMap`, random draws only thro
 `RandomProvider.deriveSeed(seed, name, partition)`. Two systems with the same seed, commands and inputs have equal
 hashes; a save taken mid-run and loaded continues to the same hash as an uninterrupted run (tested).
 
-## Not covered here
+## Integration
 
-Applying `WorkforceEffect`s in the workforce module, the command wrapper, the snapshot section, routes and news.
+`simulation/TalentRunner.kt` connects the module to the economy. It is switched on by the system-only
+`Command.EstablishTalent` (a new game issues it); until then nothing is saved, hashed or drawn, so existing games play
+as before. Establishing seeds each region's qualified-people stock from its education level and opens a public school,
+vocational college and university per region, paid by the country's government account.
 
+- Tick: the module's day runs in the procurement phase; its payments join the same tick's settlement batch. A short
+  treasury is topped up as benefits are.
+- Effects: `Hire`, `Transfer`, `Depart`, `Emigrate`, `RaiseWage`, `Morale` and `TrainingShare` are applied by the
+  workforce service. A transfer raises the destination cohort's target to its headcount, and wages are only ever raised.
+- Skill term: `WorkforceService.skillSource` feeds the module's skill-match figure into productivity, only once the
+  module is on; otherwise the cohort's plain skill number is used.
+- Graduates: the qualified share of a region sets how job seekers split over the skill tiers in the labour supply.
+- Commands: `Command.Talent(company, TalentCommand)` and the system-only `Command.SetImmigrationPolicy`; wire tags 126
+  to 128, sub-tags 1 to 34 in `TalentCommandCodec`.
+- AI: `AiTalent` plans weekly per computer company and quarterly for providers.
+- Snapshot: section `talent`, written only when the module is on.
+- Session and UI: `TalentSessionDesk`, six routes (`talent`, `talent-education`, `talent-training`,
+  `talent-recruiting`, `talent-careers`, `talent-providers`), alerts, news, advisor, agenda, glossary, tips and help.
+- Pack roles are mapped onto the existing skills in `DefaultTaxonomy` so no skill was added.
