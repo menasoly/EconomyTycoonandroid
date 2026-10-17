@@ -11,14 +11,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import app.many.economytycoon.scenarios.GoalKind
-import app.many.economytycoon.ui.compose.app.GameUi
 import app.many.economytycoon.ui.compose.components.Card
 import app.many.economytycoon.ui.compose.components.ChoiceChips
+import app.many.economytycoon.ui.compose.components.ConfirmDialog
 import app.many.economytycoon.ui.compose.components.EmptyState
 import app.many.economytycoon.ui.compose.components.FieldKind
 import app.many.economytycoon.ui.compose.components.LabeledField
 import app.many.economytycoon.ui.compose.components.Pill
 import app.many.economytycoon.ui.compose.components.PrimaryButton
+import app.many.economytycoon.ui.compose.components.ProblemsDialog
 import app.many.economytycoon.ui.compose.components.ScreenFrame
 import app.many.economytycoon.ui.compose.components.ScreenList
 import app.many.economytycoon.ui.compose.components.SecondaryButton
@@ -31,6 +32,9 @@ import app.many.economytycoon.ui.compose.design.color
 import app.many.economytycoon.ui.present.FieldInput
 import app.many.economytycoon.ui.present.FieldRow
 import app.many.economytycoon.ui.present.Tone
+import app.many.economytycoon.ui.present.WorkshopNav
+import app.many.economytycoon.ui.present.WorkshopPage
+import app.many.economytycoon.ui.present.WorkshopPlayPresenter
 import app.many.economytycoon.ui.present.WorkshopEditorPresenter
 import app.many.economytycoon.ui.present.WorkshopValidationPresenter
 import app.many.economytycoon.workshop.EventKind
@@ -58,17 +62,19 @@ private fun DraftField(session: WorkshopSession, row: FieldRow, onChanged: () ->
 
 /** The scenario editor: a section at a time, with undo and redo, the problems found so far, and the way on to testing. */
 @Composable
-fun WorkshopScreen(ui: GameUi, workshop: WorkshopSession) {
+fun WorkshopScreen(nav: WorkshopNav, workshop: WorkshopSession) {
     var tick by remember { mutableStateOf(0) }
     var message by remember { mutableStateOf<String?>(null) }
     var sectionKey by remember { mutableStateOf("identity") }
     var newTitle by remember { mutableStateOf("") }
     var template by remember { mutableStateOf(WorkshopEditorPresenter.templates().first()) }
+    var confirmPlay by remember { mutableStateOf(false) }
+    var playProblems by remember { mutableStateOf<List<String>>(emptyList()) }
     val report = remember(tick) { workshop.validation() }
     val model = remember(tick) { WorkshopEditorPresenter.model(workshop.editor, report) }
     val problems = remember(tick) { WorkshopValidationPresenter.model(report) }
     val section = model.sections.firstOrNull { it.key == sectionKey } ?: model.sections.first()
-    ScreenFrame("Scenario workshop", onBack = { ui.back() }) {
+    ScreenFrame("Scenario workshop", onBack = { nav.back() }) {
         ScreenList {
             item { TileGrid(model.tiles) }
             message?.let { m -> item { Text(m, style = Type.Body, color = Theme.tokens.textSecondary) } }
@@ -83,6 +89,13 @@ fun WorkshopScreen(ui: GameUi, workshop: WorkshopSession) {
                     SecondaryButton("Undo", { message = WorkshopEditorPresenter.undo(workshop.editor); tick++ }, Modifier.weight(1f), enabled = model.canUndo)
                     SecondaryButton("Redo", { message = WorkshopEditorPresenter.redo(workshop.editor); tick++ }, Modifier.weight(1f), enabled = model.canRedo)
                     PrimaryButton("Save", { message = (workshop.save() as? app.many.economytycoon.core.Outcome.Rejected)?.rejection?.message ?: "Saved."; tick++ }, Modifier.weight(1f))
+                }
+            }
+            item {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    SecondaryButton("Test", { nav.open(WorkshopPage.REPORT) }, Modifier.weight(1f))
+                    SecondaryButton("Saved", { nav.open(WorkshopPage.LIBRARY) }, Modifier.weight(1f))
+                    PrimaryButton("Play", { confirmPlay = true }, Modifier.weight(1f), enabled = report.ok)
                 }
             }
             item { Text(problems.headline, style = Type.Body, color = problems.tone.color()) }
@@ -140,5 +153,11 @@ fun WorkshopScreen(ui: GameUi, workshop: WorkshopSession) {
             }
             if (!report.ok) item { EmptyState("Not playable yet", "Fix the errors above and the scenario can be tested and shared.") }
         }
+        if (confirmPlay) {
+            val prompt = remember(tick) { WorkshopPlayPresenter.prompt(workshop) }
+            if (prompt.canPlay) ConfirmDialog(prompt.title, prompt.lines.joinToString("\n"), "Play", { confirmPlay = false; playProblems = nav.play().orEmpty() }, { confirmPlay = false })
+            else ProblemsDialog(prompt.title, prompt.lines, { confirmPlay = false })
+        }
+        if (playProblems.isNotEmpty()) ProblemsDialog("Cannot start yet", playProblems, { playProblems = emptyList() })
     }
 }
