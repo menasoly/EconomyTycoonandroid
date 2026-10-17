@@ -49,6 +49,9 @@ object Tips {
         Tip("blueprints", "Set up one good bakery, save it as a blueprint, and build the next one in one step.", "Production", Route.Blueprints),
         Tip("marketing", "Awareness builds with steady spending and fades when it stops. A modest campaign that runs for weeks beats a big one that ends in days.", "Marketing", Route.Marketing),
         Tip("electricity", "A short grid sells at scarcity prices and cuts customers off in order. Own a plant, or sign a power agreement, before the peak.", "World", Route.Electricity),
+        Tip("carbon-deadline", "Check the carbon deadline before the year ends. Missing it costs a fine on every tonne you could not cover.", "Government", Route.Carbon),
+        Tip("carbon-lapse", "Spare permits lapse after a few years. Use them, or sell what you will not need, before they expire.", "Government", Route.Carbon),
+        Tip("carbon-cheapest", "The cheapest tonne is the one you do not emit. Compare each measure's cost per tonne with the carbon price.", "Government", Route.Carbon),
     )
 
     fun byId(id: String): Tip? = all.firstOrNull { it.id == id }
