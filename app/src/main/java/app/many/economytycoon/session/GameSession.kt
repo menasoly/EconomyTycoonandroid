@@ -60,6 +60,12 @@ class GameSession(
     var selectedCompany: CompanyId? = null
         private set
 
+    /**
+     * True while a multiplayer layer owns the clock: [advanceBy] runs nothing (ticks come from [step], called once per
+     * commit the host sends), and nothing is saved, so the simulation cannot be rolled back on one device.
+     */
+    var externallyClocked: Boolean = false
+
     /** Told about every scenario event as it happens, so progress outside the game (medals) can be kept. */
     var scenarioSink: ((app.many.economytycoon.scenarios.ScenarioEvent) -> Unit)? = null
 
@@ -228,7 +234,7 @@ class GameSession(
     fun managerLog(): List<app.many.economytycoon.automation.ManagerAction> = automation.recent()
 
     private fun runManagers(tickValue: Long) {
-        if (!managers.anyOn) return
+        if (externallyClocked || !managers.anyOn) return
         for (company in playerCompanies()) {
             for (p in automation.plan(company, managers, tickValue)) {
                 issue(p.command)
@@ -389,7 +395,7 @@ class GameSession(
      * stall (the app in the background) does not freeze the screen catching up. Returns the ticks run.
      */
     fun advanceBy(elapsedMillis: Long, maxTicks: Int = 12): Int {
-        if (speed == GameSpeed.PAUSED || elapsedMillis <= 0L) return 0
+        if (externallyClocked || speed == GameSpeed.PAUSED || elapsedMillis <= 0L) return 0
         carryMillis += elapsedMillis
         val millisPerTick = 1_000L / speed.ticksPerSecond
         var ran = 0
@@ -431,6 +437,7 @@ class GameSession(
     // ---- saving --------------------------------------------------------------------------------
 
     fun save(slot: String, label: String): SaveSlot? {
+        if (externallyClocked) return null
         val saved = saves?.save(slot, simulation, label, SlotKind.MANUAL)
         if (saved != null) notify(SessionChange.SAVED)
         return saved
@@ -438,6 +445,7 @@ class GameSession(
 
     private fun autosave() {
         val manager = saves ?: return
+        if (externallyClocked) return
         val due = tick.value % settings.autosaveEveryTicks == 0L
         if (due && manager.autosaveIfDue(simulation) != null) notify(SessionChange.SAVED)
     }

@@ -85,7 +85,7 @@ class PeopleReports(private val e: Economy) {
         }
 
     fun research(company: CompanyId): ResearchSummary {
-        val state = e.research.of(company)
+        val state = e.research.read(company)
         val active = state.projects().map { row(company, it.tech) }
         val queued = state.queued().map { row(company, it) }
         return ResearchSummary(
@@ -98,7 +98,7 @@ class PeopleReports(private val e: Economy) {
 
     fun row(company: CompanyId, id: TechId): TechRow {
         val def = e.content.technology(id)
-        val state = e.research.of(company)
+        val state = e.research.read(company)
         val project = state.project(id)
         val status = when {
             state.isUnlocked(id) -> TechState.UNLOCKED
@@ -116,5 +116,5 @@ class PeopleReports(private val e: Economy) {
         )
     }
 
-    fun unlockedAt(company: CompanyId, tech: TechId): Tick? = e.research.of(company).unlockedAt(tech)
+    fun unlockedAt(company: CompanyId, tech: TechId): Tick? = e.research.read(company).unlockedAt(tech)
 }
