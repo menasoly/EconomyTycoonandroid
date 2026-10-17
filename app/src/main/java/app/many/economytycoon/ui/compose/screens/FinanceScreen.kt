@@ -70,6 +70,7 @@ fun FinanceScreen(ui: GameUi) {
                     SecondaryButton("Credit", { ui.open(Route.Credit) }, Modifier.weight(1f))
                 }
             }
+            item { SecondaryButton("Cash forecast", { ui.open(Route.CashForecast) }, Modifier.fillMaxWidth()) }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     SecondaryButton("Grants", { ui.open(Route.Grants) }, Modifier.weight(1f))

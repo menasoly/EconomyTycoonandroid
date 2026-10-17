@@ -182,6 +182,12 @@ class GameSession(
     /** What each of the selected company's facilities earns at today's prices, and where lines could earn more. */
     fun facilityProfit(): app.many.economytycoon.facilityprofit.PortfolioPerformance? = selectedCompany?.let { profitAnalyzer.portfolio(it) }
 
+    private val cashForecaster = app.many.economytycoon.cashflow.CashForecaster(simulation.economy)
+
+    /** The selected company's cash day by day under three scenarios. */
+    fun cashOutlook(horizon: Int = app.many.economytycoon.cashflow.CashForecaster.DEFAULT_HORIZON): app.many.economytycoon.cashflow.CashOutlook? =
+        selectedCompany?.let { cashForecaster.outlook(it, horizon) }
+
     private val valuationReader = app.many.economytycoon.valuation.ValuationReader(simulation.economy)
 
     /** What the selected company is worth under the given assumptions, from several angles. */
