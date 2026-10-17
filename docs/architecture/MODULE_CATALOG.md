@@ -37,3 +37,4 @@ Later volumes add per-module detail: public API, owned entities, events produced
 | net | Multiplayer | Wire protocol, authoritative shard, lockstep client, lobby, escrow trades, season scoring | core, content, finance, companies, persistence, simulation, replay |
 | carbon | Emissions and carbon pricing | Emission accounting, regimes, permit market, offsets, abatement, border adjustment | core, content, finance, production, advisor |
 | banking | Commercial banks | Bank balance sheets, deposits, lending, capital rules, runs, resolution, stress tests | core, finance |
+| ip | Patents and licensing | Patents, trade secrets, licences, disputes, portfolio valuation | core, content, finance, production, advisor |
