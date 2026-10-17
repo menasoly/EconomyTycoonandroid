@@ -1,7 +1,7 @@
 # Module: net
 
-Multiplayer protocol and server logic. Pure Kotlin, no `android.*`, no sockets. Nothing outside `net` and its
-presenters depends on it yet.
+Multiplayer protocol and server logic. Pure Kotlin, no `android.*`, no sockets. Only the presenters and screens in `ui`
+read from it; `session` and the engine do not depend on it.
 
 Depends on: core (binary primitives, money, results, deterministic random), simulation (`Command`, `Simulation`),
 persistence (`CommandCodec`, `SimulationSnapshot`), content, finance, companies, world (through the economy port only).
@@ -19,11 +19,28 @@ leaderboard. See ADR-0011 for the reasoning.
 | Wire | `NetIds`, `NetError`, `Messages`, `MessageCodec`, `Assets` | Typed ids, error codes, the message set and a strict canonical binary codec. `MessageCodec.decode` returns a typed result and never throws. |
 | Trust | `Crypto`, `Identity`, `Handshake`, `SeqWindow`, `CommandGate`, `CommandPayload`, `CommandSanity`, `AntiCheat` | HMAC-SHA256, per-player keys, resume proofs, replay windows, rate limits, command validation, offense scoring. |
 | Transport | `Transport`, `MemoryNetwork` | The datagram seam and a deterministic test network. |
-| Game seam | `SimulationPort`, `RealSimulationPort`, `Seating` | What the protocol needs from a game. |
+| Game seam | `SimulationPort`, `RealSimulationPort`, `SimulationDriver`, `Seating` | What the protocol needs from a game. Cash moves as `Command.EscrowTransfer`, a system-only command (codec tag 104) executed immediately and logged, so replays of the host's own command log reproduce trades. |
+| Device | `MultiplayerNode`, `LocalTable`, `NetNews`, `SecureTokenSource` | What one device runs: pump the shard and clients from the app's clock, host or join over a `Transport`, news headlines, production token source. |
 | History | `CommitLog`, `SessionRecord`, `SnapshotTransfer`, `SnapshotService` | The chained log of commits, replay of a recorded session, chunked snapshots with resume. |
 | Session | `Lobby`, `ChatModerator`, `Escrow`, `Scoring`, `Season`, `DesyncAnalysis` | Who is in the game, chat limits, trades, scores, who diverged. |
 | Endpoints | `ServerShard`, `ShardConfig`, `Connection`, `ClientSession` | The two ends of the protocol. |
 | Presentation | `ui/present/Net*Presenter`, `NetScreenSource`, `ui/compose/screens/MultiplayerScreen` | Lobby, player list with connection quality, desync report, leaderboard, trades and chat. |
+
+## Hosting and joining on a device
+
+`LocalTable` builds a host and its guests on a `MemoryNetwork` (one process: local tables, tests). The host runs a
+headless `RealSimulationPort` as the authority; every person, the host included, plays through their own port. A port
+built with a `SimulationDriver` advances through the owner of the game instead of around it: the app passes
+`GameSession.step()` so news, stats and achievements run after each commit, and sets `GameSession.externallyClocked`
+so the local clock, speed and saving cannot move the game. A driver refuses `replace`, so a game on screen is never
+swapped by a snapshot; the app rebuilds the session when a client reports a desync it cannot repair.
+
+The app calls `MultiplayerNode.pump(nowMs)` about every 20 ms from a monotonic clock and posts the returned
+`headlines` to the news feed. To play across devices, give `ServerShard` and `ClientSession` a `Transport` over a
+socket or relay instead of a `MemoryNetwork` endpoint (the Android adapter belongs in `android/`): `send(to, bytes)`
+must not block, endpoint ids are small integers the adapter maps to addresses, frames are at most 32 KiB, and the
+welcome message carries the one-time token, so use DTLS or a TLS relay. Use `SecureTokenSource` for tokens; `SeededTokenSource`
+is for tests.
 
 ## A tick, in order
 
@@ -76,6 +93,9 @@ repair, partitions and resume, a host restart, escrow trades, malicious input fr
 the recorded session. A few short scenarios run the real economy through `RealSimulationPort`.
 
 ## Known limits
+
+- No socket transport exists yet; hosting works over the in-memory network only (see above for what an adapter must provide).
+- The host's own state (`ServerShard.writeState`) is not yet written beside the game save.
 
 - Goods cannot be traded between players through the real economy yet (no command moves goods between companies).
 - Late joiners can only watch.
