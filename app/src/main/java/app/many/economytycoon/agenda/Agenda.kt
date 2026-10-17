@@ -13,6 +13,8 @@ enum class AgendaKind(val label: String) {
     TENDER_DUE("Tender delivery due"),
     GRANT_CLOSES("Grant applications close"),
     GRANT_ENDS("Grant period ends"),
+    CARBON_DEADLINE("Carbon deadline"),
+    PERMIT_AUCTION("Permit auction"),
 }
 
 /** One dated thing the company has to do or expects, with the money moving on that day if known. */

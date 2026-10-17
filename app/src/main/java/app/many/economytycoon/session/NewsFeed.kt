@@ -176,6 +176,35 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
                 else -> Unit
             }
         }
+        for (ev in summary.carbonEvents) {
+            val place = e.world.countries().firstOrNull { it.id == ev.country }?.name ?: "A government"
+            val own = { company: app.many.economytycoon.core.CompanyId -> e.companies.company(company)?.kind == app.many.economytycoon.companies.CompanyKind.PLAYER }
+            when (ev) {
+                is app.many.economytycoon.carbon.CarbonEvent.RegimeChanged -> add(
+                    NewsItem(t, NewsKind.WORLD, if (ev.to == app.many.economytycoon.carbon.RegimeKind.NONE) "$place ends its carbon policy" else "$place introduces ${ev.to.label.lowercase()}"),
+                )
+                is app.many.economytycoon.carbon.CarbonEvent.AuctionCleared -> add(
+                    NewsItem(
+                        t, NewsKind.FINANCE,
+                        if (ev.result.sold.isPositive) "$place sold ${ev.result.sold.wholeTonnes()} t of permits at ${Formatting.money(ev.result.price)}" else "No buyers at the permit auction in $place",
+                    ),
+                )
+                is app.many.economytycoon.carbon.CarbonEvent.ReserveAdjusted ->
+                    if (ev.withheld.isPositive || ev.released.isPositive) add(NewsItem(t, NewsKind.FINANCE, "$place ${if (ev.withheld.isPositive) "tightened" else "loosened"} the permit supply"))
+                is app.many.economytycoon.carbon.CarbonEvent.YearClosed ->
+                    if (ev.status == app.many.economytycoon.carbon.ComplianceStatus.SHORTFALL) {
+                        val name = e.companies.company(ev.company)?.name ?: "A company"
+                        add(NewsItem(t, NewsKind.FINANCE, "$name missed its carbon target for ${ev.year}"))
+                    }
+                is app.many.economytycoon.carbon.CarbonEvent.TaxCharged ->
+                    if (own(ev.company)) add(NewsItem(t, NewsKind.FINANCE, "Carbon tax of ${Formatting.money(ev.amount)} charged by $place"))
+                is app.many.economytycoon.carbon.CarbonEvent.RatingChanged ->
+                    if (own(ev.company) && ev.from != null && Math.abs(ev.from.ordinal - ev.to.ordinal) >= 2) add(NewsItem(t, NewsKind.COMPANY, "Your carbon rating moves to ${ev.to.label}"))
+                is app.many.economytycoon.carbon.CarbonEvent.AbatementDone ->
+                    if (own(ev.company)) add(NewsItem(t, NewsKind.COMPANY, "A ${ev.kind.label.lowercase()} measure is finished and cutting emissions"))
+                else -> Unit
+            }
+        }
         for (ev in summary.marketingEvents) {
             val company = e.companies.company(ev.company) ?: continue
             val name = company.name
