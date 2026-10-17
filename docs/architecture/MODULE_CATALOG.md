@@ -38,3 +38,4 @@ Later volumes add per-module detail: public API, owned entities, events produced
 | carbon | Emissions and carbon pricing | Emission accounting, regimes, permit market, offsets, abatement, border adjustment | core, content, finance, production, advisor |
 | banking | Commercial banks | Bank balance sheets, deposits, lending, capital rules, runs, resolution, stress tests | core, finance |
 | ip | Patents and licensing | Patents, trade secrets, licences, disputes, portfolio valuation | core, content, finance, production, advisor |
+| tourism | Tourism and hospitality | Destinations, visitor flows, accommodation, attractions, tour operators | core, finance, world |
