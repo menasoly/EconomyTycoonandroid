@@ -29,6 +29,7 @@ class AppEnvironment(
     val profile: ProfileStore = ProfileStore(MemorySaveStore()),
     val rules: app.many.economytycoon.watch.WatchStore = app.many.economytycoon.watch.WatchStore(MemorySaveStore()),
     val managers: app.many.economytycoon.automation.ManagerStore = app.many.economytycoon.automation.ManagerStore(MemorySaveStore()),
+    val blueprints: app.many.economytycoon.persistence.SaveStore = MemorySaveStore(),
 )
 
 /** The screen the whole app is showing, before any in-game navigation. */
@@ -138,6 +139,9 @@ class AppController(private val env: AppEnvironment, private val entropy: () -> 
         session.profileSink = { env.profile.save(profile) }
         session.watch = env.rules.load()
         session.watchSink = { env.rules.save(session.watch) }
+        session.blueprints = app.many.economytycoon.blueprint.BlueprintController.open(env.blueprints) {
+            session.selectedCompany?.let { app.many.economytycoon.blueprint.EconomyBlueprintHost(session.economy, it) }
+        }
         session.restoreManagers(env.managers.load())
         session.managerSink = { env.managers.save(session.managers) }
         session.scenarioSink = { ev ->

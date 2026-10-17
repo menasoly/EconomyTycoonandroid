@@ -82,6 +82,10 @@ object Glossary {
         GlossaryTerm("utilisation", "Utilisation", "The share of time a line actually ran. Missing inputs, staff or power pull it down.", listOf("line"), PRODUCTION),
         GlossaryTerm("yield-rate", "Yield rate", "The share of a batch that comes out good. Machines, quality assurance and skilled staff raise it.", listOf("recipe"), PRODUCTION),
         GlossaryTerm("upkeep", "Upkeep", "What a facility costs every day just to stay open, whether or not it produces.", listOf("depreciation"), PRODUCTION),
+        GlossaryTerm("blueprint", "Blueprint", "A saved set-up of a facility: its lines, recipes, machines, staffing and trading rules, kept so it can be applied to another building.", listOf("blueprint-code", "pending-build"), PRODUCTION),
+        GlossaryTerm("blueprint-code", "Blueprint code", "A block of text that holds a blueprint and a checksum, so a set-up can be copied to another game or shared.", listOf("blueprint", "library-folder"), PRODUCTION),
+        GlossaryTerm("library-folder", "Library folder", "A named group in the blueprint library, such as bakeries or mines, used to keep many blueprints tidy.", listOf("blueprint"), PRODUCTION),
+        GlossaryTerm("pending-build", "Pending build", "A new building ordered from a blueprint that is still under construction; its set-up waits until the building stands.", listOf("blueprint"), PRODUCTION),
         GlossaryTerm("payback", "Payback", "How long a facility takes to earn back what it cost to build.", listOf("upkeep"), PRODUCTION),
 
         GlossaryTerm("morale", "Morale", "How content the staff are. Low morale lowers output and, with unpaid wages, leads to strikes.", listOf("union"), PEOPLE),

@@ -57,6 +57,7 @@ fun MoreMenuScreen(ui: GameUi, onQuit: () -> Unit) {
                 Triple("People", "Staff, wages and morale", Route.People),
                 Triple("Research", "Unlock technology", Route.Research),
                 Triple("Logistics", "Vehicles, warehouses and shipments", Route.Logistics),
+                Triple("Blueprints", "Save and reuse facility set-ups", Route.Blueprints),
                 Triple("Achievements", "Milestones and lifetime totals", Route.Achievements),
                 Triple("Coming up", "Payments, deliveries and deadlines", Route.Agenda),
                 Triple("Activity", "What you have ordered", Route.Activity),

@@ -31,3 +31,4 @@ Modules are folders inside the app source tree, not Gradle modules or separate p
 - A new module requires an ADR.
 
 Later volumes add per-module detail: public API, owned entities, events produced and consumed, tests, complexity and priority.
+| blueprint | Facility blueprints | Capture facility layouts, share them as text codes, plan and apply them as ordinary commands | core, content, world, workforce, production, companies, facilityprofit, simulation, session, persistence |
