@@ -97,7 +97,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
     val techEffects = TechEffects(research)
     val carbonState = app.many.economytycoon.carbon.CarbonState()
     val modifiers: app.many.economytycoon.production.ProductionModifiers =
-        CarbonModifiers(ResearchModifiers(techEffects), carbonState, app.many.economytycoon.carbon.StandardFactors.table, content)
+        IpModifiers(CarbonModifiers(ResearchModifiers(techEffects), carbonState, app.many.economytycoon.carbon.StandardFactors.table, content), this)
     val macro = MacroService(view = WorldMacroView(world, markets, { tick }))
     val outlook = WorldOutlook(content, markets, laborMarkets, world, grid)
     val competitors = CompetitorService(content, outlook)
@@ -122,6 +122,15 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
     )
     val carbonViews = app.many.economytycoon.carbon.CarbonViews(carbon)
     val carbonRunner = CarbonRunner(this)
+    /** Patents, licences, disputes and secrets. The engine is rebuilt around a loaded state; it holds nothing before [openIp]. */
+    var ip: app.many.economytycoon.ip.IpEngine = newIpEngine(app.many.economytycoon.ip.IpState(config.seed))
+        private set
+    /** True once the patent office has been opened (or a saved one loaded); before that nothing is saved, hashed or run. */
+    var ipActive: Boolean = false
+        private set
+    val ipSales = IpSalesLog()
+    val ipContext = EconomyIpContext(this)
+    val ipRunner = IpRunner(this)
     val banking = app.many.economytycoon.banking.BankingService()
     val bankingInputs = MacroBankingInputs(this)
     val bankingRunner = BankingRunner(this)
@@ -165,6 +174,23 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         for (r in world.regions()) grid.setBaseline(r.id, world.citiesIn(r.id).sumOf { world.population(it.id).total })
     }
 
+    private fun newIpEngine(state: app.many.economytycoon.ip.IpState) = app.many.economytycoon.ip.IpEngine(
+        config.seed, content, app.many.economytycoon.ip.TechHolding { company, tech -> research.isUnlocked(company, tech) },
+        app.many.economytycoon.ip.IpParams(), state,
+    )
+
+    /** Opens the patent office on a new game: the scripted patent holders appear. */
+    internal fun openIp() {
+        ip.start()
+        ipActive = true
+    }
+
+    /** Puts a loaded patent state in place of the empty one. */
+    internal fun restoreIp(state: app.many.economytycoon.ip.IpState) {
+        ip = newIpEngine(state)
+        ipActive = true
+    }
+
     fun governmentOf(country: CountryId): LedgerOwner = LedgerOwner.government(country)
 
     fun governmentOfCompany(company: CompanyId): LedgerOwner =
@@ -192,6 +218,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         for (f in production.facilitiesOf(id)) production.shutdown(id, f.id)
         contracts.endAllOf(id, tick)
         exchangeRunner.forget(id)
+        ipRunner.forget(id, tick)
         riskRunner.forget(id, tick)
         tenderRunner.forget(id, tick)
         grantRunner.forget(id)
@@ -238,6 +265,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         if (!energyGrids.isEmpty) energyGrids.hashInto(h)
         if (!carbonState.isPristine) carbonState.hashInto(h)
         if (!banking.isPristine) banking.hashInto(h)
+        if (ipActive) { ip.state.hashInto(h); ipSales.hashInto(h) }
         regulation.hashInto(h)
         bonds.hashInto(h)
         unions.hashInto(h)

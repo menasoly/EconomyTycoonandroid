@@ -91,6 +91,7 @@ class Fulfillment(private val e: Economy) {
         out.executed++
         out.delivered += value
         val country = e.world.region(trade.key.region).country
+        if (e.ipActive) e.ipContext.recordSale(trade.tick, seller, good, country, qty, value)
         val origin = e.world.region(sellerFacility.region).country
         val destination = buyerFacility?.let { e.world.region(it.region).country } ?: country
         if (origin != destination) out.crossBorder += app.many.economytycoon.carbon.TradeFlow(good, qty, origin, destination, buyerCompany.takeIf { buyerFacility != null }, seller)

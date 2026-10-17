@@ -143,6 +143,8 @@ object CommandDescriber {
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement ->
             app.many.economytycoon.simulation.GridCommandMap.of(cmd)?.let { app.many.economytycoon.energygrid.GridCommandExecutor.describe(it) } ?: "Changed the electricity grid"
         is Command.EstablishBanks -> "Opened the banks"
+        is Command.EstablishIp -> "Opened the patent office"
+        is Command.Ip -> app.many.economytycoon.ip.IpCommandDescriber.describe(cmd.command)
         is Command.FoundBank -> "Founded bank ${cmd.name} with ${n.money(cmd.capital)}"
         is Command.BankDecision -> bankDecision(cmd.action, n)
         is Command.EstablishCarbonPolicies -> "Put the carbon policies in force"
@@ -194,7 +196,7 @@ object CommandDescriber {
         is Command.RemoveBuyRule, is Command.OpenFuture, is Command.CloseFuture, is Command.AddMargin -> ActivityArea.TRADE
         is Command.EstablishBanks, is Command.FoundBank, is Command.BankDecision,
         is Command.EscrowTransfer, is Command.SetDividend, is Command.Borrow, is Command.Repay, is Command.SetBudget, is Command.SubscribeBond, is Command.TradeBond -> ActivityArea.FINANCE
-        is Command.StartResearch, is Command.QueueResearch, is Command.CancelResearch, is Command.LicenseTech -> ActivityArea.RESEARCH
+        is Command.StartResearch, is Command.QueueResearch, is Command.CancelResearch, is Command.LicenseTech, is Command.EstablishIp, is Command.Ip -> ActivityArea.RESEARCH
         is Command.Ship, is Command.MoveLocal, is Command.BuyVehicle, is Command.SellVehicle, is Command.RepairVehicle,
         is Command.LeaseWarehouse, is Command.CloseWarehouse -> ActivityArea.LOGISTICS
         is Command.ProposeContract, is Command.AcceptContract, is Command.DeclineContract, is Command.CancelContract -> ActivityArea.CONTRACTS
@@ -220,6 +222,11 @@ object CommandDescriber {
         is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials, is Command.CreateCampaign,
         is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest, is Command.OrderGridUnit,
         is Command.TerminatePowerAgreement, is Command.EscrowTransfer, is Command.FoundBank, is Command.BuyCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement -> true
+        is Command.Ip -> when (cmd.command) {
+            is app.many.economytycoon.ip.IpCommand.FilePatent, is app.many.economytycoon.ip.IpCommand.PayMaintenance, is app.many.economytycoon.ip.IpCommand.InvestInSecret,
+            is app.many.economytycoon.ip.IpCommand.BuyPatent, is app.many.economytycoon.ip.IpCommand.StartDesignAround, is app.many.economytycoon.ip.IpCommand.FileSuit -> true
+            else -> false
+        }
         else -> false
     }
 }
