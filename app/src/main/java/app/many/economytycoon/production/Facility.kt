@@ -112,6 +112,10 @@ class Facility(
     var energyUsed: app.many.economytycoon.core.Quantity = app.many.economytycoon.core.Quantity.ZERO
         internal set
 
+    /** Share of today's working hours with power, in ppm. Set by a blackout and put back to full when the day's production has run. */
+    var powerFactorPpm: Long = 1_000_000L
+        internal set
+
     /** Well-kept buildings run at full speed; below 80% condition output falls toward 70%. */
     val conditionFactorPpm: Long get() = if (conditionPpm >= 800_000L) 1_000_000L else 700_000L + conditionPpm * 3 / 8
 

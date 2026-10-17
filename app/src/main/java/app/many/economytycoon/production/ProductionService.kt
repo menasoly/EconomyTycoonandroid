@@ -342,6 +342,18 @@ class ProductionService(
 
     // ---- simulation ----------------------------------------------------------------------------
 
+    /**
+     * Loses the working hours a facility spent without power today and wears its condition by [conditionLossPpm]. The lost
+     * hours slow the facility's lines in the production step that follows and are forgotten once it has run.
+     */
+    fun applyBlackout(facility: FacilityId, shedHours: Int, conditionLossPpm: Long) {
+        val f = facilities[facility] ?: return
+        if (f.status != FacilityStatus.OPERATING) return
+        val hours = shedHours.coerceIn(0, 24)
+        f.powerFactorPpm = (Rate.ONE_PPM * (24 - hours)) / 24
+        f.conditionPpm = (f.conditionPpm - conditionLossPpm.coerceAtLeast(0L)).coerceAtLeast(0L)
+    }
+
     fun step(ctx: TickContext): ProductionReport {
         val report = ProductionReport(ctx.tick)
         for (p in projects.values.toList()) stepProject(p, ctx.tick, report)

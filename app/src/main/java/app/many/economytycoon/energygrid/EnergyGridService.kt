@@ -141,6 +141,18 @@ class EnergyGridService(val state: EnergyGridState = EnergyGridState(), val limi
         return Outcome.ok(u)
     }
 
+    // ----- power plant facilities -----
+
+    /** Records that a power plant facility is represented on its grid by [unit]. */
+    fun linkPlant(facility: FacilityId, unit: UnitId): Outcome<Unit> {
+        if (state.unit(unit) == null) return Outcome.reject(Rules.UNKNOWN_ENTITY, "unknown unit")
+        if (state.plantMap.containsKey(facility)) return Outcome.reject(Rules.DUPLICATE, "that plant is already linked")
+        state.plantMap[facility] = unit
+        return Outcome.ok(Unit)
+    }
+
+    fun unlinkPlant(facility: FacilityId) { state.plantMap.remove(facility) }
+
     // ----- loads -----
 
     fun connectFacility(grid: GridId, customer: CustomerClass, company: CompanyId, facility: FacilityId, baseKw: Long): Outcome<GridLoad> {

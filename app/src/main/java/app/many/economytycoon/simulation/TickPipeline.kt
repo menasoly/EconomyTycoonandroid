@@ -54,6 +54,8 @@ class TickSummary(val tick: Tick) {
     var tenderEvents: List<app.many.economytycoon.tenders.TenderEvent> = emptyList()
     var grantEvents: List<app.many.economytycoon.grants.GrantEvent> = emptyList()
     var marketingEvents: List<app.many.economytycoon.marketing.MarketingEvent> = emptyList()
+    /** What the electricity grids did today; null in a game without grids. */
+    var gridReport: app.many.economytycoon.energygrid.DayReport? = null
     var scenarioEvents: List<app.many.economytycoon.scenarios.ScenarioEvent> = emptyList()
     var propertyEvents: List<app.many.economytycoon.property.PropertyEvent> = emptyList()
     var futuresEvents: List<app.many.economytycoon.futures.FuturesEvent> = emptyList()
@@ -95,6 +97,7 @@ class TickPipeline(
     private val aiTenders = AiTenders(e, executor)
     private val aiGrants = AiGrants(e, executor)
     private val aiMarketing = AiMarketing(e, executor)
+    private val aiUtilities = AiUtilities(e)
     private val aiLobbying = AiLobbying(e, executor)
     private val aiBonds = AiBonds(e, executor)
     private val aiBargaining = AiBargaining(e, executor)
@@ -130,6 +133,7 @@ class TickPipeline(
             aiTenders.run(tick)
             aiGrants.run(tick)
             aiMarketing.run(tick)
+            aiUtilities.run(tick)
             aiLobbying.run(tick)
             aiBonds.run(tick)
             aiBargaining.run(tick)
@@ -166,6 +170,7 @@ class TickPipeline(
             supplier.run(tick)
             s.tenderEvents = e.tenderRunner.run(tick)
             s.grantEvents = e.grantRunner.run(tick)
+            e.energyGridRunner.advance(tick, s)
             s.regulationEvents = e.regulationRunner.run(tick)
             s.bondEvents = e.bondRunner.run(tick)
             s.unionEvents = e.unionRunner.run(tick)
@@ -189,7 +194,8 @@ class TickPipeline(
                     val facility = e.production.facility(f.facility)
                     if (facility != null) {
                         facility.inventory.remove(e.electricity, app.many.economytycoon.core.Quantity.min(produced, facility.inventory.available(e.electricity)))
-                        e.grid.recordProduction(facility.region, facility.owner, produced)
+                        // A region with a grid of its own takes power from the grid's units, not from this pool.
+                        if (!e.energyGridRunner.covers(facility.region)) e.grid.recordProduction(facility.region, facility.owner, produced)
                     }
                 }
             }
@@ -288,6 +294,7 @@ class TickPipeline(
         intents += f.taxIntents
         intents += e.workforce.payrollIntents(tick, households) { e.governmentOfCompany(it) }
         intents += gridIntents(tick)
+        intents += e.energyGridRunner.settlementIntents(tick)
         intents += e.marketingRunner.settlementIntents(e.companies.departmentIntents(tick, households))
 
         val results = e.finance.settleTick(tick, intents)
@@ -319,6 +326,7 @@ class TickPipeline(
         val out = ArrayList<SettlementIntent>()
         for ((key, amount) in e.grid.billsByRegion()) {
             val (region, company) = key
+            if (e.energyGridRunner.covers(region)) continue
             val payer = LedgerOwner.company(company)
             for ((payee, share) in e.grid.payees(region, amount)) {
                 if (payee == company || share.raw <= 0L) continue

@@ -12,6 +12,7 @@ class EnergyGridState : Hashable {
     internal val gridMap = java.util.TreeMap<GridId, Grid>()
     internal val linkMap = java.util.TreeMap<LinkId, Interconnector>()
     internal val ppaMap = java.util.TreeMap<PpaId, Ppa>()
+    internal val plantMap = java.util.TreeMap<app.many.economytycoon.core.FacilityId, UnitId>()
     val counters = GridCounters()
 
     /** Last day advanced, or -1 before the first. */
@@ -26,6 +27,9 @@ class EnergyGridState : Hashable {
     val links: List<Interconnector> get() = linkMap.values.toList()
     val ppas: List<Ppa> get() = ppaMap.values.toList()
 
+    /** Power plant facilities that feed a grid, and the unit that stands for each. */
+    val plantLinks: Map<app.many.economytycoon.core.FacilityId, UnitId> get() = plantMap.toMap()
+
     fun grid(id: GridId): Grid? = gridMap[id]
     fun link(id: LinkId): Interconnector? = linkMap[id]
     fun ppa(id: PpaId): Ppa? = ppaMap[id]
@@ -39,7 +43,7 @@ class EnergyGridState : Hashable {
     val isEmpty: Boolean get() = gridMap.isEmpty()
 
     internal fun clear() {
-        gridMap.clear(); linkMap.clear(); ppaMap.clear()
+        gridMap.clear(); linkMap.clear(); ppaMap.clear(); plantMap.clear()
         counters.nextGrid = 1L; counters.nextUnit = 1L; counters.nextLoad = 1L; counters.nextPpa = 1L; counters.nextLink = 1L; counters.nextBlackout = 1L
         lastTick = -1L; lastBilledMonth = -1L
     }
@@ -51,6 +55,7 @@ class EnergyGridState : Hashable {
         hasher.putInt(gridMap.size); for (g in gridMap.values) g.hashInto(hasher)
         hasher.putInt(linkMap.size); for (l in linkMap.values) l.hashInto(hasher)
         hasher.putInt(ppaMap.size); for (p in ppaMap.values) p.hashInto(hasher)
+        if (plantMap.isNotEmpty()) { hasher.putInt(plantMap.size); for ((f, u) in plantMap) hasher.putLong(f.value).putLong(u.value) }
     }
 
     /** The canonical hash of this section on its own. */

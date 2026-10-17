@@ -104,7 +104,8 @@ class SettlementEngine(private val ledger: Ledger) {
         val total = intent.total
         if (intent.payer == intent.payee) return SettlementResult(intent, SettlementStatus.INVALID, Money.ZERO)
         val cash = ledger.cash(intent.payer)
-        if (cash >= total) {
+        // A system account is a clearing account (a grid's pool and retailer) and may run a balance in either direction.
+        if (cash >= total || intent.payer.kind == OwnerKind.SYSTEM) {
             val entries = ArrayList<Entry>()
             for (line in intent.lines) {
                 entries.add(Entry(AccountRef(intent.payer, line.payerDebit), line.amount))

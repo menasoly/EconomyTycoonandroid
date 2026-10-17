@@ -162,7 +162,7 @@ class Ledger(private val ids: IdAllocators) : Hashable {
     /** All cash in circulation, which only MINT transactions may change. */
     fun moneySupply(): Money {
         var total = 0L
-        for ((ref, v) in balances) if (ref.chart == Chart.CASH && ref.owner.kind != OwnerKind.SYSTEM) total += v
+        for ((ref, v) in balances) if (ref.chart == Chart.CASH && ref.owner != LedgerOwner.SYSTEM) total += v
         return Money(total)
     }
 

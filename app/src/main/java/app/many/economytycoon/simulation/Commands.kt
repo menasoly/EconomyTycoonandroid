@@ -159,6 +159,28 @@ sealed class Command {
     ) : Command()
     data class CancelPromotion(override val company: CompanyId, val promotion: app.many.economytycoon.marketing.PromotionId) : Command()
 
+    // ---- electricity grids ----
+    /** Sets up one grid for every region of a world that has none; only the system gives it. */
+    object EstablishGrids : Command() {
+        override val company: CompanyId? get() = null
+        override fun toString() = "EstablishGrids"
+    }
+    data class ConnectFacilityToGrid(override val company: CompanyId, val grid: Long, val facility: FacilityId, val customer: Int, val baseKw: Long) : Command()
+    data class DisconnectFacilityFromGrid(override val company: CompanyId, val facility: FacilityId) : Command()
+    data class ReclassifyGridLoad(override val company: CompanyId, val load: Long, val customer: Int) : Command()
+    data class SetGridLoadDraw(override val company: CompanyId, val load: Long, val baseKw: Long) : Command()
+    data class OrderGridUnit(override val company: CompanyId, val grid: Long, val tech: Int, val capacityKw: Long) : Command()
+    data class RetireGridUnit(override val company: CompanyId, val unit: Long) : Command()
+    data class MothballGridUnit(override val company: CompanyId, val unit: Long) : Command()
+    data class RestartGridUnit(override val company: CompanyId, val unit: Long) : Command()
+    data class OfferPowerAgreement(
+        override val company: CompanyId, val grid: Long, val buyer: CompanyId, val profile: Int, val volumeKw: Long, val sharePpm: Long,
+        val unit: Long?, val strike: Money, val startsAt: Long, val days: Int, val penaltyPpm: Long,
+    ) : Command()
+    data class AcceptPowerAgreement(override val company: CompanyId, val ppa: Long) : Command()
+    data class DeclinePowerAgreement(override val company: CompanyId, val ppa: Long) : Command()
+    data class TerminatePowerAgreement(override val company: CompanyId, val ppa: Long) : Command()
+
     // ---- labour relations ----
     data class OpenFuture(override val company: CompanyId, val good: GoodId, val side: app.many.economytycoon.futures.Side, val contracts: Long, val tenor: Int) : Command()
     data class CloseFuture(override val company: CompanyId, val position: Long) : Command()

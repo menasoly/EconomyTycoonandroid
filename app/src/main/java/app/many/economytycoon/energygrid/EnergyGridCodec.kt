@@ -30,6 +30,8 @@ object EnergyGridCodec {
         }
         out.writeVarInt(s.ppaMap.size)
         for (p in s.ppaMap.values) writePpa(p, out)
+        out.writeVarInt(s.plantMap.size)
+        for ((f, u) in s.plantMap) { out.writeVarLong(f.value); out.writeVarLong(u.value) }
     }
 
     fun read(r: ByteReader, s: EnergyGridState) {
@@ -54,6 +56,7 @@ object EnergyGridCodec {
             s.linkMap[l.id] = l
         }
         repeat(r.readVarInt()) { val p = readPpa(r); s.ppaMap[p.id] = p }
+        repeat(r.readVarInt()) { s.plantMap[FacilityId(r.readVarLong())] = UnitId(r.readVarLong()) }
     }
 
     /** Convenience for tests and tools: the section as bytes. */
