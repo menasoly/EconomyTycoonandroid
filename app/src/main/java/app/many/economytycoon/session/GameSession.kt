@@ -126,6 +126,12 @@ class GameSession(
     fun agenda(days: Int = app.many.economytycoon.agenda.AgendaBuilder.DEFAULT_DAYS): app.many.economytycoon.agenda.Agenda? =
         selectedCompany?.let { agendaBuilder.build(it, tick.value, days) }
 
+    private val tradeFinder = app.many.economytycoon.trade.TradeFinder(simulation.economy)
+
+    /** Profitable buy-here-sell-there legs for a shipment of the given size, best first. */
+    fun tradeLegs(quantity: app.many.economytycoon.core.Quantity = app.many.economytycoon.trade.TradeFinder.DEFAULT_QUANTITY): List<app.many.economytycoon.trade.TradeLeg> =
+        tradeFinder.scan(quantity)
+
     private val exports = Exports(this)
 
     /** Spreadsheet files of the selected company's figures. */
