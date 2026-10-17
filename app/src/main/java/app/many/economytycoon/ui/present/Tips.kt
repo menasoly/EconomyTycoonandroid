@@ -59,6 +59,7 @@ object Tips {
         Tip("talent-train", "A trained team produces more than a cheap one. Train where the skill match is weakest, and tie trainees in with a bond so the investment stays.", "People", Route.TalentTraining),
         Tip("talent-poach", "Rivals hunt the people you trained. Keep pay close to the market and answer offers before they settle.", "People", Route.TalentRecruiting),
         Tip("carbon-cheapest", "The cheapest tonne is the one you do not emit. Compare each measure's cost per tonne with the carbon price.", "Government", Route.Carbon),
+        Tip("workshop-test", "Test a scenario before sharing it. If one kind of player wins in a week, or none can, the goals or the start need work.", "World", Route.Workshop),
     )
 
     fun byId(id: String): Tip? = all.firstOrNull { it.id == id }

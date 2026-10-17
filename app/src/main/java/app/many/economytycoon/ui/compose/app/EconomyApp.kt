@@ -16,6 +16,7 @@ import app.many.economytycoon.ui.compose.screens.MenuScreen
 import app.many.economytycoon.ui.compose.screens.AchievementsMenuScreen
 import app.many.economytycoon.ui.compose.screens.ScenariosScreen
 import app.many.economytycoon.ui.compose.screens.SetupScreen
+import app.many.economytycoon.ui.compose.screens.WorkshopMenuScreen
 
 /** Root of the interface: the theme, the text-size setting and whichever top-level screen is showing. */
 @Composable
@@ -31,6 +32,7 @@ fun EconomyApp(host: AppHost) {
                     AppScreen.LoadList -> LoadListScreen(host)
                     is AppScreen.Scenarios -> ScenariosScreen(host, screen)
                     AppScreen.Achievements -> AchievementsMenuScreen(host)
+                    is AppScreen.Workshop -> WorkshopMenuScreen(host, screen.page)
                     is AppScreen.Playing -> GameShell(host, screen.session)
                 }
             }

@@ -53,6 +53,11 @@ import app.many.economytycoon.ui.compose.screens.ManagersScreen
 import app.many.economytycoon.ui.compose.screens.BlueprintsScreen
 import app.many.economytycoon.ui.compose.screens.IndustryCatalogScreen
 import app.many.economytycoon.ui.compose.screens.WatchScreen
+import app.many.economytycoon.ui.compose.screens.WorkshopLibraryScreen
+import app.many.economytycoon.ui.compose.screens.WorkshopReportScreen
+import app.many.economytycoon.ui.compose.screens.WorkshopScreen
+import app.many.economytycoon.ui.present.WorkshopNav
+import app.many.economytycoon.ui.present.WorkshopPage
 import app.many.economytycoon.ui.compose.screens.ReportsScreen
 import app.many.economytycoon.ui.compose.screens.InsuranceScreen
 import app.many.economytycoon.ui.compose.screens.StockScreen
@@ -225,5 +230,17 @@ private fun Router(ui: GameUi, host: AppHost) {
         Route.Saves -> SavesScreen(ui, host)
         Route.Settings -> SettingsScreen(ui, host)
         Route.Help -> HelpScreen(ui)
+        Route.Workshop -> WorkshopScreen(workshopNav(ui, host), host.workshop)
+        Route.WorkshopReport -> WorkshopReportScreen(workshopNav(ui, host), host.workshop)
+        Route.WorkshopLibrary -> WorkshopLibraryScreen(workshopNav(ui, host), host.workshop)
     }
 }
+
+/** The workshop's way around inside a game: its pages are routes, and playing a draft leaves this game for the new one. */
+private fun workshopNav(ui: GameUi, host: AppHost) = WorkshopNav(
+    back = { ui.back() },
+    open = { page ->
+        ui.open(when (page) { WorkshopPage.EDITOR -> Route.Workshop; WorkshopPage.REPORT -> Route.WorkshopReport; WorkshopPage.LIBRARY -> Route.WorkshopLibrary })
+    },
+    play = { host.playWorkshopDraft() },
+)

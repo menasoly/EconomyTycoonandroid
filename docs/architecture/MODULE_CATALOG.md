@@ -41,3 +41,4 @@ Later volumes add per-module detail: public API, owned entities, events produced
 | tourism | Tourism and hospitality | Destinations, visitor flows, accommodation, attractions, tour operators | core, finance, world |
 | urban | Urban planning | Districts, zoning, land value, transit network, municipal budgets, petitions | core, finance |
 | talent | Skills and education | Skill distributions, schools, training, poaching, talent pipelines | core, content, finance, workforce, world, competitors, advisor |
+| workshop | Scenario workshop | Scenario drafts, text codec, balance harness, library | core, content, finance, production, companies, competitors, scenarios, persistence, session, simulation, world |

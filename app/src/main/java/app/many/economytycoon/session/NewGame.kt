@@ -5,8 +5,10 @@ import app.many.economytycoon.core.Money
 import app.many.economytycoon.core.Outcome
 import app.many.economytycoon.core.Rules
 import app.many.economytycoon.persistence.SaveManager
+import app.many.economytycoon.scenarios.GoalMeter
 import app.many.economytycoon.scenarios.ScenarioCatalog
 import app.many.economytycoon.scenarios.ScenarioDef
+import app.many.economytycoon.scenarios.StarterSites
 import app.many.economytycoon.simulation.Actor
 import app.many.economytycoon.simulation.Command
 import app.many.economytycoon.simulation.SimConfig
@@ -43,16 +45,8 @@ object NewGame {
     fun forScenario(def: ScenarioDef, companyName: String, playerId: Long = 1L): NewGameOptions =
         NewGameOptions(companyName, Difficulty.STANDARD, def.worldSize, def.seed, def.countryIndex, playerId, def.id)
 
-    fun start(
-        options: NewGameOptions,
-        content: ContentRepository,
-        settings: GameSettings = GameSettings(),
-        saves: SaveManager? = null,
-    ): Outcome<GameSession> {
-        val name = options.companyName.trim()
-        if (name.length < 3) return Outcome.reject(Rules.INVALID_ARGUMENT, "a company name needs at least three characters")
-        val def = options.scenario?.let { id -> ScenarioCatalog.byId(id) ?: return Outcome.reject(Rules.UNKNOWN_ENTITY, "unknown scenario") }
-        val sim = Simulation(config(options), content)
+    /** The services every new game starts with, in the order they have always been set up. */
+    private fun establish(sim: Simulation): Simulation {
         // New games run on regional electricity grids; games saved without them keep the simple pool.
         sim.execute(Actor.System, Command.EstablishGrids)
         // Governments set carbon policy from their environmental stance; the first rules start two years in.
@@ -67,6 +61,19 @@ object NewGame {
         sim.execute(Actor.System, Command.EstablishUrban)
         // Every region gets public schools and colleges, and people carry skills that decide how well they do their jobs.
         sim.execute(Actor.System, Command.EstablishTalent)
+        return sim
+    }
+
+    fun start(
+        options: NewGameOptions,
+        content: ContentRepository,
+        settings: GameSettings = GameSettings(),
+        saves: SaveManager? = null,
+    ): Outcome<GameSession> {
+        val name = options.companyName.trim()
+        if (name.length < 3) return Outcome.reject(Rules.INVALID_ARGUMENT, "a company name needs at least three characters")
+        val def = options.scenario?.let { id -> ScenarioCatalog.byId(id) ?: return Outcome.reject(Rules.UNKNOWN_ENTITY, "unknown scenario") }
+        val sim = establish(Simulation(config(options), content))
         val countries = sim.economy.world.countries().sortedBy { it.id }
         val country = countries.getOrNull(def?.countryIndex ?: options.countryIndex) ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
         val hq = country.capital
@@ -77,5 +84,35 @@ object NewGame {
         if (founded is Outcome.Rejected) return Outcome.Rejected(founded.rejection)
         if (def != null) sim.economy.scenario.begin(def.id, options.playerId, sim.tick)
         return Outcome.Ok(GameSession(sim, options.playerId, settings, saves))
+    }
+
+    /**
+     * Starts a game from a scenario definition that is not in the catalog, such as one made in the workshop. [config] decides the
+     * world, rivals and rules; the definition travels with the run, so saving and loading keep it.
+     */
+    fun startCustom(
+        def: ScenarioDef,
+        config: SimConfig,
+        companyName: String,
+        content: ContentRepository,
+        settings: GameSettings = GameSettings(),
+        saves: SaveManager? = null,
+        playerId: Long = 1L,
+    ): Outcome<GameSession> {
+        val name = companyName.trim()
+        if (name.length < 3) return Outcome.reject(Rules.INVALID_ARGUMENT, "a company name needs at least three characters")
+        def.problems().firstOrNull()?.let { return Outcome.reject(Rules.INVALID_ARGUMENT, "the scenario is unsound: $it") }
+        val sim = establish(Simulation(config, content))
+        val country = sim.economy.world.countries().sortedBy { it.id }.getOrNull(def.countryIndex)
+            ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
+        val founded = sim.execute(Actor.Player(playerId), Command.FoundCompany(name, country.id, country.capital, def.capital))
+        if (founded is Outcome.Rejected) return Outcome.Rejected(founded.rejection)
+        if (def.starters.isNotEmpty()) {
+            val company = GoalMeter.playerCompanies(sim.economy, playerId).firstOrNull()
+                ?: return Outcome.reject(Rules.UNKNOWN_ENTITY, "the company was not created")
+            StarterSites.place(sim, def.starters, company, country, playerId)
+        }
+        sim.economy.scenario.beginCustom(def, playerId, sim.tick)
+        return Outcome.Ok(GameSession(sim, playerId, settings, saves))
     }
 }

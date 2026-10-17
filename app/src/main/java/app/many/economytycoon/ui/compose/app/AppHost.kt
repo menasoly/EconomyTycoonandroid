@@ -10,6 +10,7 @@ import app.many.economytycoon.ui.app.AppController
 import app.many.economytycoon.ui.app.AppScreen
 import app.many.economytycoon.ui.app.LoadFailure
 import app.many.economytycoon.ui.app.NewGameDraft
+import app.many.economytycoon.ui.present.WorkshopPage
 
 /**
  * Makes the plain [AppController] observable. Every action goes through here so the root composable
@@ -31,6 +32,9 @@ class AppHost(val controller: AppController) {
     fun openSetup() = bump { controller.openSetup() }
     fun openLoadList() = bump { controller.openLoadList() }
     fun openScenarios() = bump { controller.openScenarios() }
+    val workshop get() = controller.workshop
+    fun openWorkshop(page: WorkshopPage = WorkshopPage.EDITOR) = bump { controller.openWorkshop(page) }
+    fun playWorkshopDraft(): List<String>? = bump { controller.playWorkshopDraft() }
     fun openAchievements() = bump { controller.openAchievements() }
     fun selectScenario(id: String) = bump { controller.selectScenario(id) }
     fun updateScenarioName(name: String) = bump { controller.updateScenarioName(name) }

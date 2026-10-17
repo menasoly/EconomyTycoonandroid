@@ -181,6 +181,11 @@ object Glossary {
         GlossaryTerm("talent-successor", "Successor", "The person named to take over a key position when it falls empty.", listOf("talent-key-position"), PEOPLE),
         GlossaryTerm("talent-brain-drain", "Brain drain", "Skilled people leaving a country for better pay or conditions abroad.", listOf("talent-diaspora"), PEOPLE),
         GlossaryTerm("talent-diaspora", "Diaspora", "People who have left a country and keep ties to it. Their ties make later migration easier.", listOf("talent-brain-drain"), PEOPLE),
+    ) + listOf(
+        GlossaryTerm("workshop-seed", "Seed", "The number that decides a world. The same seed with the same rules builds the same countries, towns and rivals every time.", listOf("workshop-share-code"), WORLD),
+        GlossaryTerm("workshop-baseline", "Baseline", "A saved set of test results for a scenario. Later tests are compared with it to show what a change did to the balance.", listOf("workshop-seed"), WORLD),
+        GlossaryTerm("workshop-softlock", "Softlock", "A company that can no longer make progress: it has no cash, nothing it can sell and no way to earn. The balance test reports it.", emptyList(), WORLD),
+        GlossaryTerm("workshop-share-code", "Share code", "A short block of text that holds a whole scenario and a checksum, so it can be pasted into another copy of the game.", listOf("workshop-seed"), WORLD),
     )
 
     private val byId: Map<String, GlossaryTerm> = terms.associateBy { it.id }

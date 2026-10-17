@@ -29,7 +29,8 @@ object AppContainer {
         val rules = app.many.economytycoon.watch.WatchStore(FileSaveStore(File(context.filesDir, "watch")))
         val managers = app.many.economytycoon.automation.ManagerStore(FileSaveStore(File(context.filesDir, "managers")))
         val blueprints = FileSaveStore(File(context.filesDir, "blueprints"))
-        val env = AppEnvironment(ShippedContent.repository, saves, settings, profile = profile, rules = rules, managers = managers, blueprints = blueprints)
+        val workshop = FileSaveStore(File(context.filesDir, "workshop"))
+        val env = AppEnvironment(ShippedContent.repository, saves, settings, profile = profile, rules = rules, managers = managers, blueprints = blueprints, workshopSaves = workshop)
         return AppHost(AppController(env))
     }
 }

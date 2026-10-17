@@ -162,6 +162,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "workshop", "Writing a scenario", "Make your own scenario, test it and share it.",
+            listOf(
+                "Open Scenario workshop from the main menu or the More tab. Start from a template or from one of the built-in scenarios, then give it a title, a world, a company, goals and a deadline. Problems are listed as you type.",
+                "Choose Test to play the scenario with four kinds of player and read what the test noticed: goals that are too easy or out of reach, companies that get stuck, and rules that never come into play. Record a baseline to see what later changes do.",
+                "Save the draft to your library and share it as a code. Choose Play to start a game of it. Scripted events, failure conditions, starting sites and rule changes all apply; bonus goals and goal weights only count in the test. Scenarios made here do not earn medals.",
+            ),
+        ),
+        HelpTopic(
             "saving", "Saving", "Slots, autosave and backups.",
             listOf(
                 "The game saves automatically at the interval you choose in Settings and when you leave to the menu. You can also save to a named slot at any time from the Saves screen.",
