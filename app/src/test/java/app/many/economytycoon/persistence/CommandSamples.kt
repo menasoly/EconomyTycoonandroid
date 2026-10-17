@@ -28,6 +28,7 @@ import app.many.economytycoon.core.RecipeId
 import app.many.economytycoon.core.RegionId
 import app.many.economytycoon.core.RoleId
 import app.many.economytycoon.core.TechId
+import app.many.economytycoon.core.Tick
 import app.many.economytycoon.core.VehicleId
 import app.many.economytycoon.core.VehicleTypeId
 import app.many.economytycoon.core.WarehouseId
@@ -113,5 +114,17 @@ object CommandSamples {
         Command.EndLease(c, app.many.economytycoon.core.ParcelId(12)),
         Command.LobbyLaw(c, app.many.economytycoon.core.RegulationId(5), true, Money.units(2_500)),
         Command.LobbyLaw(c, app.many.economytycoon.core.RegulationId(5), false, Money.units(10)),
+        Command.CreateCampaign(c, GoodId("beer"), RegionId(1), null, app.many.economytycoon.marketing.Channel.RADIO, app.many.economytycoon.marketing.TargetSegment.EVERYONE, Money.units(500), 30, app.many.economytycoon.marketing.CreativeTier.PROFESSIONAL, null),
+        Command.CreateCampaign(c, GoodId("bread"), RegionId(2), CityId(10), app.many.economytycoon.marketing.Channel.IN_STORE, app.many.economytycoon.marketing.TargetSegment.BUDGET, Money.units(90), 12, app.many.economytycoon.marketing.CreativeTier.BASIC, Tick(40)),
+        Command.PauseCampaign(c, app.many.economytycoon.marketing.CampaignId(3)),
+        Command.ResumeCampaign(c, app.many.economytycoon.marketing.CampaignId(3)),
+        Command.ExtendCampaign(c, app.many.economytycoon.marketing.CampaignId(3), 14),
+        Command.SetCampaignBudget(c, app.many.economytycoon.marketing.CampaignId(3), Money.units(750)),
+        Command.RefreshCreative(c, app.many.economytycoon.marketing.CampaignId(3), app.many.economytycoon.marketing.CreativeTier.STUDIO),
+        Command.CancelCampaign(c, app.many.economytycoon.marketing.CampaignId(3)),
+        Command.StartAbTest(c, app.many.economytycoon.marketing.CampaignId(3), app.many.economytycoon.marketing.CreativeTier.STUDIO, 10),
+        Command.LaunchPromotion(c, GoodId("beer"), RegionId(1), 7, 150_000L, Money.units(100), Money.units(60), 2_000_000L, false),
+        Command.LaunchPromotion(c, GoodId("beer"), RegionId(1), 7, 300_000L, Money.units(100), Money.units(60), 2_000_000L, true),
+        Command.CancelPromotion(c, app.many.economytycoon.marketing.PromotionId(2)),
     )
 }
