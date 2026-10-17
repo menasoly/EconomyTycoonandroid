@@ -53,6 +53,7 @@ fun MoreMenuScreen(ui: GameUi, onQuit: () -> Unit) {
                 Triple("News", "What is happening in the world", Route.News),
                 Triple("World", "Map, countries and regions", Route.World),
                 Triple("Electricity", "Supply, prices, agreements and outages", Route.Electricity),
+                Triple("Play with others", "Host or join a game, standings and chat", Route.Multiplayer),
                 Triple("Government", "Laws, elections and pollution fines", Route.Government),
                 Triple("Rivals", "Other companies and takeovers", Route.Rivals),
                 Triple("People", "Staff, wages and morale", Route.People),
