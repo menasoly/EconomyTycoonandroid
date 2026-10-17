@@ -39,9 +39,11 @@ lists goods with a rough price, recipes as input ratios, facilities with a targe
 The Kotlin the generator writes is committed. The generator is deterministic and a `--check` mode reports a pack file that is
 out of date with its spec.
 
-`ExpandedContent` merges the shipped packs with the expansion packs without editing `ShippedContent`. Tests build
-their content from it. Once `ShippedContent.packs` lists the new packs `ExpandedContent` keeps
-working because it only appends packs that are missing.
+`ShippedContent.packs` lists the eight expansion packs after the base packs, so the game ships with them.
+`ExpandedContent` remains as the helper that names the expansion packs and the base packs; it only appends packs that
+are missing, so it equals the shipped list. A save records the content versions it was made with; loading it with a
+different set of packs is refused with `IncompatibleContentException`, so saves made before the packs shipped are
+not played on with content they were not made with.
 
 A catalog report is built from content alone. It lists each industry with the counts of its goods, recipes,
 facilities, machines and technologies, the lowest, middle and highest recipe margin, and the payback of its
