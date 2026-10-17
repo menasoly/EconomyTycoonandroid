@@ -16,6 +16,7 @@ class AgendaBuilder(private val e: Economy) {
         grants(company, now, end, items)
         carbon(company, now, end, items)
         tourism(company, now, end, items)
+        urban(company, now, end, items)
         val sorted = items.sortedWith(compareBy<AgendaItem>({ it.day }, { it.kind.ordinal }, { it.title }))
         return Agenda(now, end, sorted)
     }
@@ -73,6 +74,22 @@ class AgendaBuilder(private val e: Economy) {
             val hotel = state.property(a.property) ?: continue
             if (hotel.owner != company && state.operator(a.operator)?.owner != company) continue
             out += AgendaItem(a.endsAt.value, AgendaKind.ALLOTMENT_ENDS, hotel.name, "Contract ${a.id.value}: ${a.roomsPerNight} rooms a night, ending")
+        }
+    }
+
+    /** Votes on the company's petitions, and tenders for city concessions it could still bid on. */
+    private fun urban(company: CompanyId, now: Long, end: Long, out: MutableList<AgendaItem>) {
+        if (!e.urbanRunner.active) return
+        for (plan in e.urban.plans()) {
+            for (p in plan.petitions.open()) {
+                if (p.applicant != company || p.voteAt.value !in now..end) continue
+                if (p.status != app.many.economytycoon.urban.PetitionStatus.FILED && p.status != app.many.economytycoon.urban.PetitionStatus.HEARING) continue
+                out += AgendaItem(p.voteAt.value, AgendaKind.COUNCIL_VOTE, plan.name, "Petition ${p.id.value} for ${plan.districts[p.district].name}: lobbying must be arranged before the vote", risky = true)
+            }
+            for (c in plan.concessions.tendering()) {
+                if (c.bidsCloseAt.value !in now..end || c.bids.any { it.company == company }) continue
+                out += AgendaItem(c.bidsCloseAt.value, AgendaKind.CONCESSION_BIDS, plan.name, "${c.name}: bids close")
+            }
         }
     }
 

@@ -145,6 +145,8 @@ object CommandDescriber {
             app.many.economytycoon.simulation.GridCommandMap.of(cmd)?.let { app.many.economytycoon.energygrid.GridCommandExecutor.describe(it) } ?: "Changed the electricity grid"
         is Command.EstablishBanks -> "Opened the banks"
         is Command.EstablishTourism -> "Set up the tourist destinations"
+        is Command.EstablishUrban -> "Drew up the city plans"
+        is Command.Urban -> UrbanCommandDescriber.describe(cmd.command, n)
         is Command.Tourism -> app.many.economytycoon.tourism.TourismCommandExecutor.describe(cmd.command)
         is Command.EstablishIp -> "Opened the patent office"
         is Command.Ip -> app.many.economytycoon.ip.IpCommandDescriber.describe(cmd.command)
@@ -213,6 +215,7 @@ object CommandDescriber {
         is Command.SetGridLoadDraw, is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement -> ActivityArea.ENERGY
         is Command.EstablishTourism, is Command.Tourism -> ActivityArea.TOURISM
+        is Command.EstablishUrban, is Command.Urban -> ActivityArea.PUBLIC
         is Command.EstablishCarbonPolicies, is Command.BidCarbonAuction, is Command.CancelCarbonBid, is Command.PlacePermitOrder, is Command.CancelPermitOrder,
         is Command.SurrenderPermits, is Command.BuyCarbonOffsets, is Command.RetireCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement,
         is Command.CancelAbatement, is Command.SetCarbonPolicy -> ActivityArea.PUBLIC
@@ -233,6 +236,7 @@ object CommandDescriber {
             is app.many.economytycoon.tourism.TourismCommand.TerminateAllotment -> true
             else -> false
         }
+        is Command.Urban -> UrbanCommandDescriber.movesMoney(cmd.command)
         is Command.Ip -> when (cmd.command) {
             is app.many.economytycoon.ip.IpCommand.FilePatent, is app.many.economytycoon.ip.IpCommand.PayMaintenance, is app.many.economytycoon.ip.IpCommand.InvestInSecret,
             is app.many.economytycoon.ip.IpCommand.BuyPatent, is app.many.economytycoon.ip.IpCommand.StartDesignAround, is app.many.economytycoon.ip.IpCommand.FileSuit -> true

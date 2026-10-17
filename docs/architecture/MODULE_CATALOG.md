@@ -39,3 +39,4 @@ Later volumes add per-module detail: public API, owned entities, events produced
 | banking | Commercial banks | Bank balance sheets, deposits, lending, capital rules, runs, resolution, stress tests | core, finance |
 | ip | Patents and licensing | Patents, trade secrets, licences, disputes, portfolio valuation | core, content, finance, production, advisor |
 | tourism | Tourism and hospitality | Destinations, visitor flows, accommodation, attractions, tour operators | core, finance, world |
+| urban | Urban planning | Districts, zoning, land value, transit network, municipal budgets, petitions | core, finance |

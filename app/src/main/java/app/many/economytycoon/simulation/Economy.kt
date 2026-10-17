@@ -136,6 +136,10 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
     val tourismService = app.many.economytycoon.tourism.TourismService(tourism)
     val tourismExecutor = app.many.economytycoon.tourism.TourismCommandExecutor(tourismService)
     val tourismRunner = TourismRunner(this)
+    /** City plans (districts, land value, housing, transit, budget, council, concessions); empty (and not saved, hashed or run) until [Command.EstablishUrban]. */
+    val urban = app.many.economytycoon.urban.UrbanState(app.many.economytycoon.urban.UrbanParams(), config.seed)
+    val urbanService = app.many.economytycoon.urban.UrbanService(urban)
+    val urbanRunner = UrbanRunner(this)
     val banking = app.many.economytycoon.banking.BankingService()
     val bankingInputs = MacroBankingInputs(this)
     val bankingRunner = BankingRunner(this)
@@ -227,6 +231,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         riskRunner.forget(id, tick)
         tenderRunner.forget(id, tick)
         tourismRunner.forget(id, tick)
+        urbanRunner.forget(id, tick)
         grantRunner.forget(id)
         marketingRunner.forget(id, tick)
         energyGridRunner.forget(id, tick)
@@ -273,6 +278,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         if (!banking.isPristine) banking.hashInto(h)
         if (ipActive) { ip.state.hashInto(h); ipSales.hashInto(h) }
         if (!tourism.isEmpty) tourism.hashInto(h)
+        if (urban.size > 0) urban.hashInto(h)
         regulation.hashInto(h)
         bonds.hashInto(h)
         unions.hashInto(h)

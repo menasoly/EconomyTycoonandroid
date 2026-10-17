@@ -16,6 +16,8 @@ enum class AgendaKind(val label: String) {
     CARBON_DEADLINE("Carbon deadline"),
     PERMIT_AUCTION("Permit auction"),
     ALLOTMENT_ENDS("Hotel contract ends"),
+    COUNCIL_VOTE("Council vote"),
+    CONCESSION_BIDS("Concession bids close"),
 }
 
 /** One dated thing the company has to do or expects, with the money moving on that day if known. */

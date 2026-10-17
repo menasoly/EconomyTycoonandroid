@@ -18,6 +18,7 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
     private var lastEventSequence = -1L
     private val gridHeadlines = HashMap<String, Long>()
     private val tourismHeadlines = HashMap<String, Long>()
+    private val urbanHeadlines = HashMap<String, Long>()
 
     fun items(): List<NewsItem> = items.toList().reversed()
 
@@ -260,8 +261,39 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
             val ours = e.companies.all().filter { it.kind == app.many.economytycoon.companies.CompanyKind.PLAYER }.map { it.id }.toSet()
             if (e.tourism.properties.any { it.owner in ours }) add(NewsItem(t, NewsKind.FINANCE, app.many.economytycoon.tourism.TourismNews(e.tourism) { Formatting.money(it) }.summary(run).let { "${it.headline}: ${it.detail}" }))
         }
+        if (summary.urbanNotices.isNotEmpty()) urbanNews(summary.urbanNotices, t)
         if (summary.closedBooks) add(NewsItem(t, NewsKind.FINANCE, "Companies closed their books for the month"))
         if (summary.problems.isNotEmpty()) add(NewsItem(t, NewsKind.WORLD, "Ledger check found ${Formatting.plural(summary.problems.size.toLong(), "problem")}"))
+    }
+
+    /**
+     * What the councils decided and the cities went through. A player hears of the city they govern, of every petition and
+     * concession of their own companies, and of city-wide events and elections anywhere; repeats are held back.
+     */
+    private fun urbanNews(notices: List<app.many.economytycoon.urban.UrbanNotice>, t: Long) {
+        val players = e.companies.all().filter { it.kind == app.many.economytycoon.companies.CompanyKind.PLAYER && it.isActive }
+        val ours = players.map { it.id }.toSet()
+        val governed = players.mapNotNull { it.hq }.toSet()
+        for (n in notices) {
+            val plan = e.urban.plan(n.city)
+            val own = plan != null && when (n.kind) {
+                app.many.economytycoon.urban.NoticeKind.PETITION_FILED, app.many.economytycoon.urban.NoticeKind.PETITION_HEARD,
+                app.many.economytycoon.urban.NoticeKind.PETITION_APPROVED, app.many.economytycoon.urban.NoticeKind.PETITION_DENIED,
+                app.many.economytycoon.urban.NoticeKind.PETITION_ENACTED, app.many.economytycoon.urban.NoticeKind.LOBBYING_SCANDAL ->
+                    plan.petitions.get(app.many.economytycoon.urban.PetitionId(n.subject))?.applicant?.let { it in ours } == true
+                app.many.economytycoon.urban.NoticeKind.CONCESSION_AWARDED, app.many.economytycoon.urban.NoticeKind.CONCESSION_OPENED,
+                app.many.economytycoon.urban.NoticeKind.CONCESSION_ENDED ->
+                    plan.concessions.get(app.many.economytycoon.urban.ConcessionId(n.subject))?.concessionaire?.let { it in ours } == true
+                else -> false
+            }
+            val worldwide = n.kind == app.many.economytycoon.urban.NoticeKind.EVENT || n.kind == app.many.economytycoon.urban.NoticeKind.ELECTION
+            if (!(own || worldwide || n.city in governed)) continue
+            val last = urbanHeadlines[n.text]
+            if (last != null && t - last < URBAN_REPEAT_DAYS) continue
+            urbanHeadlines[n.text] = t
+            add(NewsItem(t, if (own) NewsKind.COMPANY else NewsKind.WORLD, n.text))
+        }
+        if (urbanHeadlines.size > 200) urbanHeadlines.entries.removeAll { t - it.value >= URBAN_REPEAT_DAYS }
     }
 
     private fun kindOf(ev: EconomicEvent): NewsKind = when (ev) {
@@ -282,5 +314,6 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
     private companion object {
         const val GRID_REPEAT_DAYS = 14L
         const val TOURISM_REPEAT_DAYS = 14L
+        const val URBAN_REPEAT_DAYS = 30L
     }
 }

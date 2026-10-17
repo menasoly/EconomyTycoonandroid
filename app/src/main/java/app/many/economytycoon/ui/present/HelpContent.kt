@@ -103,6 +103,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "cities", "Cities and planning", "Districts, land value and rents, the council, transport, the city budget and concessions.",
+            listOf(
+                "Every city is planned as nine districts. Each is zoned for homes, shops, factories, a mix, parkland or public buildings, from the land the city really has. Land is worth most where people can reach many jobs and homes quickly, and least beside noise, pollution and crime. Rents follow land value and how full the housing is; the Cities screen shows each district and a map of any measure.",
+                "A rezoning or density petition goes to a council of nine. Planners, the neighbours and each member's leanings decide the vote, and a company can put money behind its own petition, but lobbying that comes to light throws the petition out. The Council and petitions screen lists the docket, and the city's concessions open for bids there.",
+                "Transport shows the roads and lines with their load and fares; a full road slows sharply, and a line that runs often and cheaply takes trips from the car. The City budget screen sets taxes, service levels, works and debt. The player whose headquarters stands in a city runs it; every other city has a computer mayor. Housing, rents and commutes in a planned city feed back into its population and the price of its land.",
+            ),
+        ),
+        HelpTopic(
             "multiplayer", "Playing with others", "The lobby, the connection banner, trades and what happens when the link drops.",
             listOf(
                 "Open Play with others from the More menu. In the lobby, mark yourself ready; the host starts the game once everyone is. Anyone who would rather not run a company can watch instead. Everybody then plays the same economy: orders travel between devices, not the whole game.",

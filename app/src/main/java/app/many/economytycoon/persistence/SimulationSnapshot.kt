@@ -74,6 +74,7 @@ object SimulationSnapshot {
     private const val IP = "ip"
     private const val IP_SALES = "ipsales"
     private const val TOURISM = "tourism"
+    private const val URBAN = "urban"
     private const val REGULATION = "regulation"
     private const val BONDS = "bonds"
     private const val UNIONS = "unions"
@@ -138,6 +139,8 @@ object SimulationSnapshot {
         }
         // And once tourism has been set up.
         if (!e.tourism.isEmpty) add(TOURISM) { app.many.economytycoon.tourism.TourismCodec.write(e.tourism, it) }
+        // And once the cities have been planned.
+        if (e.urban.size > 0) add(URBAN) { app.many.economytycoon.urban.UrbanCodec.write(e.urban, it) }
         add(REGULATION) { RegulationCodec.write(e.regulation, it) }
         add(BONDS) { BondCodec.write(e.bonds, it) }
         add(UNIONS) { UnionCodec.write(e.unions, it) }
@@ -202,6 +205,10 @@ object SimulationSnapshot {
         sections[IP]?.let { e.restoreIp(app.many.economytycoon.ip.IpCodec.read(ByteReader(it.payload))) }
         sections[IP_SALES]?.let { e.ipSales.read(ByteReader(it.payload)) }
         sections[TOURISM]?.let { app.many.economytycoon.tourism.TourismCodec.read(ByteReader(it.payload), e.tourism) }
+        sections[URBAN]?.let {
+            app.many.economytycoon.urban.UrbanCodec.read(ByteReader(it.payload), e.urban)
+            e.urbanService.refreshScores()
+        }
         RegulationCodec.read(reader(REGULATION), e.regulation)
         BondCodec.read(reader(BONDS), e.bonds)
         UnionCodec.read(reader(UNIONS), e.unions)
