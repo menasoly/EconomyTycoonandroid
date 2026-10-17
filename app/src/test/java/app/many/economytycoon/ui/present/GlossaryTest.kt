@@ -29,7 +29,7 @@ class GlossaryTest {
     }
 
     @Test fun everyGroupIsKnownAndUsed() {
-        val known = setOf(Glossary.ACCOUNTS, Glossary.RATIOS, Glossary.CREDIT, Glossary.MARKETS, Glossary.PRODUCTION, Glossary.PEOPLE, Glossary.OWNERSHIP, Glossary.WORLD)
+        val known = setOf(Glossary.ACCOUNTS, Glossary.RATIOS, Glossary.CREDIT, Glossary.MARKETS, Glossary.PRODUCTION, Glossary.PEOPLE, Glossary.OWNERSHIP, Glossary.WORLD, Glossary.TOGETHER)
         assertEquals(known, Glossary.groups().toSet())
         for (g in known) assertTrue(g, Glossary.inGroup(g).size >= 3)
     }
