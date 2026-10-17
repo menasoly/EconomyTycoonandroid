@@ -79,8 +79,17 @@ simulation, no commands and no snapshot sections, so it cannot change an existin
 
 Costs: the harness duplicates a few dozen lines of setup that live privately in `Bootstrap`. The linear projection of
 time-to-goal is crude for scenarios with an S-shaped curve; the analysis says "not on track" rather than guess when
-progress is flat. A draft can describe things (events, bonus goals, extra failure conditions) that the shipped
-`ScenarioDef` cannot play yet; the converter lists them.
+progress is flat. A draft can describe bonus goals, goal weights and difficulty tags that `ScenarioDef` has no place
+for; the converter lists them as notes and the play confirmation shows them.
+
+**Playing a draft.** `ScenarioDef` gained additive fields (grace period for the net worth floor, scripted events, further
+failure conditions, starting sites), all empty for catalog scenarios. `NewGame.startCustom` starts a game from a
+definition and a configuration; the definition travels with the run (`ScenarioRun.custom`) and is written into the
+scenario save section, whose version byte is 2 only when a run carries its own definition. Catalog games and games
+without a scenario still write version 1, byte for byte as before, and the run hash only grows for custom runs.
+`ScenarioRunner` applies due events every tick with the same mint and ledger posts the harness uses, and checks the
+extra failure conditions with the deadline. Workshop scenarios earn no medals and do not count towards achievements.
+Studies and sweeps run on an injected executor (`WorkshopRunner`), one job at a time.
 
 Rejected: reusing `ScenarioDef` as the draft type (its constructor throws on anything unsound, which makes editing
 impossible); a JSON share format (no checksum story, easy to mangle when retyped); running balance tests on the
