@@ -5,13 +5,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.delay
 import app.many.economytycoon.core.Outcome
-import app.many.economytycoon.ui.compose.app.GameUi
 import app.many.economytycoon.ui.compose.components.Card
 import app.many.economytycoon.ui.compose.components.ChoiceChips
 import app.many.economytycoon.ui.compose.components.EmptyState
@@ -27,6 +28,7 @@ import app.many.economytycoon.ui.compose.design.Spacing
 import app.many.economytycoon.ui.compose.design.Theme
 import app.many.economytycoon.ui.compose.design.Type
 import app.many.economytycoon.ui.compose.design.color
+import app.many.economytycoon.ui.present.WorkshopNav
 import app.many.economytycoon.ui.present.WorkshopReportPresenter
 import app.many.economytycoon.workshop.HarnessSettings
 import app.many.economytycoon.workshop.StudySpec
@@ -39,8 +41,15 @@ private data class Horizon(val label: String, val days: Int)
 
 /** Plays the draft with four kinds of player and shows what came of it. */
 @Composable
-fun WorkshopReportScreen(ui: GameUi, workshop: WorkshopSession) {
+fun WorkshopReportScreen(nav: WorkshopNav, workshop: WorkshopSession) {
     var tick by remember { mutableStateOf(0) }
+    val runner = workshop.runner
+    val busy = runner.busy
+    // Tests run on another thread; look again while one is running and once more when it ends.
+    LaunchedEffect(busy, runner.completed) {
+        while (runner.busy != null) { delay(250); tick++ }
+        tick++
+    }
     var message by remember { mutableStateOf<String?>(null) }
     val horizons = remember { listOf(Horizon("60 days", 60), Horizon("120 days", 120), Horizon("1 year", 360)) }
     var horizon by remember { mutableStateOf(horizons[0]) }
@@ -49,17 +58,17 @@ fun WorkshopReportScreen(ui: GameUi, workshop: WorkshopSession) {
     val sweep = remember(tick) { WorkshopReportPresenter.sweepLines(workshop.lastSweep) }
     val regression = remember(tick) { WorkshopReportPresenter.regressionLines(workshop.regression) }
     val compat = remember(tick) { workshop.compat() }
-    ScreenFrame("Balance test", onBack = { ui.back() }) {
+    ScreenFrame("Balance test", onBack = { nav.back() }) {
         ScreenList {
             item { ChoiceChips(horizons, horizon, { it.label }, { horizon = it }) }
             item {
-                PrimaryButton("Run test", {
+                PrimaryButton(busy ?: "Run test", {
                     val settings = HarnessSettings(days = horizon.days, sampleEvery = maxOf(1, horizon.days / 12))
-                    message = (workshop.runStudy(StudySpec(settings = settings)) as? Outcome.Rejected)?.rejection?.message
+                    runner.startStudy(StudySpec(settings = settings))
                     tick++
-                }, Modifier.fillMaxWidth())
+                }, Modifier.fillMaxWidth(), enabled = busy == null)
             }
-            message?.let { m -> item { Text(m, style = Type.Body, color = Theme.tokens.negative) } }
+            (message ?: runner.message)?.let { m -> item { Text(m, style = Type.Body, color = Theme.tokens.negative) } }
             model.empty?.let { e -> item { EmptyState("No results", e) } }
             if (model.empty == null) {
                 item { Text(model.headline, style = Type.Heading, color = model.tone.color()) }
@@ -87,9 +96,9 @@ fun WorkshopReportScreen(ui: GameUi, workshop: WorkshopSession) {
                 SecondaryButton("Sweep from half to double", {
                     val now = param.current(workshop.draft)
                     val values = SweepRunner.range(maxOf(1L, now / 2), maxOf(2L, now * 2), 4)
-                    workshop.runSweep(SweepSpec(param, values, settings = HarnessSettings(days = horizon.days, sampleEvery = maxOf(1, horizon.days / 6))))
+                    runner.startSweep(SweepSpec(param, values, settings = HarnessSettings(days = horizon.days, sampleEvery = maxOf(1, horizon.days / 6))))
                     tick++
-                }, Modifier.fillMaxWidth())
+                }, Modifier.fillMaxWidth(), enabled = busy == null)
             }
             items(sweep.size) { i -> Text(sweep[i], style = Type.Body, color = Theme.tokens.textPrimary) }
             item { SectionHeader("Against the baseline") }
