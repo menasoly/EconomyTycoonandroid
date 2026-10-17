@@ -70,6 +70,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "blueprints", "Blueprints", "Save a facility's set-up and reuse it.",
+            listOf(
+                "Open one of your facilities and choose Save as blueprint. The lines, recipes, machines, staffing and trading rules are kept in your blueprint library.",
+                "To reuse one, open another facility and choose Apply a blueprint, or choose Build from a blueprint on the build screen. You see what will be done and what it costs before anything happens.",
+                "A new building takes days to finish. Its set-up waits as a pending build, and the facility screen offers it once the building stands. Blueprints can be copied out as a code and pasted into another game.",
+            ),
+        ),
+        HelpTopic(
             "research", "Research", "Unlock better machines, recipes and buildings.",
             listOf(
                 "Spend research points to unlock technologies. Each has a cost, a minimum time and prerequisites. Unlocked technology can open new facility types, recipes and machines, or improve what you already have.",
