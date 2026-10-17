@@ -76,6 +76,13 @@ object Glossary {
         GlossaryTerm("market-share", "Market share", "A company's part of all that is made of a good. The game measures it by production capacity.", listOf("hhi"), MARKETS),
         GlossaryTerm("future", "Futures contract", "An agreement to buy or sell a good at a fixed price on a later date. Margin is held to cover losses.", listOf("margin"), MARKETS),
         GlossaryTerm("margin", "Margin", "Cash held against a futures position. If losses eat it, you must add more or the position is closed.", listOf("future"), MARKETS),
+        GlossaryTerm("awareness", "Awareness", "The share of buyers in a place who have heard of your brand for a product. Advertising raises it and it fades when the money stops.", listOf("loyalty", "reach"), MARKETS),
+        GlossaryTerm("loyalty", "Loyalty", "The share of aware buyers who prefer your brand and come back. It grows only from awareness and follows the quality you deliver.", listOf("awareness", "payback-campaign"), MARKETS),
+        GlossaryTerm("reach", "Reach", "The share of the people you target that a campaign puts its message in front of each day. It flattens as the daily budget grows.", listOf("awareness", "share-of-voice"), MARKETS),
+        GlossaryTerm("share-of-voice", "Share of voice", "Your part of all the advertising pressure for a product in a place. A louder rival blunts every message you send.", listOf("reach"), MARKETS),
+        GlossaryTerm("wear-out", "Creative wear-out", "How tired people have grown of an advertisement. A worn creative works at a fraction of its strength until it is replaced.", listOf("ab-test"), MARKETS),
+        GlossaryTerm("ab-test", "A/B test", "A trial of a new advertisement against the current one on the same campaign. The better creative is kept when enough people have responded.", listOf("wear-out"), MARKETS),
+        GlossaryTerm("payback-campaign", "Campaign payback", "The day on which the extra profit an advertising campaign brought in has covered everything it cost.", listOf("awareness"), MARKETS),
 
         GlossaryTerm("recipe", "Recipe", "A set of inputs, labour and energy that a production line turns into outputs over a number of days.", listOf("line", "utilisation"), PRODUCTION),
         GlossaryTerm("line", "Production line", "One slot in a facility that runs one recipe at a time.", listOf("recipe", "utilisation"), PRODUCTION),
