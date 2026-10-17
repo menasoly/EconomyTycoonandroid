@@ -26,7 +26,8 @@ object AppContainer {
         val saves = SaveManager(FileSaveStore(File(context.filesDir, "saves")))
         val settings = SettingsStore(FileSaveStore(File(context.filesDir, "prefs")))
         val profile = ProfileStore(FileSaveStore(File(context.filesDir, "profile")))
-        val env = AppEnvironment(ShippedContent.repository, saves, settings, profile = profile)
+        val rules = app.many.economytycoon.watch.WatchStore(FileSaveStore(File(context.filesDir, "watch")))
+        val env = AppEnvironment(ShippedContent.repository, saves, settings, profile = profile, rules = rules)
         return AppHost(AppController(env))
     }
 }
