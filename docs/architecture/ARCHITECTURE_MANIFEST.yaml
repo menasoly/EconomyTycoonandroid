@@ -27,6 +27,7 @@ modules:
   marketing:   { path: marketing, depends_on: [core, content, finance, markets, world, advisor], owner: economy, priority: 5 }
   energygrid:  { path: energygrid, depends_on: [core, finance, world], owner: economy, priority: 5 }
   net:         { path: net, depends_on: [core, content, finance, companies, persistence, simulation, replay], owner: platform, priority: 6 }
+  carbon:      { path: carbon, depends_on: [core, content, finance, production, advisor], owner: economy, priority: 6 }
 tick_phases:
   - begin_tick
   - scheduled_events
@@ -43,4 +44,4 @@ tick_phases:
   - macro_update
   - invariant_checks
   - publish
-adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0008, ADR-0009, ADR-0010, ADR-0011]
+adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0008, ADR-0009, ADR-0010, ADR-0011, ADR-0012]
