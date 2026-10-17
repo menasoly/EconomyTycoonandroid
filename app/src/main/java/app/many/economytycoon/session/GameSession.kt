@@ -133,6 +133,21 @@ class GameSession(
     /** The planner's warnings about the city the selected company governs. */
     fun urbanInsights(): List<app.many.economytycoon.advisor.Insight> = urbanDesk.insights()
 
+    /** The people and skills screens' desk; it shows nothing until skills and education are switched on. */
+    val talentDesk: TalentSessionDesk by lazy { TalentSessionDesk(this) }
+
+    /** True once skills and education are switched on. */
+    val hasTalent: Boolean get() = simulation.economy.talentRunner.active
+
+    /** The selected company's teams, schools, training, offers, brand, careers and providers. */
+    fun talentView(): app.many.economytycoon.talent.TalentView? = talentDesk.view()
+
+    /** Sends one people order for the selected company and says what came of it. */
+    fun issueTalent(command: app.many.economytycoon.talent.TalentCommand, done: String = "Done."): String = talentDesk.issue(command, done)
+
+    /** The people advisor's suggestions for the selected company. */
+    fun talentInsights(): List<app.many.economytycoon.advisor.Insight> = talentDesk.advice()
+
     private val marketingReader = MarketingReader(simulation.economy)
 
     /** Reads campaigns, brands, results and plans for the marketing screen. */

@@ -65,6 +65,8 @@ object NewGame {
         sim.execute(Actor.System, Command.EstablishTourism)
         // Every city gets a plan of districts zoned from its land, with a council, a budget and a mayor.
         sim.execute(Actor.System, Command.EstablishUrban)
+        // Every region gets public schools and colleges, and people carry skills that decide how well they do their jobs.
+        sim.execute(Actor.System, Command.EstablishTalent)
         val countries = sim.economy.world.countries().sortedBy { it.id }
         val country = countries.getOrNull(def?.countryIndex ?: options.countryIndex) ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
         val hq = country.capital
