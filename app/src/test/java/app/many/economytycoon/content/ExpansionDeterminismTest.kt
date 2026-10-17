@@ -46,7 +46,7 @@ class ExpansionDeterminismTest {
     }
 
     @Test fun expansionChangesTheFingerprint() {
-        assertNotEquals(fingerprint(ShippedContent.repository), fingerprint(ExpandedContent.repository))
+        assertNotEquals(fingerprint(ContentRepository.of(ExpandedContent.basePacks)), fingerprint(ExpandedContent.repository))
     }
 
     @Test fun auditIsRepeatable() {
