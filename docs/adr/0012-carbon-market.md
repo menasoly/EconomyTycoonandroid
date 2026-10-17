@@ -72,8 +72,8 @@ Design rules that follow from the coding standards and that shape the package:
   and hash exactly as before; economic results do not change while no regime is installed.
 * Offsets and permits are intangible assets in the books with a cost basis per lot, so surrendering, retiring and
   expiring write them down at what was paid, and selling shows a real gain or loss.
-* Efficiency retrofits reduce the reported footprint but not the real input use, because production has no
-  per-facility modifier. This is a known gap; fixing it needs a hook in `production`, not a change here.
+* Efficiency retrofits reduce real fuel and electricity use through per-facility production modifiers, so the footprint
+  falls because less is burned, not by a separate discount.
 * A day is processed at most once per package (`lastTick`), which makes replays and double calls harmless.
 * Adding a country's regime is data, not code. New regime kinds need a new `RegimeKind`, an entry in the codec (enums
   are written by ordinal and must only be appended to) and tests.
