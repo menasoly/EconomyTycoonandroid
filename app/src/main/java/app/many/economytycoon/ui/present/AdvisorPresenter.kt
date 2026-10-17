@@ -23,7 +23,7 @@ object AdvisorPresenter {
         "concentration" -> Route.Facilities
         "idle-land" -> Route.Property
         "contract-offers" -> Route.Contracts
-        else -> if (code.startsWith("mkt-")) Route.Marketing else if (code.startsWith("carbon.")) Route.Carbon else null
+        else -> if (code.startsWith("mkt-")) Route.Marketing else if (code.startsWith("carbon.")) Route.Carbon else if (code.startsWith("ip-")) Route.Ip else null
     }
 
     private fun actionLabel(route: Route?): String? = when (route) {
@@ -38,6 +38,7 @@ object AdvisorPresenter {
         Route.Contracts -> "Open contracts"
         Route.Marketing -> "Open marketing"
         Route.Carbon -> "Open carbon"
+        Route.Ip -> "Open patents and secrets"
         else -> "Open"
     }
 
@@ -69,7 +70,7 @@ object AdvisorPresenter {
 
     /** Suggestions for the selected company of a running game; null before one is chosen. */
     fun build(session: app.many.economytycoon.session.GameSession, limit: Int = 12): AdviceModel? =
-        session.adviceFacts()?.let { build(session.advisor, it, limit, session.marketingInsights() + session.carbonInsights()) }
+        session.adviceFacts()?.let { build(session.advisor, it, limit, session.marketingInsights() + session.carbonInsights() + session.ipInsights()) }
 
     fun topics(): List<String> = Topic.values().map { it.label }
 }
