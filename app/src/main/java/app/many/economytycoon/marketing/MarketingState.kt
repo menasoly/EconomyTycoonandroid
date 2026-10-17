@@ -49,6 +49,9 @@ class MarketingState : Hashable {
 
     fun isEmpty(): Boolean = campaignMap.isEmpty() && stockMap.isEmpty() && promotionMap.isEmpty() && testMap.isEmpty() && damageMap.isEmpty()
 
+    /** True while nothing has ever been booked: no records and no id handed out. Saves and hashes skip a pristine state. */
+    fun isPristine(): Boolean = isEmpty() && ids.snapshot().contentEquals(MarketingIds().snapshot())
+
     internal fun clear() {
         campaignMap.clear(); stockMap.clear(); promotionMap.clear(); testMap.clear(); damageMap.clear()
     }

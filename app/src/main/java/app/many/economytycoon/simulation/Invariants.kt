@@ -18,6 +18,7 @@ object Invariants {
         out += reservations(e)
         out += inventoryBooks(e)
         out += population(e)
+        out += app.many.economytycoon.marketing.MarketingInvariants.check(e.marketing.state).map { "MKT: $it" }
         return out
     }
 

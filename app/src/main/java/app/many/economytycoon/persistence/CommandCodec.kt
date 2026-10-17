@@ -161,6 +161,23 @@ object CommandCodec {
             is Command.WithdrawBid -> { tag(w, 65); co(w, c.company); w.writeVarLong(c.tender.value) }
             is Command.ApplyGrant -> { tag(w, 79); co(w, c.company); w.writeVarLong(c.program.value) }
             is Command.WithdrawGrant -> { tag(w, 80); co(w, c.company); w.writeVarLong(c.program.value) }
+            is Command.CreateCampaign -> {
+                tag(w, 81); co(w, c.company); w.writeString(c.good.key); w.writeVarLong(c.region.value); city(w, c.city)
+                w.writeVarInt(c.channel.ordinal); w.writeVarInt(c.segment.ordinal); w.writeMoney(c.dailyBudget); w.writeVarInt(c.days)
+                w.writeVarInt(c.tier.ordinal); optLong(w, c.startTick?.value)
+            }
+            is Command.PauseCampaign -> { tag(w, 82); co(w, c.company); w.writeVarLong(c.campaign.value) }
+            is Command.ResumeCampaign -> { tag(w, 83); co(w, c.company); w.writeVarLong(c.campaign.value) }
+            is Command.ExtendCampaign -> { tag(w, 84); co(w, c.company); w.writeVarLong(c.campaign.value); w.writeVarInt(c.extraDays) }
+            is Command.SetCampaignBudget -> { tag(w, 85); co(w, c.company); w.writeVarLong(c.campaign.value); w.writeMoney(c.dailyBudget) }
+            is Command.RefreshCreative -> { tag(w, 86); co(w, c.company); w.writeVarLong(c.campaign.value); w.writeVarInt(c.tier.ordinal) }
+            is Command.CancelCampaign -> { tag(w, 87); co(w, c.company); w.writeVarLong(c.campaign.value) }
+            is Command.StartAbTest -> { tag(w, 88); co(w, c.company); w.writeVarLong(c.campaign.value); w.writeVarInt(c.challenger.ordinal); w.writeVarInt(c.days) }
+            is Command.LaunchPromotion -> {
+                tag(w, 89); co(w, c.company); w.writeString(c.good.key); w.writeVarLong(c.region.value); w.writeVarInt(c.days); w.writeVarLong(c.discountPpm)
+                w.writeMoney(c.listPrice); w.writeMoney(c.unitCost); w.writeVarLong(c.elasticityPpm); w.writeBoolean(c.clearance)
+            }
+            is Command.CancelPromotion -> { tag(w, 90); co(w, c.company); w.writeVarLong(c.promotion.value) }
             is Command.ListParcel -> { tag(w, 73); co(w, c.company); w.writeVarLong(c.parcel.value); w.writeMoney(c.ask) }
             is Command.DelistParcel -> { tag(w, 74); co(w, c.company); w.writeVarLong(c.parcel.value) }
             is Command.BuyListed -> { tag(w, 75); co(w, c.company); w.writeVarLong(c.parcel.value) }
@@ -268,6 +285,23 @@ object CommandCodec {
             65 -> Command.WithdrawBid(company, app.many.economytycoon.core.TenderId(r.readVarLong()))
             79 -> Command.ApplyGrant(company, app.many.economytycoon.core.GrantId(r.readVarLong()))
             80 -> Command.WithdrawGrant(company, app.many.economytycoon.core.GrantId(r.readVarLong()))
+            81 -> {
+                val good = GoodId(r.readString()); val region = RegionId(r.readVarLong()); val city = readCity(r)
+                val channel = enumAt(app.many.economytycoon.marketing.Channel.values(), r.readVarInt(), "channel")
+                val segment = enumAt(app.many.economytycoon.marketing.TargetSegment.values(), r.readVarInt(), "segment")
+                val budget = r.readMoney(); val days = r.readVarInt()
+                val tier = enumAt(app.many.economytycoon.marketing.CreativeTier.values(), r.readVarInt(), "creative tier")
+                Command.CreateCampaign(company, good, region, city, channel, segment, budget, days, tier, readOptLong(r)?.let { app.many.economytycoon.core.Tick(it) })
+            }
+            82 -> Command.PauseCampaign(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()))
+            83 -> Command.ResumeCampaign(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()))
+            84 -> Command.ExtendCampaign(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()), r.readVarInt())
+            85 -> Command.SetCampaignBudget(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()), r.readMoney())
+            86 -> Command.RefreshCreative(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()), enumAt(app.many.economytycoon.marketing.CreativeTier.values(), r.readVarInt(), "creative tier"))
+            87 -> Command.CancelCampaign(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()))
+            88 -> Command.StartAbTest(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()), enumAt(app.many.economytycoon.marketing.CreativeTier.values(), r.readVarInt(), "creative tier"), r.readVarInt())
+            89 -> Command.LaunchPromotion(company, GoodId(r.readString()), RegionId(r.readVarLong()), r.readVarInt(), r.readVarLong(), r.readMoney(), r.readMoney(), r.readVarLong(), r.readBoolean())
+            90 -> Command.CancelPromotion(company, app.many.economytycoon.marketing.PromotionId(r.readVarLong()))
             73 -> Command.ListParcel(company, ParcelId(r.readVarLong()), r.readMoney())
             74 -> Command.DelistParcel(company, ParcelId(r.readVarLong()))
             75 -> Command.BuyListed(company, ParcelId(r.readVarLong()))

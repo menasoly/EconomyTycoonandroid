@@ -23,6 +23,7 @@ import app.many.economytycoon.unions.UnionCodec
 import app.many.economytycoon.regulation.RegulationCodec
 import app.many.economytycoon.tenders.TenderCodec
 import app.many.economytycoon.grants.GrantCodec
+import app.many.economytycoon.marketing.MarketingCodec
 import app.many.economytycoon.research.ResearchCodec
 import app.many.economytycoon.simulation.RestoredCore
 import app.many.economytycoon.simulation.Simulation
@@ -65,6 +66,7 @@ object SimulationSnapshot {
     private const val RISK = "risk"
     private const val TENDERS = "tenders"
     private const val GRANTS = "grants"
+    private const val MARKETING = "marketing"
     private const val REGULATION = "regulation"
     private const val BONDS = "bonds"
     private const val UNIONS = "unions"
@@ -114,6 +116,8 @@ object SimulationSnapshot {
         add(RISK) { RiskCodec.write(e.risk, it) }
         add(TENDERS) { TenderCodec.write(e.tenders, it) }
         add(GRANTS) { GrantCodec.write(e.grants, it) }
+        // Written only once something has been booked, so a game that never advertises saves exactly as before.
+        if (!e.marketing.state.isPristine()) add(MARKETING) { MarketingCodec.write(e.marketing.state, it) }
         add(REGULATION) { RegulationCodec.write(e.regulation, it) }
         add(BONDS) { BondCodec.write(e.bonds, it) }
         add(UNIONS) { UnionCodec.write(e.unions, it) }
@@ -171,6 +175,7 @@ object SimulationSnapshot {
         RiskCodec.read(reader(RISK), e.risk)
         TenderCodec.read(reader(TENDERS), e.tenders)
         GrantCodec.read(reader(GRANTS), e.grants)
+        sections[MARKETING]?.let { MarketingCodec.read(ByteReader(it.payload), e.marketing.state) }
         RegulationCodec.read(reader(REGULATION), e.regulation)
         BondCodec.read(reader(BONDS), e.bonds)
         UnionCodec.read(reader(UNIONS), e.unions)

@@ -151,6 +151,16 @@ class CommandExecutor(private val e: Economy) {
             is Command.WithdrawBid -> e.tenderRunner.withdraw(id, cmd.tender).map { CommandResult() }
             is Command.ApplyGrant -> e.grantRunner.apply(id, cmd.program, tick).map { CommandResult(message = "applied, starting from ${it.baseline}") }
             is Command.WithdrawGrant -> e.grantRunner.withdraw(id, cmd.program).map { CommandResult() }
+            is Command.CreateCampaign -> e.marketingRunner.create(id, cmd, tick)
+            is Command.PauseCampaign -> e.marketingRunner.pause(id, cmd.campaign)
+            is Command.ResumeCampaign -> e.marketingRunner.resume(id, cmd.campaign, tick)
+            is Command.ExtendCampaign -> e.marketingRunner.extend(id, cmd.campaign, cmd.extraDays, tick)
+            is Command.SetCampaignBudget -> e.marketingRunner.setBudget(id, cmd.campaign, cmd.dailyBudget, tick)
+            is Command.RefreshCreative -> e.marketingRunner.refresh(id, cmd.campaign, cmd.tier, tick)
+            is Command.CancelCampaign -> e.marketingRunner.cancel(id, cmd.campaign, tick)
+            is Command.StartAbTest -> e.marketingRunner.startTest(id, cmd, tick)
+            is Command.LaunchPromotion -> e.marketingRunner.launchPromotion(id, cmd, tick)
+            is Command.CancelPromotion -> e.marketingRunner.cancelPromotion(id, cmd.promotion, tick)
             is Command.RespondDemand -> e.unionRunner.respond(id, cmd.demand, cmd.response, cmd.counterPpm, tick).map { CommandResult(message = when (it) { is app.many.economytycoon.unions.UnionEvent.Struck -> "the workers walk out"; is app.many.economytycoon.unions.UnionEvent.Agreed -> "agreed"; else -> "the union backs down" }) }
             is Command.ListParcel -> e.propertyRunner.list(id, cmd.parcel, cmd.ask, tick).map { CommandResult(message = "listed for ${cmd.ask}") }
             is Command.DelistParcel -> e.propertyRunner.delist(id, cmd.parcel).map { CommandResult() }

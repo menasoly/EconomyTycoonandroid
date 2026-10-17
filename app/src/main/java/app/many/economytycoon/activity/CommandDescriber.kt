@@ -44,6 +44,7 @@ enum class ActivityArea(val label: String) {
     PUBLIC("Government"),
     PROPERTY("Property"),
     CORPORATE("Takeovers"),
+    MARKETING("Marketing"),
 }
 
 /** Writes any command as a sentence a player would recognise, and says which part of the game it belongs to. */
@@ -113,6 +114,16 @@ object CommandDescriber {
         is Command.WithdrawBid -> "Withdrew the bid on tender ${cmd.tender.value}"
         is Command.ApplyGrant -> "Applied for grant programme ${cmd.program.value}"
         is Command.WithdrawGrant -> "Withdrew from grant programme ${cmd.program.value}"
+        is Command.CreateCampaign -> "Booked a ${cmd.channel.label.lowercase()} campaign for ${n.good(cmd.good)} at ${n.money(cmd.dailyBudget)} a day for ${cmd.days} days"
+        is Command.PauseCampaign -> "Paused campaign ${cmd.campaign.value}"
+        is Command.ResumeCampaign -> "Resumed campaign ${cmd.campaign.value}"
+        is Command.ExtendCampaign -> "Extended campaign ${cmd.campaign.value} by ${cmd.extraDays} days"
+        is Command.SetCampaignBudget -> "Set the budget of campaign ${cmd.campaign.value} to ${n.money(cmd.dailyBudget)} a day"
+        is Command.RefreshCreative -> "Commissioned a new creative for campaign ${cmd.campaign.value}"
+        is Command.CancelCampaign -> "Cancelled campaign ${cmd.campaign.value}"
+        is Command.StartAbTest -> "Started a creative test on campaign ${cmd.campaign.value}"
+        is Command.LaunchPromotion -> "Launched a ${pct(cmd.discountPpm)} price promotion on ${n.good(cmd.good)} for ${cmd.days} days"
+        is Command.CancelPromotion -> "Cancelled promotion ${cmd.promotion.value}"
         is Command.OpenFuture -> "Opened a ${word(cmd.side)} position of ${cmd.contracts} futures in ${n.good(cmd.good)} for ${cmd.tenor} days"
         is Command.CloseFuture -> "Closed futures position ${cmd.position}"
         is Command.AddMargin -> "Added ${n.money(cmd.amount)} margin to futures position ${cmd.position}"
@@ -157,6 +168,8 @@ object CommandDescriber {
         is Command.BidTender, is Command.WithdrawBid, is Command.ApplyGrant, is Command.WithdrawGrant, is Command.LobbyLaw -> ActivityArea.PUBLIC
         is Command.ListParcel, is Command.DelistParcel, is Command.BuyListed, is Command.OfferLease, is Command.WithdrawLease, is Command.EndLease -> ActivityArea.PROPERTY
         is Command.MakeOffer, is Command.RespondOffer, is Command.WithdrawOffer, is Command.FileInsolvency -> ActivityArea.CORPORATE
+        is Command.CreateCampaign, is Command.PauseCampaign, is Command.ResumeCampaign, is Command.ExtendCampaign, is Command.SetCampaignBudget,
+        is Command.RefreshCreative, is Command.CancelCampaign, is Command.StartAbTest, is Command.LaunchPromotion, is Command.CancelPromotion -> ActivityArea.MARKETING
     }
 
     /** True for commands that spend or move money straight away, so a review of the log can pick them out. */
@@ -164,7 +177,8 @@ object CommandDescriber {
         is Command.FoundCompany, is Command.BuyParcel, is Command.Build, is Command.Maintain, is Command.Borrow, is Command.Repay,
         is Command.BuyShares, is Command.SellShares, is Command.BuybackShares, is Command.BuyVehicle, is Command.BuyListed,
         is Command.LicenseTech, is Command.SubscribeBond, is Command.TradeBond, is Command.LobbyLaw, is Command.AddMargin,
-        is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials -> true
+        is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials, is Command.CreateCampaign,
+        is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest -> true
         else -> false
     }
 }

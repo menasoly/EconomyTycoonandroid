@@ -53,6 +53,7 @@ class TickSummary(val tick: Tick) {
     var sharesTraded: Long = 0
     var tenderEvents: List<app.many.economytycoon.tenders.TenderEvent> = emptyList()
     var grantEvents: List<app.many.economytycoon.grants.GrantEvent> = emptyList()
+    var marketingEvents: List<app.many.economytycoon.marketing.MarketingEvent> = emptyList()
     var scenarioEvents: List<app.many.economytycoon.scenarios.ScenarioEvent> = emptyList()
     var propertyEvents: List<app.many.economytycoon.property.PropertyEvent> = emptyList()
     var futuresEvents: List<app.many.economytycoon.futures.FuturesEvent> = emptyList()
@@ -93,6 +94,7 @@ class TickPipeline(
     private val aiInsurance = AiInsurance(e, executor)
     private val aiTenders = AiTenders(e, executor)
     private val aiGrants = AiGrants(e, executor)
+    private val aiMarketing = AiMarketing(e, executor)
     private val aiLobbying = AiLobbying(e, executor)
     private val aiBonds = AiBonds(e, executor)
     private val aiBargaining = AiBargaining(e, executor)
@@ -127,6 +129,7 @@ class TickPipeline(
             aiInsurance.run(tick)
             aiTenders.run(tick)
             aiGrants.run(tick)
+            aiMarketing.run(tick)
             aiLobbying.run(tick)
             aiBonds.run(tick)
             aiBargaining.run(tick)
@@ -196,10 +199,14 @@ class TickPipeline(
             }
         }
         phase(Phase.DEMAND) {
+            // Advertising is brought up to date first, so the market sees today's brand stocks. Its bills are settled with the day's other payments.
+            val blows = e.marketingRunner.recordDamage(tick, s.unionEvents, s.regulationEvents)
+            s.marketingEvents = blows + e.marketingRunner.advance(tick)
             for (c in e.world.countries()) {
                 val shift = e.macro.demandShiftPpm(c.id)
                 for (r in e.world.regionsOf(c.id)) for (p in e.content.allDemandProfiles) {
-                    e.markets.setDemandShift(app.many.economytycoon.markets.MarketKey(r.id, p.good), mulDiv(shift, events.demandShift(p.good), 1_000_000L))
+                    val base = mulDiv(shift, events.demandShift(p.good), 1_000_000L)
+                    e.markets.setDemandShift(app.many.economytycoon.markets.MarketKey(r.id, p.good), e.marketingRunner.scaleDemand(base, p.good, r.id))
                 }
             }
         }
@@ -281,9 +288,11 @@ class TickPipeline(
         intents += f.taxIntents
         intents += e.workforce.payrollIntents(tick, households) { e.governmentOfCompany(it) }
         intents += gridIntents(tick)
-        intents += e.companies.departmentIntents(tick, households)
+        intents += e.marketingRunner.settlementIntents(e.companies.departmentIntents(tick, households))
 
         val results = e.finance.settleTick(tick, intents)
+        val marketingEvents = e.marketingRunner.reportPayments(tick, results)
+        if (marketingEvents.isNotEmpty()) s.marketingEvents = s.marketingEvents + marketingEvents
         for (r in results) {
             when (r.status) {
                 SettlementStatus.PAID -> s.intentsSettled++
