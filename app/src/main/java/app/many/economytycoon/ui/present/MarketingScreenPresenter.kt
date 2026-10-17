@@ -47,4 +47,7 @@ interface MarketingScreenHost {
 
     /** Carries out [action] and returns a short message for the player. */
     fun perform(action: CampaignAction): String
+
+    /** Books the campaigns of the budget plan shown on the plan tab and returns a short message for the player. */
+    fun applyPlan(): String = "Booking from the plan is not available here."
 }
