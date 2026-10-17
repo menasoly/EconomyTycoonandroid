@@ -15,6 +15,7 @@ class AgendaBuilder(private val e: Economy) {
         tenders(company, now, end, items)
         grants(company, now, end, items)
         carbon(company, now, end, items)
+        tourism(company, now, end, items)
         val sorted = items.sortedWith(compareBy<AgendaItem>({ it.day }, { it.kind.ordinal }, { it.title }))
         return Agenda(now, end, sorted)
     }
@@ -60,6 +61,18 @@ class AgendaBuilder(private val e: Economy) {
         for (t in e.tenders.awardedTo(company)) {
             val due = t.deliverBy.value
             if (due in now..end) out += AgendaItem(due, AgendaKind.TENDER_DUE, nameOf(t.good), "Deliver the full amount or pay a penalty", cash = t.awardedValue, good = t.good, risky = true)
+        }
+    }
+
+    /** Room allotments between a hotel and a tour operator that run out in the window, for either side. */
+    private fun tourism(company: CompanyId, now: Long, end: Long, out: MutableList<AgendaItem>) {
+        if (!e.tourismRunner.active) return
+        val state = e.tourism
+        for (a in state.allotments) {
+            if (a.status != app.many.economytycoon.tourism.AllotmentStatus.ACTIVE || a.endsAt.value !in now..end) continue
+            val hotel = state.property(a.property) ?: continue
+            if (hotel.owner != company && state.operator(a.operator)?.owner != company) continue
+            out += AgendaItem(a.endsAt.value, AgendaKind.ALLOTMENT_ENDS, hotel.name, "Contract ${a.id.value}: ${a.roomsPerNight} rooms a night, ending")
         }
     }
 

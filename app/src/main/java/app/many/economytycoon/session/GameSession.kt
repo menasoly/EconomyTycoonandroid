@@ -96,6 +96,24 @@ class GameSession(
     fun gridNews(): List<app.many.economytycoon.energygrid.GridNote> =
         lastSummary?.gridReport?.let { app.many.economytycoon.energygrid.GridNews(energyGrids, settings::money).notes(it) }.orEmpty()
 
+    /** The tourist destinations of the world; empty in a game that never set tourism up. */
+    val tourism: app.many.economytycoon.tourism.TourismState get() = simulation.economy.tourism
+
+    /** Today's news from the tourist towns, worst first. */
+    fun tourismNews(): List<app.many.economytycoon.tourism.TourismNote> =
+        lastSummary?.tourismReport?.let { app.many.economytycoon.tourism.TourismNews(tourism, settings::money).notes(it) }.orEmpty()
+
+    /** The hotel advisor's suggestions for the properties of the selected company. */
+    fun tourismInsights(): List<app.many.economytycoon.advisor.Insight> {
+        val company = selectedCompany ?: return emptyList()
+        val advisor = app.many.economytycoon.tourism.TourismAdvisor()
+        return tourism.propertiesOf(company).filter { it.isOpen }.flatMap { p ->
+            advisor.advise(app.many.economytycoon.tourism.PropertyFacts.of(tourism, p, tick.value)).map { i ->
+                app.many.economytycoon.advisor.Insight("tourism.${i.code}.${p.id.value}", app.many.economytycoon.advisor.Topic.PRODUCTION, i.priority, i.title, i.detail)
+            }
+        }
+    }
+
     private val marketingReader = MarketingReader(simulation.economy)
 
     /** Reads campaigns, brands, results and plans for the marketing screen. */

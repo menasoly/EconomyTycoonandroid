@@ -61,6 +61,8 @@ object NewGame {
         sim.execute(Actor.System, Command.EstablishBanks)
         // The patent office opens, with a few outside investors who hold patents and press claims.
         sim.execute(Actor.System, Command.EstablishIp)
+        // Towns that draw visitors get hotels, attractions and booking channels, and every region sends travellers.
+        sim.execute(Actor.System, Command.EstablishTourism)
         val countries = sim.economy.world.countries().sortedBy { it.id }
         val country = countries.getOrNull(def?.countryIndex ?: options.countryIndex) ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
         val hq = country.capital
