@@ -172,6 +172,10 @@ private fun Router(ui: GameUi, host: AppHost) {
         Route.Outlook -> OutlookScreen(ui)
         Route.Grants -> GrantsScreen(ui)
         Route.Carbon -> ui.session.carbonDesk()?.let { CarbonScreen(ui, it) }
+        Route.Banking -> app.many.economytycoon.ui.compose.screens.BankingRoute(ui)
+        is Route.BankDetail -> app.many.economytycoon.ui.compose.screens.BankDetailRoute(ui, r.bank)
+        Route.BankStress -> app.many.economytycoon.ui.compose.screens.BankStressRoute(ui)
+        Route.FoundBank -> app.many.economytycoon.ui.compose.screens.FoundBankRoute(ui)
         Route.Activity -> ActivityScreen(ui)
         Route.Agenda -> AgendaScreen(ui)
         Route.Export -> ExportScreen(ui)

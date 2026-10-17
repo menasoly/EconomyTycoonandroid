@@ -68,8 +68,10 @@ fun MoreMenuScreen(ui: GameUi, onQuit: () -> Unit) {
                 Triple("Settings", "Display, saving and speed", Route.Settings),
                 Triple("Help", "How the game works", Route.Help),
             )
-            val entries: List<Triple<String, String, Route>> =
+            val withScenario: List<Triple<String, String, Route>> =
                 if (ui.session.economy.scenario.run != null) base.take(2) + Triple("Scenario", "Targets and time left", Route.Scenario) + base.drop(2) else base
+            val entries: List<Triple<String, String, Route>> =
+                if (ui.session.hasBanking) withScenario.take(1) + Triple("Banks", "Deposits, lending and stress tests", Route.Banking) + withScenario.drop(1) else withScenario
             items(entries.size) { i ->
                 val (title, subtitle, route) = entries[i]
                 Card(onClick = { ui.open(route) }) { ListRow(title, subtitle = subtitle) }

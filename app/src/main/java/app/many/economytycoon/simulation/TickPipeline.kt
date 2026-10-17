@@ -63,6 +63,7 @@ class TickSummary(val tick: Tick) {
     var bondEvents: List<app.many.economytycoon.bonds.BondEvent> = emptyList()
     var regulationEvents: List<app.many.economytycoon.regulation.RegulationEvent> = emptyList()
     var carbonEvents: List<app.many.economytycoon.carbon.CarbonEvent> = emptyList()
+    var bankingEvents: List<app.many.economytycoon.banking.BankEvent> = emptyList()
     var riskEvents: List<app.many.economytycoon.risk.RiskEvent> = emptyList()
     var contractEvents: List<app.many.economytycoon.contracts.ContractEvent> = emptyList()
     var closedBooks: Boolean = false
@@ -303,6 +304,10 @@ class TickPipeline(
         intents += e.marketingRunner.settlementIntents(e.companies.departmentIntents(tick, households))
         val carbon = e.carbonRunner.drain()
         intents += carbon.payments
+        // The banks' day: interest, fees, wages, tax and dividends join the same batch, after every other group so existing order is unchanged.
+        val bank = e.bankingRunner.step(tick)
+        intents += bank.second
+        s.bankingEvents = bank.first
 
         val results = e.finance.settleTick(tick, intents)
         for (draft in carbon.adjustments) e.finance.ledger.post(draft)

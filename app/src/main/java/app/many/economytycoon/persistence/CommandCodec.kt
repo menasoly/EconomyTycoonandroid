@@ -180,6 +180,9 @@ object CommandCodec {
             is Command.CancelPromotion -> { tag(w, 90); co(w, c.company); w.writeVarLong(c.promotion.value) }
             is Command.EstablishGrids -> tag(w, 91)
             is Command.EstablishCarbonPolicies -> { tag(w, 105); w.writeVarInt(c.delayYears) }
+            is Command.EstablishBanks -> tag(w, 117)
+            is Command.FoundBank -> { tag(w, 118); co(w, c.company); w.writeString(c.name); w.writeVarLong(c.country.value); w.writeMoney(c.capital) }
+            is Command.BankDecision -> { tag(w, 119); co(w, c.company); app.many.economytycoon.banking.BankActionCodec.write(c.action, w) }
             is Command.BidCarbonAuction -> { tag(w, 106); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.quantity.raw); w.writeMoney(c.limit) }
             is Command.CancelCarbonBid -> { tag(w, 107); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.bid.value) }
             is Command.PlacePermitOrder -> { tag(w, 108); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarInt(c.side.ordinal); w.writeVarLong(c.quantity.raw); w.writeMoney(c.limit) }
@@ -252,6 +255,7 @@ object CommandCodec {
         }
         if (t == 91) return Command.EstablishGrids
         if (t == 105) return Command.EstablishCarbonPolicies(r.readVarInt())
+        if (t == 117) return Command.EstablishBanks
         if (t == 104) return Command.EscrowTransfer(r.readVarLong(), r.readVarLong(), r.readVarLong(), r.readMoney(), r.readVarInt())
         val company = CompanyId(r.readVarLong())
         return when (t) {
@@ -366,6 +370,8 @@ object CommandCodec {
             114 -> Command.StartAbatement(company, FacilityId(r.readVarLong()), enumAt(app.many.economytycoon.carbon.AbatementKind.values(), r.readVarInt(), "abatement kind"))
             115 -> Command.CancelAbatement(company, app.many.economytycoon.carbon.AbatementId(r.readVarLong()))
             116 -> Command.SetCarbonPolicy(company, CountryId(r.readVarLong()), r.readBoolean(), r.readBoolean())
+            118 -> Command.FoundBank(company, r.readString(), CountryId(r.readVarLong()), r.readMoney())
+            119 -> Command.BankDecision(company, app.many.economytycoon.banking.BankActionCodec.read(r))
             73 -> Command.ListParcel(company, ParcelId(r.readVarLong()), r.readMoney())
             74 -> Command.DelistParcel(company, ParcelId(r.readVarLong()))
             75 -> Command.BuyListed(company, ParcelId(r.readVarLong()))

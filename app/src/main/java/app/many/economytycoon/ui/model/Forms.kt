@@ -112,6 +112,27 @@ data class LoanForm(
     }
 }
 
+/** Open a bank. The bank starts in the company's own country. */
+data class FoundBankForm(
+    val company: CompanyId,
+    val country: app.many.economytycoon.core.CountryId,
+    val nameText: String = "",
+    val capitalText: String = "",
+    val minimumCapital: Money? = null,
+    val cash: Money? = null,
+) {
+    fun validate(): FormResult {
+        val r = FormReader()
+        val name = nameText.trim()
+        r.check("name", name.length in 1..40, "A bank needs a name of up to 40 characters.")
+        val capital = r.need("capital", Parsing.money(capitalText))
+        r.check("capital", capital == null || capital.raw > 0, "Put in more than zero.")
+        if (capital != null && minimumCapital != null) r.check("capital", capital >= minimumCapital, "A bank needs at least ${app.many.economytycoon.session.Formatting.money(minimumCapital)} of capital.")
+        if (capital != null && cash != null) r.check("capital", capital <= cash, "The company has only ${app.many.economytycoon.session.Formatting.money(cash)}.")
+        return r.result { Command.FoundBank(company, name, country, capital ?: Money.ZERO) }
+    }
+}
+
 /** Pay back part or all of a loan. */
 data class RepayForm(val company: CompanyId, val loan: LoanId?, val amountText: String = "", val outstanding: Money? = null) {
     fun validate(): FormResult {

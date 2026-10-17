@@ -155,6 +155,12 @@ object CommandSamples {
         Command.StartAbatement(c, f, app.many.economytycoon.carbon.AbatementKind.CARBON_CAPTURE),
         Command.CancelAbatement(c, app.many.economytycoon.carbon.AbatementId(2)),
         Command.SetCarbonPolicy(c, CountryId(2), true, false),
+        Command.EstablishBanks,
+        Command.FoundBank(c, "Harbour Savings", CountryId(2), Money.units(750_000)),
+        Command.BankDecision(c, app.many.economytycoon.banking.BankAction.SetLoanMargin(app.many.economytycoon.banking.BankId(3), 25L)),
+        Command.BankDecision(c, app.many.economytycoon.banking.BankAction.RaiseCapital(app.many.economytycoon.banking.BankId(3), app.many.economytycoon.banking.CapitalInstrument.TIER2, Money.units(90_000))),
+        Command.BankDecision(c, app.many.economytycoon.banking.BankAction.SetFundingPolicy(app.many.economytycoon.banking.BankId(3), app.many.economytycoon.core.Rate.percent(20), app.many.economytycoon.core.Rate.percent(10), app.many.economytycoon.core.Rate.percent(120))),
+        Command.BankDecision(c, app.many.economytycoon.banking.BankAction.RunStressTest(app.many.economytycoon.banking.BankId(3), "adverse")),
         Command.EscrowTransfer(3L, 5L, 0L, Money.units(250), 1),
     )
 }

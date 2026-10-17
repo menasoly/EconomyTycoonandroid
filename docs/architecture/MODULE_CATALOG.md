@@ -36,3 +36,4 @@ Later volumes add per-module detail: public API, owned entities, events produced
 | energygrid | Electricity grids | Regional grids, merit-order dispatch, spot prices, outages, power purchase agreements | core, finance, world |
 | net | Multiplayer | Wire protocol, authoritative shard, lockstep client, lobby, escrow trades, season scoring | core, content, finance, companies, persistence, simulation, replay |
 | carbon | Emissions and carbon pricing | Emission accounting, regimes, permit market, offsets, abatement, border adjustment | core, content, finance, production, advisor |
+| banking | Commercial banks | Bank balance sheets, deposits, lending, capital rules, runs, resolution, stress tests | core, finance |

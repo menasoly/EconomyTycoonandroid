@@ -57,6 +57,8 @@ object NewGame {
         sim.execute(Actor.System, Command.EstablishGrids)
         // Governments set carbon policy from their environmental stance; the first rules start two years in.
         sim.execute(Actor.System, Command.EstablishCarbonPolicies())
+        // Each country gets a few computer-run banks beside the simple lender companies borrow from.
+        sim.execute(Actor.System, Command.EstablishBanks)
         val countries = sim.economy.world.countries().sortedBy { it.id }
         val country = countries.getOrNull(def?.countryIndex ?: options.countryIndex) ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
         val hq = country.capital
