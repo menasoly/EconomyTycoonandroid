@@ -20,6 +20,7 @@ object Glossary {
     const val PEOPLE = "People"
     const val OWNERSHIP = "Ownership"
     const val WORLD = "World and policy"
+    const val TOGETHER = "Playing together"
 
     val terms: List<GlossaryTerm> = listOf(
         GlossaryTerm("revenue", "Revenue", "Money earned from selling goods and services before any cost is taken off.", listOf("gross-profit", "net-income"), ACCOUNTS),
@@ -103,6 +104,15 @@ object Glossary {
         GlossaryTerm("group", "Group", "A company and all the companies it controls. Group figures count each by the share you own.", listOf("control"), OWNERSHIP),
         GlossaryTerm("takeover", "Takeover", "Buying enough of a company's shares to control it. Offers above fair value are likely to be accepted.", listOf("control"), OWNERSHIP),
         GlossaryTerm("float", "Float", "The share of a listed company's stock that the public may buy.", listOf("dividend"), OWNERSHIP),
+        GlossaryTerm("host", "Host", "The player whose device runs the game for everyone and decides the order in which orders are carried out.", listOf("lockstep"), TOGETHER),
+        GlossaryTerm("lockstep", "Lockstep", "Everybody plays the same game by carrying out the same orders in the same order, so only orders travel, not the whole economy.", listOf("host", "command-delay"), TOGETHER),
+        GlossaryTerm("command-delay", "Command delay", "The few ticks between giving an order and it taking effect, which gives the host time to pass it on to everyone.", listOf("lockstep"), TOGETHER),
+        GlossaryTerm("desync", "Out of step", "When one player's game stops matching the host's. The host notices within ten ticks and sends a fresh copy.", listOf("lockstep", "host"), TOGETHER),
+        GlossaryTerm("escrow", "Escrow", "A holding account run by the host. Money and goods in a trade wait there until both sides have kept their promise.", listOf("host"), TOGETHER),
+        GlossaryTerm("season", "Season", "A fixed stretch of the game that is scored from net worth growth, income and solvency.", listOf("net-worth"), TOGETHER),
+        GlossaryTerm("spectator", "Spectator", "Someone who watches a game without running a company.", emptyList(), TOGETHER),
+        GlossaryTerm("resume", "Resume", "Rejoining after a lost connection with a signed proof, keeping your company.", listOf("host"), TOGETHER),
+        GlossaryTerm("link-quality", "Connection quality", "How good a player's link to the host is, from ping time and lost messages.", listOf("desync"), TOGETHER),
     ) + app.many.economytycoon.energygrid.GridGlossary.entries.map { GlossaryTerm("grid-${it.key}", it.term, it.text, emptyList(), WORLD) }
 
     private val byId: Map<String, GlossaryTerm> = terms.associateBy { it.id }

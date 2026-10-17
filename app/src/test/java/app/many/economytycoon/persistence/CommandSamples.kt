@@ -140,5 +140,6 @@ object CommandSamples {
         Command.AcceptPowerAgreement(c, 4L),
         Command.DeclinePowerAgreement(c, 4L),
         Command.TerminatePowerAgreement(c, 4L),
+        Command.EscrowTransfer(3L, 5L, 0L, Money.units(250), 1),
     )
 }

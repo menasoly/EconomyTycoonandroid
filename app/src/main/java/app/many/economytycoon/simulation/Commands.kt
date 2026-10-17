@@ -212,6 +212,15 @@ sealed class Command {
     data class RespondOffer(override val company: CompanyId, val offer: Long, val accept: Boolean) : Command()
     data class WithdrawOffer(override val company: CompanyId, val offer: Long) : Command()
     data class FileInsolvency(override val company: CompanyId) : Command()
+
+    // ---- multiplayer ----
+    /**
+     * Moves cash between two companies, or between a company and the multiplayer escrow account (company 0), as part of a
+     * player trade. [from] and [to] are company numbers. Only the system gives it; the host applies it to every copy of the game.
+     */
+    data class EscrowTransfer(val trade: Long, val from: Long, val to: Long, val amount: Money, val index: Int) : Command() {
+        override val company: CompanyId? get() = null
+    }
 }
 
 /** A command with the order and tick it was accepted, for replay. */

@@ -55,8 +55,8 @@ object Objectives {
         Objective("net-worth-1m", "A million", "Reach a net worth of one million.", "Wealth") { e, c -> netWorthUnits(e, c) to 1_000_000L },
         Objective("net-worth-10m", "Ten million", "Reach a net worth of ten million.", "Wealth") { e, c -> netWorthUnits(e, c) to 10_000_000L },
         Objective("net-worth-100m", "Tycoon", "Reach a net worth of one hundred million.", "Wealth") { e, c -> netWorthUnits(e, c) to 100_000_000L },
-        Objective("first-tech", "Researcher", "Unlock a technology.", "Technology") { e, c -> count(e.research.of(c).unlockedTechs().size, 1) },
-        Objective("five-techs", "Innovator", "Unlock five technologies.", "Technology") { e, c -> count(e.research.of(c).unlockedTechs().size, 5) },
+        Objective("first-tech", "Researcher", "Unlock a technology.", "Technology") { e, c -> count(e.research.read(c).unlockedTechs().size, 1) },
+        Objective("five-techs", "Innovator", "Unlock five technologies.", "Technology") { e, c -> count(e.research.read(c).unlockedTechs().size, 5) },
         Objective("top-rated", "Creditworthy", "Earn an A rating or better.", "Finance") { e, c ->
             val rating = e.finance.company(e.companies.require(c).owner)?.rating?.rating
             val rank = rating?.let { app.many.economytycoon.finance.CreditRating.values().size - it.ordinal } ?: 0

@@ -19,6 +19,9 @@ import app.many.economytycoon.session.GameSession
 import app.many.economytycoon.ui.compose.components.BottomTabs
 import app.many.economytycoon.ui.compose.components.ClockBar
 import app.many.economytycoon.ui.compose.components.ConfirmDialog
+import app.many.economytycoon.ui.compose.components.EmptyState
+import app.many.economytycoon.ui.compose.components.ScreenFrame
+import app.many.economytycoon.ui.compose.components.ScreenList
 import app.many.economytycoon.ui.compose.components.MessageBar
 import app.many.economytycoon.ui.compose.components.ProblemsDialog
 import app.many.economytycoon.ui.compose.screens.AlertsScreen
@@ -32,6 +35,7 @@ import app.many.economytycoon.ui.compose.screens.AgendaScreen
 import app.many.economytycoon.ui.compose.screens.ExportScreen
 import app.many.economytycoon.ui.compose.screens.GlossaryScreen
 import app.many.economytycoon.ui.compose.screens.EnergyGridScreen
+import app.many.economytycoon.ui.compose.screens.MultiplayerScreen
 import app.many.economytycoon.ui.compose.screens.GrantsScreen
 import app.many.economytycoon.ui.compose.screens.MarketingScreen
 import app.many.economytycoon.ui.compose.screens.GuideScreen
@@ -189,6 +193,12 @@ private fun Router(ui: GameUi, host: AppHost) {
         is Route.Region -> RegionScreen(ui, r.region)
         Route.Government -> GovernmentScreen(ui)
         Route.Electricity -> EnergyGridScreen(ui, ui.session.energyGrids, ui.session.tick.value)
+        Route.Multiplayer -> ui.multiplayerSource.let { src ->
+            if (src != null) MultiplayerScreen(ui, src)
+            else ScreenFrame("Multiplayer", onBack = { ui.back() }) {
+                ScreenList { item { EmptyState("Not playing with others", "This is a single-player game. A hosted or joined game opens here with its lobby, standings and chat.") } }
+            }
+        }
         Route.Rivals -> RivalsScreen(ui)
         is Route.Rival -> RivalScreen(ui, r.company)
         Route.Saves -> SavesScreen(ui, host)

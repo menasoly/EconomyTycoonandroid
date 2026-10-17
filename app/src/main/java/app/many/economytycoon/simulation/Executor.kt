@@ -41,6 +41,7 @@ class CommandExecutor(private val e: Economy) {
         val tick = e.tick
         if (cmd is Command.FoundCompany) return found(actor, cmd, tick)
         if (cmd is Command.EstablishGrids) return if (actor is Actor.System) e.energyGridRunner.establish(tick) else fail(Rules.NOT_OWNER, "only the game sets up the grids")
+        if (cmd is Command.EscrowTransfer) return if (actor is Actor.System) escrowTransfer(cmd, tick) else fail(Rules.NOT_OWNER, "only the host moves escrow money")
         val id = cmd.company ?: return fail(Rules.INVALID_ARGUMENT, "command needs a company")
         val company = e.companies.company(id) ?: return fail(Rules.UNKNOWN_ENTITY, "unknown company")
         authorize(actor, company)?.let { return Outcome.Rejected(it) }
@@ -48,7 +49,7 @@ class CommandExecutor(private val e: Economy) {
             return fail(Rules.WRONG_STATE, "${company.name} is not trading")
         }
         return when (cmd) {
-            is Command.FoundCompany, is Command.EstablishGrids -> fail(Rules.INVALID_ARGUMENT, "unreachable")
+            is Command.FoundCompany, is Command.EstablishGrids, is Command.EscrowTransfer -> fail(Rules.INVALID_ARGUMENT, "unreachable")
             is Command.Rename -> e.companies.rename(id, cmd.name).map { CommandResult() }
             is Command.SetHeadquarters -> {
                 if (e.world.cityOrNull(cmd.city) == null) fail(Rules.UNKNOWN_ENTITY, "unknown city")
@@ -243,6 +244,27 @@ class CommandExecutor(private val e: Economy) {
         }
     }
 
+    /** One leg of a player trade: cash from one company (or the escrow account, company 0) to another. A repeat of the same leg is harmless. */
+    private fun escrowTransfer(cmd: Command.EscrowTransfer, tick: Tick): Outcome<CommandResult> {
+        if (cmd.amount.raw <= 0L || cmd.from == cmd.to) return fail(Rules.INVALID_ARGUMENT, "a transfer needs an amount and two different accounts")
+        val from = escrowOwner(cmd.from) ?: return fail(Rules.UNKNOWN_ENTITY, "unknown paying company")
+        val to = escrowOwner(cmd.to) ?: return fail(Rules.UNKNOWN_ENTITY, "unknown receiving company")
+        val ledger = e.finance.ledger
+        if (ledger.cash(from).raw < cmd.amount.raw) return fail(Rules.INSUFFICIENT_FUNDS, "not enough cash for the transfer")
+        val draft = app.many.economytycoon.finance.TransactionDraft(
+            "net:${cmd.trade}:${tick.value}:${cmd.index}", tick, app.many.economytycoon.finance.ReasonCode.TRANSFER,
+            listOf(
+                app.many.economytycoon.finance.Entry(app.many.economytycoon.finance.AccountRef(from, app.many.economytycoon.finance.Chart.CASH), Money(-cmd.amount.raw)),
+                app.many.economytycoon.finance.Entry(app.many.economytycoon.finance.AccountRef(to, app.many.economytycoon.finance.Chart.CASH), cmd.amount),
+            ),
+            "player trade ${cmd.trade}",
+        )
+        return ledger.post(draft).map { CommandResult() }
+    }
+
+    private fun escrowOwner(company: Long): LedgerOwner? =
+        if (company == ESCROW_COMPANY) ESCROW_OWNER else e.companies.company(CompanyId(company))?.takeIf { it.isActive }?.owner
+
     private fun survey(id: CompanyId, cmd: Command.SurveyDeposit): Outcome<CommandResult> {
         val d = e.world.deposits.get(cmd.deposit) ?: return fail(Rules.UNKNOWN_ENTITY, "unknown deposit")
         if (d.surveyed) return fail(Rules.WRONG_STATE, "already surveyed")
@@ -336,5 +358,11 @@ class CommandExecutor(private val e: Economy) {
     private fun cancelFacilityOrders(company: CompanyId, facility: Long) {
         val mine = e.markets.openOrders(Party.company(company)).filter { it.source == facility }
         for (o in mine) { e.markets.cancelOrder(Party.company(company), o.id); e.releaseReservation(o) }
+    }
+
+    companion object {
+        /** Company number that stands for the multiplayer escrow account in [Command.EscrowTransfer]. */
+        const val ESCROW_COMPANY = 0L
+        val ESCROW_OWNER: LedgerOwner = LedgerOwner.bank(900_001L)
     }
 }

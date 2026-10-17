@@ -179,6 +179,7 @@ object CommandCodec {
             }
             is Command.CancelPromotion -> { tag(w, 90); co(w, c.company); w.writeVarLong(c.promotion.value) }
             is Command.EstablishGrids -> tag(w, 91)
+            is Command.EscrowTransfer -> { tag(w, 104); w.writeVarLong(c.trade); w.writeVarLong(c.from); w.writeVarLong(c.to); w.writeMoney(c.amount); w.writeVarInt(c.index) }
             is Command.ConnectFacilityToGrid -> { tag(w, 92); co(w, c.company); w.writeVarLong(c.grid); w.writeVarLong(c.facility.value); w.writeVarInt(c.customer); w.writeVarLong(c.baseKw) }
             is Command.DisconnectFacilityFromGrid -> { tag(w, 93); co(w, c.company); w.writeVarLong(c.facility.value) }
             is Command.ReclassifyGridLoad -> { tag(w, 94); co(w, c.company); w.writeVarLong(c.load); w.writeVarInt(c.customer) }
@@ -238,6 +239,7 @@ object CommandCodec {
             return Command.FoundCompany(name, country, hq, capital, kind)
         }
         if (t == 91) return Command.EstablishGrids
+        if (t == 104) return Command.EscrowTransfer(r.readVarLong(), r.readVarLong(), r.readVarLong(), r.readMoney(), r.readVarInt())
         val company = CompanyId(r.readVarLong())
         return when (t) {
             2 -> Command.Rename(company, r.readString())

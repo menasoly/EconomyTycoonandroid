@@ -12,6 +12,7 @@ import app.many.economytycoon.simulation.Command
 import app.many.economytycoon.ui.nav.NavState
 import app.many.economytycoon.ui.nav.Route
 import app.many.economytycoon.ui.nav.Tab
+import app.many.economytycoon.ui.present.NetScreenSource
 
 /**
  * Compose-facing state for a running game. Screens read [revision] to recompose after every tick or command,
@@ -32,6 +33,9 @@ class GameUi(val session: GameSession, initialNav: NavState = NavState()) : Sess
 
     var problems: List<String> by mutableStateOf(emptyList())
         private set
+
+    /** The multiplayer views while this game is hosted or joined; null in a single-player game. */
+    var multiplayerSource: NetScreenSource? by mutableStateOf(null)
 
     init { session.addListener(this) }
 
