@@ -79,6 +79,17 @@ class GameSession(
         notify(SessionChange.ADVICE)
     }
 
+    /** The electricity grids of the world; empty in a game that never set them up. */
+    val energyGrids: app.many.economytycoon.energygrid.EnergyGridState get() = simulation.economy.energyGrids
+
+    /** What the grid advisor looks at for one grid, or null when there is no such grid. */
+    fun gridFacts(grid: app.many.economytycoon.energygrid.GridId): app.many.economytycoon.energygrid.GridFacts? =
+        energyGrids.grid(grid)?.let { app.many.economytycoon.energygrid.GridFacts.of(energyGrids, it, tick.value, simulation.economy.energyGridService.peakDemandKw(grid)) }
+
+    /** Today's news from the grids, worst first. */
+    fun gridNews(): List<app.many.economytycoon.energygrid.GridNote> =
+        lastSummary?.gridReport?.let { app.many.economytycoon.energygrid.GridNews(energyGrids, settings::money).notes(it) }.orEmpty()
+
     private val marketingReader = MarketingReader(simulation.economy)
 
     /** Reads campaigns, brands, results and plans for the marketing screen. */

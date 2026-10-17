@@ -16,6 +16,7 @@ data class NewsItem(val tick: Long, val kind: NewsKind, val headline: String)
 class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
     private val items = ArrayDeque<NewsItem>()
     private var lastEventSequence = -1L
+    private val gridHeadlines = HashMap<String, Long>()
 
     fun items(): List<NewsItem> = items.toList().reversed()
 
@@ -189,6 +190,17 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
                 else -> Unit
             }
         }
+        summary.gridReport?.let { report ->
+            // Everyone in a region hears of its blackouts; the rest of the grid's news is kept for the warnings, and repeats are held back.
+            for (note in app.many.economytycoon.energygrid.GridNews(e.energyGrids) { Formatting.money(it) }.notes(report)) {
+                if (note.severity == app.many.economytycoon.energygrid.NoteSeverity.INFO) continue
+                val last = gridHeadlines[note.headline]
+                if (last != null && t - last < GRID_REPEAT_DAYS) continue
+                gridHeadlines[note.headline] = t
+                add(NewsItem(t, NewsKind.WORLD, note.headline))
+            }
+            if (gridHeadlines.size > 200) gridHeadlines.entries.removeAll { t - it.value >= GRID_REPEAT_DAYS }
+        }
         if (summary.closedBooks) add(NewsItem(t, NewsKind.FINANCE, "Companies closed their books for the month"))
         if (summary.problems.isNotEmpty()) add(NewsItem(t, NewsKind.WORLD, "Ledger check found ${Formatting.plural(summary.problems.size.toLong(), "problem")}"))
     }
@@ -207,4 +219,8 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
     }
 
     fun since(tick: Tick): List<NewsItem> = items().filter { it.tick >= tick.value }
+
+    private companion object {
+        const val GRID_REPEAT_DAYS = 14L
+    }
 }

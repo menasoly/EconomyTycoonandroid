@@ -53,6 +53,8 @@ object NewGame {
         if (name.length < 3) return Outcome.reject(Rules.INVALID_ARGUMENT, "a company name needs at least three characters")
         val def = options.scenario?.let { id -> ScenarioCatalog.byId(id) ?: return Outcome.reject(Rules.UNKNOWN_ENTITY, "unknown scenario") }
         val sim = Simulation(config(options), content)
+        // New games run on regional electricity grids; games saved without them keep the simple pool.
+        sim.execute(Actor.System, Command.EstablishGrids)
         val countries = sim.economy.world.countries().sortedBy { it.id }
         val country = countries.getOrNull(def?.countryIndex ?: options.countryIndex) ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
         val hq = country.capital
