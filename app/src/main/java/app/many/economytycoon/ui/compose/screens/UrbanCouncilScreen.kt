@@ -25,8 +25,10 @@ import app.many.economytycoon.ui.compose.design.Theme
 import app.many.economytycoon.ui.compose.design.Type
 import app.many.economytycoon.ui.compose.design.color
 import app.many.economytycoon.urban.CityView
+import app.many.economytycoon.urban.DistrictView
 import app.many.economytycoon.urban.UrbanCommand
 import app.many.economytycoon.urban.UrbanView
+import app.many.economytycoon.urban.ZoneUse
 
 import app.many.economytycoon.ui.present.UrbanCouncilPresenter
 import app.many.economytycoon.ui.present.PetitionRow
@@ -36,6 +38,7 @@ import app.many.economytycoon.ui.present.PetitionRow
 fun UrbanCouncilScreen(ui: GameUi, view: UrbanView, issue: (UrbanCommand) -> String) {
     var selected by remember { mutableStateOf<CityView?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
+    var district by remember { mutableStateOf(0) }
     ScreenFrame("City council", onBack = { ui.back() }) {
         if (view.cities.isEmpty()) {
             EmptyState("No cities", "No city has a plan yet.")
@@ -56,6 +59,19 @@ fun UrbanCouncilScreen(ui: GameUi, view: UrbanView, issue: (UrbanCommand) -> Str
             if (model.closed.isNotEmpty()) {
                 item { SectionHeader("Decided") }
                 items(model.closed.size) { i -> PetitionCard(model.closed[i], null) }
+            }
+            item { SectionHeader("Ask for a change") }
+            item {
+                val target = current.districts.firstOrNull { it.index == district } ?: current.districts.first()
+                ChoiceChips<DistrictView>(current.districts, target, { it.name }, { district = it.index })
+            }
+            item {
+                val target = current.districts.firstOrNull { it.index == district } ?: current.districts.first()
+                SecondaryButton(
+                    "File a petition to rezone " + target.name + " for mixed use",
+                    { message = issue(UrbanCouncilPresenter.rezone(current.city, target.index, ZoneUse.MIXED, 0, 0, ui.session.selectedCompany)) },
+                    Modifier.fillMaxWidth(),
+                )
             }
             item { SectionHeader("Members") }
             items(model.seats.size) { i ->
