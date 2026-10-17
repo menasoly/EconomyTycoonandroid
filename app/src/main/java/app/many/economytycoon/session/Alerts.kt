@@ -48,6 +48,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         energy(company, out)
         carbon(company, out)
         patents(company, out)
+        tourism(company, out)
         banks(company, out)
         regulation(company, out)
         bonds(company, out)
@@ -299,6 +300,18 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         }
     }
 
+    /** Hotels of the company that the advisor judges to need action now; the insight and the property make the alert's key. */
+    private fun tourism(id: CompanyId, out: MutableList<Alert>) {
+        if (!e.tourismRunner.active) return
+        val advisor = app.many.economytycoon.tourism.TourismAdvisor()
+        for (p in e.tourism.propertiesOf(id)) {
+            if (!p.isOpen) continue
+            for (i in advisor.advise(app.many.economytycoon.tourism.PropertyFacts.of(e.tourism, p, e.tick.value), thresholds.tourismAlertPriority)) {
+                out += Alert("tourism.${i.code}", p.id.value, Severity.WARNING, "${p.name}: ${i.title}", i.detail)
+            }
+        }
+    }
+
     /** Supervision, capital breaches and runs at the banks the company runs. */
     private fun banks(id: CompanyId, out: MutableList<Alert>) {
         if (!e.bankingRunner.active) return
@@ -421,6 +434,7 @@ data class AlertThresholds(
     val grantNoticeDays: Long = 4,
     val marketingNoticeDays: Long = 10,
     val gridAlertPriority: Int = 70,
+    val tourismAlertPriority: Int = 70,
     val lawNoticeDays: Long = 10,
     val bondNoticeDays: Long = 10,
     val demandUrgentDays: Long = 3,

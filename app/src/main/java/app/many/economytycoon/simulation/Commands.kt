@@ -219,6 +219,17 @@ sealed class Command {
         override val company: CompanyId? get() = command.actor
     }
 
+    // ---- tourism ----
+    /** Sets up the destinations, home markets, booking channels and first hotels of a world that has none; only the system gives it. */
+    object EstablishTourism : Command() {
+        override val company: CompanyId? get() = null
+        override fun toString() = "EstablishTourism"
+    }
+    /** Any decision of the tourism module (properties, rates, attractions, operators, platforms, allotments, campaigns). */
+    data class Tourism(val command: app.many.economytycoon.tourism.TourismCommand) : Command() {
+        override val company: CompanyId? get() = command.company
+    }
+
     // ---- labour relations ----
     data class OpenFuture(override val company: CompanyId, val good: GoodId, val side: app.many.economytycoon.futures.Side, val contracts: Long, val tenor: Int) : Command()
     data class CloseFuture(override val company: CompanyId, val position: Long) : Command()

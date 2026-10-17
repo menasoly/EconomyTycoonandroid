@@ -151,7 +151,8 @@ object Glossary {
         GlossaryTerm("spectator", "Spectator", "Someone who watches a game without running a company.", emptyList(), TOGETHER),
         GlossaryTerm("resume", "Resume", "Rejoining after a lost connection with a signed proof, keeping your company.", listOf("host"), TOGETHER),
         GlossaryTerm("link-quality", "Connection quality", "How good a player's link to the host is, from ping time and lost messages.", listOf("desync"), TOGETHER),
-    ) + app.many.economytycoon.energygrid.GridGlossary.entries.map { GlossaryTerm("grid-${it.key}", it.term, it.text, emptyList(), WORLD) }
+    ) + app.many.economytycoon.energygrid.GridGlossary.entries.map { GlossaryTerm("grid-${it.key}", it.term, it.text, emptyList(), WORLD) } +
+        app.many.economytycoon.tourism.TourismGlossary.entries.map { GlossaryTerm("tourism-${it.key}", it.term, it.text, emptyList(), WORLD) }
 
     private val byId: Map<String, GlossaryTerm> = terms.associateBy { it.id }
 

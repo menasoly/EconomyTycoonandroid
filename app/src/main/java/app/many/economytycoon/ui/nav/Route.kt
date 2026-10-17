@@ -82,6 +82,7 @@ sealed class Route(val tab: Tab, val name: String) {
     object MoreMenu : Route(Tab.MORE, "more") { override val args = emptyList<String>() }
     object World : Route(Tab.MORE, "world") { override val args = emptyList<String>() }
     object Electricity : Route(Tab.MORE, "electricity") { override val args = emptyList<String>() }
+    object Tourism : Route(Tab.MORE, "tourism") { override val args = emptyList<String>() }
     object Multiplayer : Route(Tab.MORE, "multiplayer") { override val args = emptyList<String>() }
     data class Region(val region: Long) : Route(Tab.MORE, "region") { override val args = listOf(region.toString()) }
     object Scenario : Route(Tab.MORE, "scenario") { override val args = emptyList<String>() }
@@ -169,6 +170,7 @@ sealed class Route(val tab: Tab, val name: String) {
                 "more" -> MoreMenu
                 "world" -> World
                 "electricity" -> Electricity
+                "tourism" -> Tourism
                 "multiplayer" -> Multiplayer
                 "region" -> number(0)?.let { Region(it) }
                 "scenario" -> Scenario

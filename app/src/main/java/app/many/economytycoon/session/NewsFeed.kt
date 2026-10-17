@@ -17,6 +17,7 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
     private val items = ArrayDeque<NewsItem>()
     private var lastEventSequence = -1L
     private val gridHeadlines = HashMap<String, Long>()
+    private val tourismHeadlines = HashMap<String, Long>()
 
     fun items(): List<NewsItem> = items.toList().reversed()
 
@@ -240,6 +241,25 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
             }
             if (gridHeadlines.size > 200) gridHeadlines.entries.removeAll { t - it.value >= GRID_REPEAT_DAYS }
         }
+        summary.tourismReport?.let { report ->
+            // A critical note is news to everyone; the rest is for people with a hotel or an attraction in the town, and repeats are held back.
+            val tourism = e.tourism
+            val ours = e.companies.all().filter { it.kind == app.many.economytycoon.companies.CompanyKind.PLAYER }.map { it.id }.toSet()
+            val destinations = tourism.properties.filter { it.owner in ours }.map { it.destination }.toSet() + tourism.attractions.filter { it.owner in ours }.map { it.destination }.toSet()
+            for (note in app.many.economytycoon.tourism.TourismNews(tourism) { Formatting.money(it) }.notes(report)) {
+                val critical = note.severity == app.many.economytycoon.tourism.TourismSeverity.CRITICAL
+                if (!critical && note.destination !in destinations) continue
+                val last = tourismHeadlines[note.headline]
+                if (last != null && t - last < TOURISM_REPEAT_DAYS) continue
+                tourismHeadlines[note.headline] = t
+                add(NewsItem(t, NewsKind.WORLD, note.headline))
+            }
+            if (tourismHeadlines.size > 200) tourismHeadlines.entries.removeAll { t - it.value >= TOURISM_REPEAT_DAYS }
+        }
+        summary.tourismSettlement?.let { run ->
+            val ours = e.companies.all().filter { it.kind == app.many.economytycoon.companies.CompanyKind.PLAYER }.map { it.id }.toSet()
+            if (e.tourism.properties.any { it.owner in ours }) add(NewsItem(t, NewsKind.FINANCE, app.many.economytycoon.tourism.TourismNews(e.tourism) { Formatting.money(it) }.summary(run).let { "${it.headline}: ${it.detail}" }))
+        }
         if (summary.closedBooks) add(NewsItem(t, NewsKind.FINANCE, "Companies closed their books for the month"))
         if (summary.problems.isNotEmpty()) add(NewsItem(t, NewsKind.WORLD, "Ledger check found ${Formatting.plural(summary.problems.size.toLong(), "problem")}"))
     }
@@ -261,5 +281,6 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
 
     private companion object {
         const val GRID_REPEAT_DAYS = 14L
+        const val TOURISM_REPEAT_DAYS = 14L
     }
 }
