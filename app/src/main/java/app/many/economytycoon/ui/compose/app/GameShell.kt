@@ -31,6 +31,7 @@ import app.many.economytycoon.ui.compose.screens.ActivityScreen
 import app.many.economytycoon.ui.compose.screens.AgendaScreen
 import app.many.economytycoon.ui.compose.screens.ExportScreen
 import app.many.economytycoon.ui.compose.screens.GlossaryScreen
+import app.many.economytycoon.ui.compose.screens.EnergyGridScreen
 import app.many.economytycoon.ui.compose.screens.GrantsScreen
 import app.many.economytycoon.ui.compose.screens.MarketingScreen
 import app.many.economytycoon.ui.compose.screens.GuideScreen
@@ -187,6 +188,7 @@ private fun Router(ui: GameUi, host: AppHost) {
         Route.World -> WorldScreen(ui)
         is Route.Region -> RegionScreen(ui, r.region)
         Route.Government -> GovernmentScreen(ui)
+        Route.Electricity -> EnergyGridScreen(ui, ui.session.energyGrids, ui.session.tick.value)
         Route.Rivals -> RivalsScreen(ui)
         is Route.Rival -> RivalScreen(ui, r.company)
         Route.Saves -> SavesScreen(ui, host)
