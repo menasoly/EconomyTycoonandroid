@@ -1,24 +1,43 @@
 package app.many.economytycoon.ui.compose.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import app.many.economytycoon.ui.compose.components.EmptyState
+import app.many.economytycoon.ui.compose.components.LinkButton
 import app.many.economytycoon.ui.compose.components.ScreenFrame
 import app.many.economytycoon.ui.compose.components.ScreenList
 import app.many.economytycoon.ui.compose.components.SectionHeader
 import app.many.economytycoon.ui.compose.components.TileGrid
+import app.many.economytycoon.ui.compose.design.Spacing
 import app.many.economytycoon.ui.compose.design.Theme
 import app.many.economytycoon.ui.compose.design.Type
+import app.many.economytycoon.ui.nav.Route
 import app.many.economytycoon.ui.present.TalentModel
 import app.many.economytycoon.ui.present.Tone
 
-/** Skills, shortages and the people side of the company at a glance. */
+/** Skills, shortages and the people side of the company at a glance, with a way into each of the detail screens. */
 @Composable
-fun TalentScreen(model: TalentModel, onBack: () -> Unit) {
+fun TalentScreen(model: TalentModel, onOpen: (Route) -> Unit, onBack: () -> Unit) {
     ScreenFrame("Talent", onBack = onBack) {
         ScreenList {
             item { TileGrid(model.tiles) }
             item { Text(model.note, style = Type.Body, color = Theme.tokens.textSecondary) }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        LinkButton("Schools", { onOpen(Route.TalentEducation) })
+                        LinkButton("Training", { onOpen(Route.TalentTraining) })
+                        LinkButton("Recruiting", { onOpen(Route.TalentRecruiting) })
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        LinkButton("Careers", { onOpen(Route.TalentCareers) })
+                        LinkButton("Providers", { onOpen(Route.TalentProviders) })
+                    }
+                }
+            }
             if (model.advice.isNotEmpty()) {
                 item { SectionHeader("Advice") }
                 items(model.advice.size) { i ->
