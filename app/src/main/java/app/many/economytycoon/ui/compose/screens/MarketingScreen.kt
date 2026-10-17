@@ -17,6 +17,7 @@ import app.many.economytycoon.ui.compose.components.ChoiceChips
 import app.many.economytycoon.ui.compose.components.EmptyState
 import app.many.economytycoon.ui.compose.components.FactList
 import app.many.economytycoon.ui.compose.components.Pill
+import app.many.economytycoon.ui.compose.components.PrimaryButton
 import app.many.economytycoon.ui.compose.components.ScreenFrame
 import app.many.economytycoon.ui.compose.components.ScreenList
 import app.many.economytycoon.ui.compose.components.SecondaryButton
@@ -57,7 +58,7 @@ fun MarketingScreen(ui: GameUi, host: MarketingScreenHost) {
             when (tab) {
                 MarketingTab.CAMPAIGNS -> campaignItems(model) { open = it }
                 MarketingTab.CHANNELS -> channelItems(model)
-                MarketingTab.PLAN -> planItems(model)
+                MarketingTab.PLAN -> planItems(model) { message = host.applyPlan(); tick++ }
                 MarketingTab.RESULTS -> resultItems(model)
                 MarketingTab.ADVICE -> adviceItems(model)
             }
@@ -179,11 +180,12 @@ private fun androidx.compose.foundation.lazy.LazyListScope.channelItems(model: M
     }
 }
 
-private fun androidx.compose.foundation.lazy.LazyListScope.planItems(model: MarketingScreenModel) {
+private fun androidx.compose.foundation.lazy.LazyListScope.planItems(model: MarketingScreenModel, onBook: () -> Unit) {
     val plan = model.plan
     if (plan == null) { item { EmptyState("No plan yet", "The planner needs a budget and the products you sell.") }; return }
     item { TileGrid(plan.tiles) }
     item { Text(plan.stop, style = Type.Body, color = plan.tone.color()) }
+    if (plan.canApply) item { PrimaryButton("Book this plan", onBook, Modifier.fillMaxWidth()) }
     items(plan.markets.size) { i ->
         val m = plan.markets[i]
         Card {
