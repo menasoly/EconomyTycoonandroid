@@ -23,6 +23,7 @@ modules:
   session:     { path: session,       depends_on: [simulation, persistence, infra],           owner: app,          priority: 5 }
   ui:          { path: ui,            depends_on: [session, infra],                           owner: app,          priority: 5 }
   visualization: { path: visualization, depends_on: [session],                                owner: app,          priority: 6 }
+  blueprint:   { path: blueprint, depends_on: [core, content, world, workforce, production, companies, facilityprofit, simulation, session, persistence], owner: app, priority: 6 }
 tick_phases:
   - begin_tick
   - scheduled_events
@@ -39,4 +40,4 @@ tick_phases:
   - macro_update
   - invariant_checks
   - publish
-adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006]
+adrs: [ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, ADR-0006, ADR-0007, ADR-0008]
