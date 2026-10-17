@@ -39,6 +39,8 @@ import app.many.economytycoon.ui.compose.design.Spacing
 import app.many.economytycoon.ui.compose.design.Theme
 import app.many.economytycoon.ui.compose.design.Type
 import app.many.economytycoon.ui.present.SavesPresenter
+import app.many.economytycoon.ui.present.WorkshopNav
+import app.many.economytycoon.ui.present.WorkshopPage
 import app.many.economytycoon.world.WorldSize
 
 @Composable
@@ -62,11 +64,28 @@ fun MenuScreen(host: AppHost) {
         Spacer(Modifier.height(Spacing.S))
         SecondaryButton("Scenarios", { host.openScenarios() }, Modifier.fillMaxWidth())
         Spacer(Modifier.height(Spacing.S))
+        SecondaryButton("Scenario workshop", { host.openWorkshop() }, Modifier.fillMaxWidth())
+        Spacer(Modifier.height(Spacing.S))
         SecondaryButton("Achievements", { host.openAchievements() }, Modifier.fillMaxWidth())
         Spacer(Modifier.height(Spacing.S))
         SecondaryButton("Load game", { host.openLoadList() }, Modifier.fillMaxWidth())
     }
     if (failure) ProblemsDialog("Could not continue", listOf(host.lastFailure?.message ?: "The save could not be read."), { failure = false })
+}
+
+/** The scenario workshop, opened from the main menu. */
+@Composable
+fun WorkshopMenuScreen(host: AppHost, page: WorkshopPage) {
+    val nav = WorkshopNav(
+        back = { if (page == WorkshopPage.EDITOR) host.showMenu() else host.openWorkshop(WorkshopPage.EDITOR) },
+        open = { host.openWorkshop(it) },
+        play = { host.playWorkshopDraft() },
+    )
+    when (page) {
+        WorkshopPage.EDITOR -> WorkshopScreen(nav, host.workshop)
+        WorkshopPage.REPORT -> WorkshopReportScreen(nav, host.workshop)
+        WorkshopPage.LIBRARY -> WorkshopLibraryScreen(nav, host.workshop)
+    }
 }
 
 @Composable
