@@ -118,6 +118,16 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "carbon", "Carbon", "Emissions, permits, offsets and the cost of cutting them.",
+            listOf(
+                "Why it matters. Governments begin to price carbon dioxide: a tax per tonne, a standard that fines emissions above a benchmark, or a cap with permits. Your facilities report what they burn and make every day, and the Carbon screen under Finance shows the tonnes, the bill at today's price and the deadline.",
+                "Permits and prices. In a cap-and-trade country the government sells permits at quarterly auctions and companies trade the rest. Hand in one permit per tonne before the deadline after the year ends. Spare permits can be kept for later years, but they lapse after a few years; a stability reserve steadies the price.",
+                "Offsets. Credits for tonnes avoided elsewhere can cover a limited share of what you owe, often at a lower price than a permit. Buy them from the open market, or fund a project and receive the credits as it delivers.",
+                "Cutting emissions. A retrofit, a fuel switch or carbon capture at a facility lowers the tonnes it reports; a retrofit also lowers the fuel it burns. Each measure has a cost per tonne saved. If that is below the carbon price it pays for itself.",
+                "Border adjustment. Some countries charge importers for the carbon embedded in goods from countries that price carbon less, and may refund exporters. It follows the goods that cross the border in your trades.",
+            ),
+        ),
+        HelpTopic(
             "saving", "Saving", "Slots, autosave and backups.",
             listOf(
                 "The game saves automatically at the interval you choose in Settings and when you leave to the menu. You can also save to a named slot at any time from the Saves screen.",
