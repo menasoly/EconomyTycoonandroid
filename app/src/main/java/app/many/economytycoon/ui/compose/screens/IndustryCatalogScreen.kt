@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import app.many.economytycoon.content.ExpandedContent
+import app.many.economytycoon.content.ShippedContent
 import app.many.economytycoon.content.catalog.CatalogBuilder
 import app.many.economytycoon.ui.compose.app.GameUi
 import app.many.economytycoon.ui.compose.components.Card
@@ -36,7 +36,7 @@ fun IndustryCatalogScreen(ui: GameUi) {
     var packId by remember { mutableStateOf<String?>(null) }
     var query by remember { mutableStateOf("") }
     var open by remember { mutableStateOf<String?>(null) }
-    val report = remember { CatalogBuilder.build(ExpandedContent.packs) }
+    val report = remember { CatalogBuilder.build(ShippedContent.packs) }
     val model = remember(packId, query) { IndustryCatalogPresenter.build(report, CatalogFilter(packId = packId, query = query)) }
     val lookup = open?.let { IndustryCatalogPresenter.detail(report, it) }
     ScreenFrame("Industries", onBack = { if (open != null) open = null else ui.back() }) {
