@@ -59,4 +59,5 @@ them.
   parameter change in `TourismParams`, not a rewrite.
 - A hotel with only standard rooms registers denied demand for the classes it lacks. That is intended: it feeds the
   expansion advice.
-- Adding the section changes the economy hash, so golden values are recomputed when it is wired in.
+- The section is hashed and saved only once tourism has been set up (`EstablishTourism`), so games that never set it up keep their hashes and saves unchanged.
+- In the game, seats come from the open links, airports and ports of the destination's city, and hospitality staff from a share of the city's labour force (`WorldTransport`, `WorldStaffSupply`); freight vehicles carry no passengers and the workforce module does not hire for properties, so neither is read.
