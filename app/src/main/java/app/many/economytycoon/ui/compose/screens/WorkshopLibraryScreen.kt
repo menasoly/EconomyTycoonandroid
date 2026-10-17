@@ -11,7 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import app.many.economytycoon.core.Outcome
-import app.many.economytycoon.ui.compose.app.GameUi
 import app.many.economytycoon.ui.compose.components.Card
 import app.many.economytycoon.ui.compose.components.ChoiceChips
 import app.many.economytycoon.ui.compose.components.EmptyState
@@ -29,6 +28,8 @@ import app.many.economytycoon.ui.compose.design.Theme
 import app.many.economytycoon.ui.compose.design.Type
 import app.many.economytycoon.ui.compose.design.color
 import app.many.economytycoon.ui.present.Tone
+import app.many.economytycoon.ui.present.WorkshopNav
+import app.many.economytycoon.ui.present.WorkshopPage
 import app.many.economytycoon.ui.present.WorkshopLibraryPresenter
 import app.many.economytycoon.workshop.ImportResult
 import app.many.economytycoon.workshop.LibraryQuery
@@ -37,14 +38,14 @@ import app.many.economytycoon.workshop.WorkshopSession
 
 /** Saved drafts: search, folders and tags, opening, copying, sharing and bringing in a shared code. */
 @Composable
-fun WorkshopLibraryScreen(ui: GameUi, workshop: WorkshopSession) {
+fun WorkshopLibraryScreen(nav: WorkshopNav, workshop: WorkshopSession) {
     var tick by remember { mutableStateOf(0) }
     var message by remember { mutableStateOf<String?>(null) }
     var query by remember { mutableStateOf(LibraryQuery()) }
     var pasted by remember { mutableStateOf("") }
     var shown by remember { mutableStateOf<String?>(null) }
     val model = remember(tick, query) { WorkshopLibraryPresenter.model(workshop.library, query) }
-    ScreenFrame("Saved scenarios", onBack = { ui.back() }) {
+    ScreenFrame("Saved scenarios", onBack = { nav.back() }) {
         ScreenList {
             item { TileGrid(model.tiles) }
             message?.let { m -> item { Text(m, style = Type.Body, color = Theme.tokens.textSecondary) } }
@@ -63,7 +64,7 @@ fun WorkshopLibraryScreen(ui: GameUi, workshop: WorkshopSession) {
                     Text(r.subtitle, style = Type.Caption, color = Theme.tokens.textSecondary)
                     if (r.note.isNotEmpty()) Text(r.note, style = Type.Body, color = Theme.tokens.textPrimary)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PrimaryButton("Open", { message = (workshop.open(r.id) as? Outcome.Rejected)?.rejection?.message; tick++ }, Modifier.weight(1f))
+                        PrimaryButton("Open", { message = (workshop.open(r.id) as? Outcome.Rejected)?.rejection?.message; if (message == null) nav.open(WorkshopPage.EDITOR); tick++ }, Modifier.weight(1f))
                         SecondaryButton("Copy", { message = (workshop.changeLibrary { it.duplicate(r.id) } as? Outcome.Rejected)?.rejection?.message; tick++ }, Modifier.weight(1f))
                         SecondaryButton(if (r.starred) "Unstar" else "Star", { workshop.changeLibrary { it.star(r.id, !r.starred) }; tick++ }, Modifier.weight(1f))
                     }
