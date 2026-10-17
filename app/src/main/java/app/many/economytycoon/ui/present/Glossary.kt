@@ -131,6 +131,8 @@ object Glossary {
         GlossaryTerm("library-folder", "Library folder", "A named group in the blueprint library, such as bakeries or mines, used to keep many blueprints tidy.", listOf("blueprint"), PRODUCTION),
         GlossaryTerm("pending-build", "Pending build", "A new building ordered from a blueprint that is still under construction; its set-up waits until the building stands.", listOf("blueprint"), PRODUCTION),
         GlossaryTerm("payback", "Payback", "How long a facility takes to earn back what it cost to build.", listOf("upkeep"), PRODUCTION),
+        GlossaryTerm("recipe-margin", "Margin (recipe)", "Profit on one batch as a share of what the batch costs to make, shown as lowest, middle and highest across the prices a market can reach.", listOf("payback", "gross-margin"), PRODUCTION),
+        GlossaryTerm("deposit", "Deposit", "A place in a region where a raw good such as ore or gypsum can be mined; regions differ in which deposits they hold and how rich they are.", listOf("recipe-margin"), PRODUCTION),
 
         GlossaryTerm("morale", "Morale", "How content the staff are. Low morale lowers output and, with unpaid wages, leads to strikes.", listOf("union"), PEOPLE),
         GlossaryTerm("union", "Union", "A body that bargains for workers. It can make demands about pay and conditions and call strikes when refused.", listOf("morale"), PEOPLE),

@@ -8,7 +8,7 @@ import org.junit.Test
 class ShippedContentTest {
     @Test fun everyPackIsPartOfTheRepository() {
         val repo = ShippedContent.repository
-        assertEquals(8, ShippedContent.packs.size)
+        assertEquals(16, ShippedContent.packs.size)
         assertSame(repo, ShippedContent.repository)
         assertTrue(repo.allGoods.size > 50)
         assertTrue(repo.allFacilityTypes.isNotEmpty() && repo.allTechnologies.isNotEmpty())
