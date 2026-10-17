@@ -3,6 +3,7 @@ package app.many.economytycoon.workshop
 import app.many.economytycoon.core.Money
 import app.many.economytycoon.core.Outcome
 import app.many.economytycoon.core.Rules
+import app.many.economytycoon.scenarios.DefFailKind
 import app.many.economytycoon.scenarios.Goal
 import app.many.economytycoon.scenarios.GoalKind
 import app.many.economytycoon.scenarios.ScenarioCatalog
@@ -54,9 +55,30 @@ class DraftConversionTest {
         val c = ok(Samples.full())
         assertFalse(c.lossless)
         val text = c.notes.joinToString("\n")
-        for (word in listOf("bonus goal", "weights", "failure condition", "grace period", "scripted event", "starting site", "rule override", "difficulty tags")) {
+        for (word in listOf("bonus goal", "weights", "difficulty tags")) {
             assertTrue("notes mention '$word':\n$text", text.contains(word))
         }
+    }
+
+    @Test fun whatTheGameCanPlayIsNotListedAsLeftOut() {
+        val c = ok(Samples.full())
+        val text = c.notes.joinToString("\n")
+        for (word in listOf("failure condition", "grace period", "scripted event", "starting site", "rule override")) {
+            assertFalse("notes do not mention '$word':\n$text", text.contains(word))
+        }
+    }
+
+    @Test fun eventsFailureConditionsAndStartingSitesCarryOver() {
+        val d = Samples.full()
+        val def = ok(d).def
+        assertEquals(d.events.map { it.day }, def.events.map { it.day })
+        assertEquals(d.events.map { it.kind.name }, def.events.map { it.kind.name })
+        assertEquals(d.events.map { it.amount }, def.events.map { it.amount })
+        assertEquals(d.company.starters.map { it.recipe to it.regionIndex }, def.starters.map { it.recipe to it.regionIndex })
+        // The net worth floor with its grace period is the definition's own ruin limit; the other condition is listed beside it.
+        assertEquals(50_000L, def.ruinBelow)
+        assertEquals(30, def.ruinAfterDay)
+        assertEquals(listOf(DefFailKind.FACILITIES_BELOW to 100), def.fails.map { it.kind to it.afterDay })
     }
 
     @Test fun aPlainDraftConvertsWithoutLoss() {
