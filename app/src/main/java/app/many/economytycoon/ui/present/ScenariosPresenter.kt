@@ -99,7 +99,7 @@ object ScenariosPresenter {
             ScenarioStatus.WON -> "Won with a ${run.medal.label.lowercase()} medal" to Tone.GOOD
             ScenarioStatus.LOST -> (run.reason?.label ?: "Lost") to Tone.BAD
         }
-        val note = if (run.isActive) {
+        val note = if (run.custom != null) "Made in the workshop, so it earns no medal." else if (run.isActive) {
             val m = def.medalFor(played)
             if (m == Medal.NONE) null else "A win now earns a ${m.label.lowercase()} medal."
         } else "You can keep playing as a sandbox."
