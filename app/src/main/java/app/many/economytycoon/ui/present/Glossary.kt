@@ -152,7 +152,18 @@ object Glossary {
         GlossaryTerm("resume", "Resume", "Rejoining after a lost connection with a signed proof, keeping your company.", listOf("host"), TOGETHER),
         GlossaryTerm("link-quality", "Connection quality", "How good a player's link to the host is, from ping time and lost messages.", listOf("desync"), TOGETHER),
     ) + app.many.economytycoon.energygrid.GridGlossary.entries.map { GlossaryTerm("grid-${it.key}", it.term, it.text, emptyList(), WORLD) } +
-        app.many.economytycoon.tourism.TourismGlossary.entries.map { GlossaryTerm("tourism-${it.key}", it.term, it.text, emptyList(), WORLD) }
+        app.many.economytycoon.tourism.TourismGlossary.entries.map { GlossaryTerm("tourism-${it.key}", it.term, it.text, emptyList(), WORLD) } + listOf(
+        GlossaryTerm("urban-far", "Floor area ratio", "Floor space of a building divided by the land it stands on. A ratio of 2 allows two square metres of floor for every square metre of ground.", listOf("urban-zoning", "urban-variance"), WORLD),
+        GlossaryTerm("urban-zoning", "Zoning", "What the council allows on a piece of land: homes, shops, factories, a mix, parkland or public buildings, and how dense it may be.", listOf("urban-far", "urban-variance"), WORLD),
+        GlossaryTerm("urban-variance", "Variance", "A petition to build denser than the zone allows without changing the zone itself.", listOf("urban-zoning", "urban-far"), WORLD),
+        GlossaryTerm("urban-gentrification", "Gentrification", "Rising rents in a poorer district push out the people who live there. Tenant protection and public housing slow it, and anger builds until it breaks out.", listOf("urban-liveability"), WORLD),
+        GlossaryTerm("urban-bpr", "BPR delay", "How a road slows down as it fills. Travel time climbs gently until the road is nearly full, then sharply.", listOf("urban-mode-share"), WORLD),
+        GlossaryTerm("urban-mode-share", "Mode share", "The share of trips made by car, by public transport and on foot. Faster, cheaper transit takes trips from the car.", listOf("urban-bpr"), WORLD),
+        GlossaryTerm("urban-concession", "Concession", "A deal in which a company builds or runs a road or transit line for a city for a fixed term, and is paid by tolls, fares or the city.", listOf("urban-availability-payment"), WORLD),
+        GlossaryTerm("urban-availability-payment", "Availability payment", "A monthly sum the city pays a concessionaire for keeping an asset open and in good order, whatever the traffic.", listOf("urban-concession", "urban-availability"), WORLD),
+        GlossaryTerm("urban-availability", "Availability", "How much of the time a road or line was open and in good order. Poor availability cuts the city's payments.", listOf("urban-availability-payment"), WORLD),
+        GlossaryTerm("urban-liveability", "Liveability", "A city's score from housing, travel, safety, services, environment and public finances. It decides how the city ranks.", listOf("urban-gentrification"), WORLD),
+    )
 
     private val byId: Map<String, GlossaryTerm> = terms.associateBy { it.id }
 
