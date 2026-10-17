@@ -4,9 +4,10 @@ Scenario authoring and balance testing. See ADR-0019 for the reasoning.
 
 ## Responsibility
 
-Holding, editing, validating, converting, sharing, filing and testing scenario drafts. It does not run a scenario in the
-live game, own any simulation state, or register anything with the scenario catalog. Test runs happen in private
-`Simulation` instances that are discarded.
+Holding, editing, validating, converting, sharing, filing and testing scenario drafts. It owns no simulation state and
+registers nothing with the scenario catalog. Test runs happen in private `Simulation` instances that are discarded.
+A converted draft is played through `NewGame.startCustom`; the definition (`ScenarioDef` with its events, failure
+conditions and starting sites) is carried by the run and saved with the game, see ADR-0019.
 
 Depends on: `core` (money, binary, hashing, results), `content` (read), `scenarios` (goal kinds, `ScenarioDef`, medals),
 `simulation` (`Simulation`, `SimConfig`, commands), `session` (`NewGameOptions`), `persistence` (`SaveStore`). Nothing
@@ -37,6 +38,7 @@ depends on it. Presenters are in `ui/present`, screens in `ui/compose/screens`.
 | `ScoreFormula`, `ScoreSubmission`, `Leaderboard` | `ScoreFormula.kt` | leaderboard-ready scoring |
 | `WorkshopLibrary`, `LibraryCodec`, `LibraryStore` | `WorkshopLibrary.kt`, `LibraryStore.kt` | the shelf and its storage |
 | `WorkshopSession` | `WorkshopSession.kt` | the screens' single entry point |
+| `WorkshopRunner` | `WorkshopRunner.kt` | studies and sweeps on an injected executor, one at a time |
 
 ## Rules (pure)
 
@@ -55,7 +57,8 @@ depends on it. Presenters are in `ui/present`, screens in `ui/compose/screens`.
 
 `LibraryCodec` (magic `ETWL`, version 1, payload, CRC32) under key `workshop.library`; baselines (magic `ETWB`) under
 `workshop.baseline.<entry id>`. Both refuse truncated or edited input with `ByteReader.CorruptDataException`, which the
-store turns into "empty" and "damaged". Nothing in the package is part of a game save.
+store turns into "empty" and "damaged". The package itself adds nothing to a game save; a game started from a draft saves
+its definition in the existing scenario section (version 2, `ScenarioDefCodec`).
 
 ## Tests
 
