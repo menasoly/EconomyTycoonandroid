@@ -45,6 +45,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         tenders(company, out)
         grants(company, out)
         marketing(company, out)
+        energy(company, out)
         regulation(company, out)
         bonds(company, out)
         unions(company, out)
@@ -279,6 +280,22 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         }
     }
 
+    /** Grids the company draws power from or sells into: a thin reserve or a recent blackout, and agreements that are not being kept. */
+    private fun energy(id: CompanyId, out: MutableList<Alert>) {
+        if (!e.energyGridRunner.active) return
+        val advisor = app.many.economytycoon.energygrid.GridAdvisor()
+        for (g in e.energyGrids.grids) {
+            val draws = g.loads.any { it.company == id }
+            val sells = g.units.any { it.owner == id }
+            if (!draws && !sells) continue
+            val facts = app.many.economytycoon.energygrid.GridFacts.of(e.energyGrids, g, e.tick.value, e.energyGridService.peakDemandKw(g.id))
+            for (i in advisor.advise(facts, thresholds.gridAlertPriority)) {
+                val mine = (draws && (i.code == "low-reserve" || i.code == "recent-blackout")) || (sells && i.code == "ppa-shortfall")
+                if (mine) out += Alert("energy.${i.code}", g.id.value, Severity.WARNING, i.title, i.detail)
+            }
+        }
+    }
+
     private fun marketing(id: CompanyId, out: MutableList<Alert>) {
         if (e.marketing.state.campaignMap.isEmpty() && e.marketing.state.damageMap.isEmpty()) return
         val now = e.tick.value
@@ -353,6 +370,7 @@ data class AlertThresholds(
     val tenderWarnDays: Long = 5,
     val grantNoticeDays: Long = 4,
     val marketingNoticeDays: Long = 10,
+    val gridAlertPriority: Int = 70,
     val lawNoticeDays: Long = 10,
     val bondNoticeDays: Long = 10,
     val demandUrgentDays: Long = 3,

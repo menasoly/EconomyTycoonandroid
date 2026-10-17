@@ -103,7 +103,7 @@ object Glossary {
         GlossaryTerm("group", "Group", "A company and all the companies it controls. Group figures count each by the share you own.", listOf("control"), OWNERSHIP),
         GlossaryTerm("takeover", "Takeover", "Buying enough of a company's shares to control it. Offers above fair value are likely to be accepted.", listOf("control"), OWNERSHIP),
         GlossaryTerm("float", "Float", "The share of a listed company's stock that the public may buy.", listOf("dividend"), OWNERSHIP),
-    )
+    ) + app.many.economytycoon.energygrid.GridGlossary.entries.map { GlossaryTerm("grid-${it.key}", it.term, it.text, emptyList(), WORLD) }
 
     private val byId: Map<String, GlossaryTerm> = terms.associateBy { it.id }
 

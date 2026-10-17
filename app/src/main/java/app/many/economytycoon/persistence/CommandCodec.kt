@@ -178,6 +178,22 @@ object CommandCodec {
                 w.writeMoney(c.listPrice); w.writeMoney(c.unitCost); w.writeVarLong(c.elasticityPpm); w.writeBoolean(c.clearance)
             }
             is Command.CancelPromotion -> { tag(w, 90); co(w, c.company); w.writeVarLong(c.promotion.value) }
+            is Command.EstablishGrids -> tag(w, 91)
+            is Command.ConnectFacilityToGrid -> { tag(w, 92); co(w, c.company); w.writeVarLong(c.grid); w.writeVarLong(c.facility.value); w.writeVarInt(c.customer); w.writeVarLong(c.baseKw) }
+            is Command.DisconnectFacilityFromGrid -> { tag(w, 93); co(w, c.company); w.writeVarLong(c.facility.value) }
+            is Command.ReclassifyGridLoad -> { tag(w, 94); co(w, c.company); w.writeVarLong(c.load); w.writeVarInt(c.customer) }
+            is Command.SetGridLoadDraw -> { tag(w, 95); co(w, c.company); w.writeVarLong(c.load); w.writeVarLong(c.baseKw) }
+            is Command.OrderGridUnit -> { tag(w, 96); co(w, c.company); w.writeVarLong(c.grid); w.writeVarInt(c.tech); w.writeVarLong(c.capacityKw) }
+            is Command.RetireGridUnit -> { tag(w, 97); co(w, c.company); w.writeVarLong(c.unit) }
+            is Command.MothballGridUnit -> { tag(w, 98); co(w, c.company); w.writeVarLong(c.unit) }
+            is Command.RestartGridUnit -> { tag(w, 99); co(w, c.company); w.writeVarLong(c.unit) }
+            is Command.OfferPowerAgreement -> {
+                tag(w, 100); co(w, c.company); w.writeVarLong(c.grid); co(w, c.buyer); w.writeVarInt(c.profile); w.writeVarLong(c.volumeKw); w.writeVarLong(c.sharePpm)
+                optLong(w, c.unit); w.writeMoney(c.strike); w.writeVarLong(c.startsAt); w.writeVarInt(c.days); w.writeVarLong(c.penaltyPpm)
+            }
+            is Command.AcceptPowerAgreement -> { tag(w, 101); co(w, c.company); w.writeVarLong(c.ppa) }
+            is Command.DeclinePowerAgreement -> { tag(w, 102); co(w, c.company); w.writeVarLong(c.ppa) }
+            is Command.TerminatePowerAgreement -> { tag(w, 103); co(w, c.company); w.writeVarLong(c.ppa) }
             is Command.ListParcel -> { tag(w, 73); co(w, c.company); w.writeVarLong(c.parcel.value); w.writeMoney(c.ask) }
             is Command.DelistParcel -> { tag(w, 74); co(w, c.company); w.writeVarLong(c.parcel.value) }
             is Command.BuyListed -> { tag(w, 75); co(w, c.company); w.writeVarLong(c.parcel.value) }
@@ -221,6 +237,7 @@ object CommandCodec {
             val kind = CompanyKind.values().getOrNull(r.readVarInt()) ?: throw ByteReader.CorruptDataException("bad company kind")
             return Command.FoundCompany(name, country, hq, capital, kind)
         }
+        if (t == 91) return Command.EstablishGrids
         val company = CompanyId(r.readVarLong())
         return when (t) {
             2 -> Command.Rename(company, r.readString())
@@ -302,6 +319,21 @@ object CommandCodec {
             88 -> Command.StartAbTest(company, app.many.economytycoon.marketing.CampaignId(r.readVarLong()), enumAt(app.many.economytycoon.marketing.CreativeTier.values(), r.readVarInt(), "creative tier"), r.readVarInt())
             89 -> Command.LaunchPromotion(company, GoodId(r.readString()), RegionId(r.readVarLong()), r.readVarInt(), r.readVarLong(), r.readMoney(), r.readMoney(), r.readVarLong(), r.readBoolean())
             90 -> Command.CancelPromotion(company, app.many.economytycoon.marketing.PromotionId(r.readVarLong()))
+            92 -> Command.ConnectFacilityToGrid(company, r.readVarLong(), FacilityId(r.readVarLong()), r.readVarInt(), r.readVarLong())
+            93 -> Command.DisconnectFacilityFromGrid(company, FacilityId(r.readVarLong()))
+            94 -> Command.ReclassifyGridLoad(company, r.readVarLong(), r.readVarInt())
+            95 -> Command.SetGridLoadDraw(company, r.readVarLong(), r.readVarLong())
+            96 -> Command.OrderGridUnit(company, r.readVarLong(), r.readVarInt(), r.readVarLong())
+            97 -> Command.RetireGridUnit(company, r.readVarLong())
+            98 -> Command.MothballGridUnit(company, r.readVarLong())
+            99 -> Command.RestartGridUnit(company, r.readVarLong())
+            100 -> Command.OfferPowerAgreement(
+                company, r.readVarLong(), CompanyId(r.readVarLong()), r.readVarInt(), r.readVarLong(), r.readVarLong(),
+                readOptLong(r), r.readMoney(), r.readVarLong(), r.readVarInt(), r.readVarLong(),
+            )
+            101 -> Command.AcceptPowerAgreement(company, r.readVarLong())
+            102 -> Command.DeclinePowerAgreement(company, r.readVarLong())
+            103 -> Command.TerminatePowerAgreement(company, r.readVarLong())
             73 -> Command.ListParcel(company, ParcelId(r.readVarLong()), r.readMoney())
             74 -> Command.DelistParcel(company, ParcelId(r.readVarLong()))
             75 -> Command.BuyListed(company, ParcelId(r.readVarLong()))

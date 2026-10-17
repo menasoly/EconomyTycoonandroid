@@ -86,6 +86,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "electricity", "Electricity", "What sets the price, why reserve matters and what to do in a blackout.",
+            listOf(
+                "Each region has its own grid. Every hour the cheapest plants are called on first, and the dearest plant needed sets the price for all of them. Wind and sun cost almost nothing to run, so they push the price down when they blow and shine; gas and coal set it when they do not.",
+                "Reserve is the reliable capacity above the peak. When it runs thin the price climbs towards the cap, and when it runs out customers are cut off in a set order: interruptible industry first, then shops, then factories, then homes. A factory that loses power produces less and wears faster.",
+                "A power agreement fixes the price between a seller with plant and a buyer with a connection; the pool still moves the energy and the two settle the difference each month. In a blackout, ask for an interruptible contract on loads that can wait, sign an agreement before the peak, or build or buy plant of your own.",
+            ),
+        ),
+        HelpTopic(
             "research", "Research", "Unlock better machines, recipes and buildings.",
             listOf(
                 "Spend research points to unlock technologies. Each has a cost, a minimum time and prerequisites. Unlocked technology can open new facility types, recipes and machines, or improve what you already have.",

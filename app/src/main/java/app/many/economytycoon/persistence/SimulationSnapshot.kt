@@ -24,6 +24,7 @@ import app.many.economytycoon.regulation.RegulationCodec
 import app.many.economytycoon.tenders.TenderCodec
 import app.many.economytycoon.grants.GrantCodec
 import app.many.economytycoon.marketing.MarketingCodec
+import app.many.economytycoon.energygrid.EnergyGridCodec
 import app.many.economytycoon.research.ResearchCodec
 import app.many.economytycoon.simulation.RestoredCore
 import app.many.economytycoon.simulation.Simulation
@@ -67,6 +68,7 @@ object SimulationSnapshot {
     private const val TENDERS = "tenders"
     private const val GRANTS = "grants"
     private const val MARKETING = "marketing"
+    private const val ENERGY = "energygrid"
     private const val REGULATION = "regulation"
     private const val BONDS = "bonds"
     private const val UNIONS = "unions"
@@ -118,6 +120,8 @@ object SimulationSnapshot {
         add(GRANTS) { GrantCodec.write(e.grants, it) }
         // Written only once something has been booked, so a game that never advertises saves exactly as before.
         if (!e.marketing.state.isPristine()) add(MARKETING) { MarketingCodec.write(e.marketing.state, it) }
+        // Likewise written only once grids have been set up, so a game on the simple electricity pool saves exactly as before.
+        if (!e.energyGrids.isEmpty) add(ENERGY) { EnergyGridCodec.write(e.energyGrids, it) }
         add(REGULATION) { RegulationCodec.write(e.regulation, it) }
         add(BONDS) { BondCodec.write(e.bonds, it) }
         add(UNIONS) { UnionCodec.write(e.unions, it) }
@@ -176,6 +180,7 @@ object SimulationSnapshot {
         TenderCodec.read(reader(TENDERS), e.tenders)
         GrantCodec.read(reader(GRANTS), e.grants)
         sections[MARKETING]?.let { MarketingCodec.read(ByteReader(it.payload), e.marketing.state) }
+        sections[ENERGY]?.let { EnergyGridCodec.read(ByteReader(it.payload), e.energyGrids) }
         RegulationCodec.read(reader(REGULATION), e.regulation)
         BondCodec.read(reader(BONDS), e.bonds)
         UnionCodec.read(reader(UNIONS), e.unions)

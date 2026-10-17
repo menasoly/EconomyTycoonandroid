@@ -326,7 +326,7 @@ object FinanceInvariants {
         // INV-02: cash is created only by designated transactions.
         for (tx in f.ledger.transactions()) {
             var cashDelta = 0L
-            for (e in tx.entries) if (e.account.chart == Chart.CASH && e.account.owner.kind != OwnerKind.SYSTEM) cashDelta += e.amount.raw
+            for (e in tx.entries) if (e.account.chart == Chart.CASH && e.account.owner != LedgerOwner.SYSTEM) cashDelta += e.amount.raw
             if (cashDelta != 0L && tx.reason !in creation) out.add("INV-02 ${tx.key} changed the money supply by $cashDelta")
         }
         // Companies never hold negative cash.

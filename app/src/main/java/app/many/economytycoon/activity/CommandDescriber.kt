@@ -45,6 +45,7 @@ enum class ActivityArea(val label: String) {
     PROPERTY("Property"),
     CORPORATE("Takeovers"),
     MARKETING("Marketing"),
+    ENERGY("Electricity"),
 }
 
 /** Writes any command as a sentence a player would recognise, and says which part of the game it belongs to. */
@@ -124,6 +125,11 @@ object CommandDescriber {
         is Command.StartAbTest -> "Started a creative test on campaign ${cmd.campaign.value}"
         is Command.LaunchPromotion -> "Launched a ${pct(cmd.discountPpm)} price promotion on ${n.good(cmd.good)} for ${cmd.days} days"
         is Command.CancelPromotion -> "Cancelled promotion ${cmd.promotion.value}"
+        is Command.EstablishGrids -> "Set up the electricity grids"
+        is Command.ConnectFacilityToGrid, is Command.DisconnectFacilityFromGrid, is Command.ReclassifyGridLoad, is Command.SetGridLoadDraw,
+        is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
+        is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement ->
+            app.many.economytycoon.simulation.GridCommandMap.of(cmd)?.let { app.many.economytycoon.energygrid.GridCommandExecutor.describe(it) } ?: "Changed the electricity grid"
         is Command.OpenFuture -> "Opened a ${word(cmd.side)} position of ${cmd.contracts} futures in ${n.good(cmd.good)} for ${cmd.tenor} days"
         is Command.CloseFuture -> "Closed futures position ${cmd.position}"
         is Command.AddMargin -> "Added ${n.money(cmd.amount)} margin to futures position ${cmd.position}"
@@ -170,6 +176,9 @@ object CommandDescriber {
         is Command.MakeOffer, is Command.RespondOffer, is Command.WithdrawOffer, is Command.FileInsolvency -> ActivityArea.CORPORATE
         is Command.CreateCampaign, is Command.PauseCampaign, is Command.ResumeCampaign, is Command.ExtendCampaign, is Command.SetCampaignBudget,
         is Command.RefreshCreative, is Command.CancelCampaign, is Command.StartAbTest, is Command.LaunchPromotion, is Command.CancelPromotion -> ActivityArea.MARKETING
+        is Command.EstablishGrids, is Command.ConnectFacilityToGrid, is Command.DisconnectFacilityFromGrid, is Command.ReclassifyGridLoad,
+        is Command.SetGridLoadDraw, is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
+        is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement -> ActivityArea.ENERGY
     }
 
     /** True for commands that spend or move money straight away, so a review of the log can pick them out. */
@@ -178,7 +187,8 @@ object CommandDescriber {
         is Command.BuyShares, is Command.SellShares, is Command.BuybackShares, is Command.BuyVehicle, is Command.BuyListed,
         is Command.LicenseTech, is Command.SubscribeBond, is Command.TradeBond, is Command.LobbyLaw, is Command.AddMargin,
         is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials, is Command.CreateCampaign,
-        is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest -> true
+        is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest, is Command.OrderGridUnit,
+        is Command.TerminatePowerAgreement -> true
         else -> false
     }
 }

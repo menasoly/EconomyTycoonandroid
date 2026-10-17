@@ -54,6 +54,7 @@ class ProductionEngine(private val content: ContentRepository, private val param
         updatePollution(f, rep)
         rep.energyUsed = f.energyUsed
         f.energyUsed = Quantity.ZERO
+        f.powerFactorPpm = ONE
         return rep
     }
 
@@ -103,6 +104,7 @@ class ProductionEngine(private val content: ContentRepository, private val param
         var rate = mulDiv(ONE, staffed, ONE)
         rate = mulDiv(rate, machineThroughput, ONE)
         rate = mulDiv(rate, f.conditionFactorPpm, ONE)
+        rate = mulDiv(rate, f.powerFactorPpm, ONE)
         rate = mulDiv(rate, tech, ONE)
         rate = rate / recipe.durationTicks
 
