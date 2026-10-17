@@ -45,6 +45,17 @@ and no two intents share a key.
 No floating point in state changes, all iteration over `TreeMap` or `EnumMap`, random draws only through
 `RandomProvider.deriveSeed(worldSeed, name, id)`. Two systems with the same seed and commands have equal hashes.
 
-## Not covered here
+## Integration
 
-Applying the multipliers inside the market, command wiring, the snapshot section and menu entries.
+- Commands: CreateCampaign, PauseCampaign, ResumeCampaign, ExtendCampaign, SetCampaignBudget, RefreshCreative,
+  CancelCampaign, StartAbTest, LaunchPromotion, CancelPromotion (codec tags 81 to 90, activity area Marketing).
+- `simulation/MarketingRunner` validates ownership, settles command-time payments, advances the engine in the demand
+  phase, nets campaign bills against the marketing department budget and reports payments after settlement.
+- `simulation/AiMarketing` turns `MarketingAi` proposals into the same commands a player sends; `MarketingPositions`
+  builds its views from sell rules.
+- Snapshot section `marketing` and the economy hash are written only when the state is not pristine.
+- Session: `MarketingReader`, `SessionMarketingHost`, route `Route.Marketing`, news, alerts and advisor insights
+  (`mkt-` codes), glossary, tips and help.
+- Overlap with `Brand` and the department budget: see ADR 0009. Premium is the larger of the two, the budget is an
+  envelope for campaign bills.
+- Not wired: manifest and catalog entries (the files do not exist in this tree), i18n keys, the agenda hook.
