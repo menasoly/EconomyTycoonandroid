@@ -50,4 +50,4 @@ model into ranked insights and a simple heuristic mayor uses the same commands a
   describe different things (an owned plot versus a planning area) and are joined only through the outputs.
 - Calibration is done in the parameters object; changing a default changes golden values and needs a new
   snapshot version only if the layout changes.
-- Rejected petitions still burn an id, so ids are not dense. Tests rely on ordering, never on gaps.
+- A refused order leaves the state untouched, ids included: the executor restores the id counters when a command is rejected. Established cities take their districts from the world's land use, and once a month the plans feed housing, rent and land value back to the world in small bounded steps.
