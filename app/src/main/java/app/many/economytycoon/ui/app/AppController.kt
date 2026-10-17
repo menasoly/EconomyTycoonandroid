@@ -18,6 +18,8 @@ import app.many.economytycoon.session.GameSettings
 import app.many.economytycoon.session.NewGame
 import app.many.economytycoon.session.NewGameOptions
 import app.many.economytycoon.session.SettingsStore
+import app.many.economytycoon.ui.present.WorkshopPage
+import app.many.economytycoon.workshop.WorkshopSession
 import app.many.economytycoon.world.WorldSize
 
 /** What the app needs from its surroundings. The Android side supplies real storage; tests supply memory. */
@@ -30,6 +32,8 @@ class AppEnvironment(
     val rules: app.many.economytycoon.watch.WatchStore = app.many.economytycoon.watch.WatchStore(MemorySaveStore()),
     val managers: app.many.economytycoon.automation.ManagerStore = app.many.economytycoon.automation.ManagerStore(MemorySaveStore()),
     val blueprints: app.many.economytycoon.persistence.SaveStore = MemorySaveStore(),
+    /** Where the scenario workshop keeps its library and recorded baselines. */
+    val workshopSaves: app.many.economytycoon.persistence.SaveStore = MemorySaveStore(),
 )
 
 /** The screen the whole app is showing, before any in-game navigation. */
@@ -41,6 +45,8 @@ sealed class AppScreen {
     data class Scenarios(val selected: String? = null, val companyName: String = "") : AppScreen()
     /** Everything the player has earned across games. */
     object Achievements : AppScreen()
+    /** The scenario workshop, opened from the main menu. */
+    data class Workshop(val page: WorkshopPage = WorkshopPage.EDITOR) : AppScreen()
     data class Playing(val session: GameSession) : AppScreen()
 }
 
@@ -86,6 +92,8 @@ class AppController(private val env: AppEnvironment, private val entropy: () -> 
         private set
     var profile: PlayerProfile = env.profile.load()
         private set
+    /** The scenario workshop; it works the same from the main menu and inside a game. */
+    val workshop: WorkshopSession by lazy { WorkshopSession(env.content, env.workshopSaves) }
     var lastFailure: LoadFailure? = null
         private set
     var recoveredFromBackup: Boolean = false
@@ -100,6 +108,26 @@ class AppController(private val env: AppEnvironment, private val entropy: () -> 
     }
 
     fun openAchievements() { screen = AppScreen.Achievements; lastFailure = null }
+
+    fun openWorkshop(page: WorkshopPage = WorkshopPage.EDITOR) { screen = AppScreen.Workshop(page); lastFailure = null }
+
+    /**
+     * Starts a game from the workshop's current draft; null on success, otherwise what is wrong. A game in progress is
+     * saved to the 'last session' slot first, the way leaving it would.
+     */
+    fun playWorkshopDraft(): List<String>? {
+        val conv = when (val c = workshop.convert()) {
+            is Outcome.Ok -> c.value
+            is Outcome.Rejected -> return listOf(c.rejection.message)
+        }
+        return when (val r = NewGame.startCustom(conv.def, conv.params.config, conv.params.options.companyName, env.content, settings, env.saves, env.playerId)) {
+            is Outcome.Ok -> {
+                (screen as? AppScreen.Playing)?.session?.save(QUIT_SLOT, "Last session")
+                attach(r.value); noteNewGame(r.value); screen = AppScreen.Playing(r.value); null
+            }
+            is Outcome.Rejected -> listOf(r.rejection.message)
+        }
+    }
 
     fun openScenarios() { screen = AppScreen.Scenarios(profile.unlocked().lastOrNull()?.id); lastFailure = null }
 
@@ -145,12 +173,14 @@ class AppController(private val env: AppEnvironment, private val entropy: () -> 
         session.restoreManagers(env.managers.load())
         session.managerSink = { env.managers.save(session.managers) }
         session.scenarioSink = { ev ->
+            // Only catalog scenarios earn medals and count towards achievements; a workshop scenario is for practice.
+            val ranked = session.economy.scenario.run?.custom == null
             when (ev) {
-                is ScenarioEvent.Won -> profile.won(ev.scenario, ev.medal, ev.days)
-                is ScenarioEvent.Lost -> profile.lost(ev.scenario)
-                is ScenarioEvent.GoalReached -> Unit
+                is ScenarioEvent.Won -> if (ranked) profile.won(ev.scenario, ev.medal, ev.days)
+                is ScenarioEvent.Lost -> if (ranked) profile.lost(ev.scenario)
+                is ScenarioEvent.GoalReached, is ScenarioEvent.Scripted -> Unit
             }
-            if (ev !is ScenarioEvent.GoalReached) env.profile.save(profile)
+            if (ranked && (ev is ScenarioEvent.Won || ev is ScenarioEvent.Lost)) env.profile.save(profile)
         }
     }
 
