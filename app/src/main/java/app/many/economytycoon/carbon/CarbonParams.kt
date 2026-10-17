@@ -30,6 +30,11 @@ data class CarbonParams(
     val marketSupplyJitterPpm: Long = 200_000L,
     /** Days of the year the AI sees as the horizon for appraising abatement. */
     val aiHorizonYears: Int = 5,
+    /**
+     * True when the production engine itself burns less in a facility with an efficiency retrofit, so the reported
+     * emissions already fall and the measure must not be counted a second time when they are worked out.
+     */
+    val efficiencyRealisedInProduction: Boolean = false,
 )
 
 /** Spot credit prices and minimum holdings are tuned in [OffsetProfiles]; the thresholds an investor uses are in [AiCarbonTuning]. */

@@ -51,7 +51,7 @@ internal class GridDayRunner(
             val w = GridWeatherModel.forDay(g.climate, tick, inputs.weather[g.id].orEmpty(), random.stream("energy.weather", g.id.value), g.windCarryPpm)
             g.windCarryPpm = w.windDayPpm
             lifecycle(g, w, t, random.stream("energy.outage", g.id.value))
-            days += prepare(g, w, tick, inputs.fuel)
+            days += prepare(g, w, tick, inputs.fuelFor(g.id))
         }
         lapseOffers(t)
         for (d in days) planStorage(d)
@@ -59,7 +59,7 @@ internal class GridDayRunner(
         runHours(days, t)
         for (d in days) summaries[d.grid.id] = finish(d, t)
         accruePpas(days, t)
-        for (d in days) govern(d.grid, tick, inputs.fuel)
+        for (d in days) govern(d.grid, tick, inputs.fuelFor(d.grid.id))
         for (g in state.gridMap.values) g.trimRecords()
         return DayReport(tick, summaries, events.toList(), impacts.toList(), linkFlow.toMap(), capex.toList())
     }

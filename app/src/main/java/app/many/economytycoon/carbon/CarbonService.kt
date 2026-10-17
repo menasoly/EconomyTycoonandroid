@@ -94,6 +94,11 @@ class CarbonService(
         return Outcome.ok(ctx.events.toList())
     }
 
+    /** Records the grams released per unit of electricity in [country], when the figure comes from outside the facility reports (for example from the electricity grids). */
+    fun noteGridIntensity(country: CountryId, gramsPerUnit: Long) {
+        if (gramsPerUnit >= 0L) state.setGrid(country, gramsPerUnit)
+    }
+
     fun setBorderPolicy(policy: BorderPolicy): Outcome<Unit> {
         if (policy.phaseInYears < 1) return Outcome.reject(Rules.INVALID_ARGUMENT, "the phase-in lasts at least a year")
         if (policy.exportRebatePpm !in 0L..1_000_000L) return Outcome.reject(Rules.INVALID_ARGUMENT, "the rebate is a share between 0 and 100%")

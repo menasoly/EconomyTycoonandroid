@@ -181,6 +181,23 @@ sealed class Command {
     data class DeclinePowerAgreement(override val company: CompanyId, val ppa: Long) : Command()
     data class TerminatePowerAgreement(override val company: CompanyId, val ppa: Long) : Command()
 
+    // ---- carbon ----
+    /** Puts the carbon policies the world starts with in force; only the system gives it, once, when a new game is set up. */
+    data class EstablishCarbonPolicies(val delayYears: Int = 2) : Command() {
+        override val company: CompanyId? get() = null
+    }
+    data class BidCarbonAuction(override val company: CompanyId, val country: CountryId, val quantity: app.many.economytycoon.carbon.Tonnes, val limit: Money) : Command()
+    data class CancelCarbonBid(override val company: CompanyId, val country: CountryId, val bid: app.many.economytycoon.carbon.BidId) : Command()
+    data class PlacePermitOrder(override val company: CompanyId, val country: CountryId, val side: app.many.economytycoon.carbon.PermitSide, val quantity: app.many.economytycoon.carbon.Tonnes, val limit: Money) : Command()
+    data class CancelPermitOrder(override val company: CompanyId, val country: CountryId, val order: app.many.economytycoon.carbon.PermitOrderId) : Command()
+    data class SurrenderPermits(override val company: CompanyId, val country: CountryId, val quantity: app.many.economytycoon.carbon.Tonnes) : Command()
+    data class BuyCarbonOffsets(override val company: CompanyId, val kind: app.many.economytycoon.carbon.OffsetKind, val quantity: app.many.economytycoon.carbon.Tonnes) : Command()
+    data class RetireCarbonOffsets(override val company: CompanyId, val country: CountryId, val kind: app.many.economytycoon.carbon.OffsetKind, val quantity: app.many.economytycoon.carbon.Tonnes, val forCompliance: Boolean) : Command()
+    data class FundOffsetProject(override val company: CompanyId, val kind: app.many.economytycoon.carbon.OffsetKind, val host: CountryId, val annual: app.many.economytycoon.carbon.Tonnes) : Command()
+    data class StartAbatement(override val company: CompanyId, val facility: FacilityId, val kind: app.many.economytycoon.carbon.AbatementKind) : Command()
+    data class CancelAbatement(override val company: CompanyId, val project: app.many.economytycoon.carbon.AbatementId) : Command()
+    data class SetCarbonPolicy(override val company: CompanyId, val country: CountryId, val autoOffsets: Boolean, val autoBorrow: Boolean) : Command()
+
     // ---- labour relations ----
     data class OpenFuture(override val company: CompanyId, val good: GoodId, val side: app.many.economytycoon.futures.Side, val contracts: Long, val tenor: Int) : Command()
     data class CloseFuture(override val company: CompanyId, val position: Long) : Command()

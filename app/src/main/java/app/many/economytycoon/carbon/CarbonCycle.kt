@@ -45,7 +45,8 @@ private fun CarbonService.observe(ctx: CarbonService.Ctx, activities: List<Facil
         val covered = state.regime(a.country)?.covers(a.family, ctx.year) == true
         val record = state.inventory.recordFor(a)
         if (record.owner != a.company) record.owner = a.company
-        val emissions = calculator.facilityDay(a, state.gridIntensity(a.country), record.effects)
+        val effects = if (params.efficiencyRealisedInProduction) record.effects.filter { it.kind != AbatementKind.EFFICIENCY_RETROFIT } else record.effects
+        val emissions = calculator.facilityDay(a, state.gridIntensity(a.country), effects)
         state.inventory.record(emissions, ctx.tick, ctx.year, covered, alpha)
         if (counted.add(a.company to a.country)) state.inventory.markDay(a.company, a.country, ctx.year)
     }

@@ -30,6 +30,9 @@ class CarbonState : Hashable {
     var lastTick: Long = -1L
         internal set
 
+    /** True while nothing has ever been set up or observed: no regime, no border policy and no day run. Such a state is neither saved nor hashed. */
+    val isPristine: Boolean get() = lastTick < 0L && regimeMap.isEmpty() && border.policies().isEmpty()
+
     fun regimes(): List<CarbonRegime> = regimeMap.values.toList()
     fun regime(country: CountryId): CarbonRegime? = regimeMap[country]
     fun markets(): List<PermitMarket> = marketMap.values.toList()
