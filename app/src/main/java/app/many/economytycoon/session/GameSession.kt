@@ -132,6 +132,9 @@ class GameSession(
     fun tradeLegs(quantity: app.many.economytycoon.core.Quantity = app.many.economytycoon.trade.TradeFinder.DEFAULT_QUANTITY): List<app.many.economytycoon.trade.TradeLeg> =
         tradeFinder.scan(quantity)
 
+    /** Looks up text in the language chosen in the settings. */
+    val translator: app.many.economytycoon.i18n.Translator get() = app.many.economytycoon.i18n.Translator(settings.language)
+
     private val chainPlanner by lazy { app.many.economytycoon.planner.ChainPlanner(simulation.content) }
 
     /** Goods some recipe can make, by name. */

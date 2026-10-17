@@ -22,7 +22,7 @@ class GameSettingsTest {
     @Test fun outOfRangeStoredValuesAreClamped() {
         fun stored(scale: Int, every: Int): ByteArray {
             val w = app.many.economytycoon.core.ByteWriter()
-            w.writeVarInt(GameSettings.VERSION); w.writeVarInt(1); w.writeBoolean(true); w.writeVarInt(every); w.writeVarInt(1)
+            w.writeVarInt(1); w.writeVarInt(1); w.writeBoolean(true); w.writeVarInt(every); w.writeVarInt(1)
             w.writeBoolean(true); w.writeBoolean(true); w.writeBoolean(true); w.writeBoolean(false); w.writeVarInt(scale)
             return w.toByteArray()
         }
@@ -30,6 +30,19 @@ class GameSettingsTest {
         assertEquals(80, GameSettings.fromBytes(stored(5, 30)).uiScalePercent)
         assertEquals(5, GameSettings.fromBytes(stored(100, 1)).autosaveEveryTicks)
         assertEquals(360, GameSettings.fromBytes(stored(100, 9_999)).autosaveEveryTicks)
+    }
+
+    @Test fun languageRoundTripsAndOldFilesDefaultToEnglish() {
+        for (l in app.many.economytycoon.i18n.GameLocale.values()) assertEquals(l, GameSettings.fromBytes(GameSettings(language = l).toBytes()).language)
+        val w = app.many.economytycoon.core.ByteWriter()
+        w.writeVarInt(1); w.writeVarInt(1); w.writeBoolean(true); w.writeVarInt(30); w.writeVarInt(1)
+        w.writeBoolean(true); w.writeBoolean(true); w.writeBoolean(true); w.writeBoolean(false); w.writeVarInt(100)
+        assertEquals(app.many.economytycoon.i18n.GameLocale.EN, GameSettings.fromBytes(w.toByteArray()).language)
+    }
+
+    @Test fun moneyFollowsTheLanguage() {
+        val s = GameSettings(currency = CurrencyStyle.EURO, compactNumbers = false, language = app.many.economytycoon.i18n.GameLocale.DE)
+        assertEquals("1.234,00\u00A0€", s.money(Money.units(1_234)))
     }
 
     @Test fun invalidConstructionIsRefused() {

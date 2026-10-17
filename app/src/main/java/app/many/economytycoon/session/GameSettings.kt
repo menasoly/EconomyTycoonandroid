@@ -24,6 +24,7 @@ data class GameSettings(
     val pauseOnCritical: Boolean = true,
     val reduceMotion: Boolean = false,
     val uiScalePercent: Int = 100,
+    val language: app.many.economytycoon.i18n.GameLocale = app.many.economytycoon.i18n.GameLocale.DEFAULT,
 ) {
     init {
         require(autosaveEveryTicks in 5..360) { "autosave interval out of range" }
@@ -37,8 +38,11 @@ data class GameSettings(
         CurrencyStyle.POUND -> "£"
     }
 
+    /** Text and number conventions for the chosen language. */
+    val format: app.many.economytycoon.i18n.LocaleFormat get() = app.many.economytycoon.i18n.LocaleFormat(language)
+
     fun money(m: app.many.economytycoon.core.Money): String =
-        if (compactNumbers) Formatting.compactMoney(m, symbol) else Formatting.money(m, symbol)
+        if (compactNumbers) format.compactMoney(m, symbol) else format.money(m, symbol)
 
     fun toBytes(): ByteArray {
         val w = ByteWriter()
@@ -52,18 +56,21 @@ data class GameSettings(
         w.writeBoolean(pauseOnCritical)
         w.writeBoolean(reduceMotion)
         w.writeVarInt(uiScalePercent)
+        w.writeVarInt(language.ordinal)
         return w.toByteArray()
     }
 
     companion object {
-        const val VERSION = 1
+        const val VERSION = 2
+        private const val FIRST_VERSION = 1
 
         /** Reads stored settings; anything unreadable gives the defaults rather than blocking the app. */
         fun fromBytes(bytes: ByteArray?): GameSettings {
             if (bytes == null) return GameSettings()
             return try {
                 val r = ByteReader(bytes)
-                if (r.readVarInt() != VERSION) return GameSettings()
+                val version = r.readVarInt()
+                if (version != VERSION && version != FIRST_VERSION) return GameSettings()
                 GameSettings(
                     defaultSpeed = GameSpeed.values().getOrElse(r.readVarInt()) { GameSpeed.NORMAL },
                     autosave = r.readBoolean(),
@@ -74,6 +81,7 @@ data class GameSettings(
                     pauseOnCritical = r.readBoolean(),
                     reduceMotion = r.readBoolean(),
                     uiScalePercent = r.readVarInt().coerceIn(80, 160),
+                    language = if (version >= 2) app.many.economytycoon.i18n.GameLocale.values().getOrElse(r.readVarInt()) { app.many.economytycoon.i18n.GameLocale.DEFAULT } else app.many.economytycoon.i18n.GameLocale.DEFAULT,
                 )
             } catch (e: ByteReader.CorruptDataException) {
                 GameSettings()
