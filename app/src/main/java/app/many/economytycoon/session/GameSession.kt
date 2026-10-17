@@ -163,6 +163,38 @@ class GameSession(
         if (settings.pauseOnCritical && speed != GameSpeed.PAUSED && hits.any { it.severity == app.many.economytycoon.watch.Severity.CRITICAL }) setSpeed(GameSpeed.PAUSED)
     }
 
+    /** Which routine jobs the player has handed to managers. The app replaces this with the saved choice. */
+    var managers: app.many.economytycoon.automation.ManagerSettings = app.many.economytycoon.automation.ManagerSettings()
+        private set
+
+    /** Called when the manager settings change, so they can be saved. */
+    var managerSink: (() -> Unit)? = null
+
+    private val automation = app.many.economytycoon.automation.AutomationRunner(simulation.economy)
+
+    fun applyManagers(settings: app.many.economytycoon.automation.ManagerSettings) {
+        managers = settings
+        managerSink?.invoke()
+        notify(SessionChange.COMMAND)
+    }
+
+    /** Loads saved manager settings without treating it as a change the player made. */
+    fun restoreManagers(settings: app.many.economytycoon.automation.ManagerSettings) { managers = settings }
+
+    /** What the managers have done lately, newest first. */
+    fun managerLog(): List<app.many.economytycoon.automation.ManagerAction> = automation.recent()
+
+    private fun runManagers(tickValue: Long) {
+        if (!managers.anyOn) return
+        for (company in playerCompanies()) {
+            for (p in automation.plan(company, managers, tickValue)) {
+                issue(p.command)
+                automation.record(tickValue, p)
+                news.post(app.many.economytycoon.core.Tick(tickValue), NewsKind.COMPANY, "Manager: " + p.note)
+            }
+        }
+    }
+
     /** The player's progress through the step-by-step tutorial. */
     val tutorial = app.many.economytycoon.tutorial.TutorialTracker()
 
@@ -301,6 +333,7 @@ class GameSession(
         if (earned.isNotEmpty() || achievements.shouldSave()) { profileSink?.invoke(); achievements.markSaved() }
         for (company in playerCompanies()) for (o in objectives.newlyCompleted(company)) news.post(summary.tick, NewsKind.COMPANY, "Goal reached: ${o.title}")
         checkWatch(summary.tick.value)
+        runManagers(summary.tick.value)
         if (settings.autosave) autosave()
         if (settings.pauseOnCritical && speed != GameSpeed.PAUSED && criticalAlerts().isNotEmpty()) setSpeed(GameSpeed.PAUSED)
         notify(SessionChange.TICK)
