@@ -154,6 +154,8 @@ private fun Router(ui: GameUi, host: AppHost) {
         is Route.Build -> BuildScreen(ui, r.region)
         Route.People -> PeopleScreen(ui)
         Route.Unions -> UnionsScreen(ui)
+        Route.Talent, Route.TalentEducation, Route.TalentTraining, Route.TalentRecruiting, Route.TalentCareers, Route.TalentProviders ->
+            app.many.economytycoon.ui.compose.screens.TalentRoute(ui, r)
         Route.Research -> ResearchScreen(ui)
         Route.Logistics -> LogisticsScreen(ui)
         Route.Market -> MarketScreen(ui)
