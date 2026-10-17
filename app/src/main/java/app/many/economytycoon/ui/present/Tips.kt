@@ -48,6 +48,7 @@ object Tips {
         Tip("glossary", "Unsure what a word on a screen means? The glossary under help explains each one in the game's own terms.", "Playing", Route.Glossary),
         Tip("blueprints", "Set up one good bakery, save it as a blueprint, and build the next one in one step.", "Production", Route.Blueprints),
         Tip("marketing", "Awareness builds with steady spending and fades when it stops. A modest campaign that runs for weeks beats a big one that ends in days.", "Marketing", Route.Marketing),
+        Tip("electricity", "A short grid sells at scarcity prices and cuts customers off in order. Own a plant, or sign a power agreement, before the peak.", "World", Route.Electricity),
     )
 
     fun byId(id: String): Tip? = all.firstOrNull { it.id == id }
