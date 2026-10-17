@@ -77,7 +77,7 @@ class ExpandedContentTest {
     }
 
     @Test fun expansionDoesNotTouchTheShippedGoodList() {
-        val shipped = ShippedContent.repository.allGoods.map { it.id }.toSet()
+        val shipped = ContentRepository.of(ExpandedContent.basePacks).allGoods.map { it.id }.toSet()
         assertTrue(ExpandedContent.repository.allGoods.map { it.id }.containsAll(shipped))
         assertFalse(ExpandedContent.repository.allGoods.size == shipped.size)
     }
