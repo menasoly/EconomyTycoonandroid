@@ -51,6 +51,19 @@ error rows, apply preview and report, comparison). `BlueprintApplyRunner` walks 
 Unit tests per class, codec round trips and hash stability, tolerant parser cases with exact error positions, library
 invariants after each mutation, determinism, and integration tests that apply plans to the real executor.
 
+## Wiring
+
+- State lives outside the simulation snapshot, like the watchlist: two keys in the app save store
+  (`blueprints.library`, `blueprints.pending`), opened by `AppController.attach` into `GameSession.blueprints`.
+  Replay logs and state hashes are unaffected, because applying a blueprint only issues ordinary commands.
+- `GameSession.checkBlueprints` runs after the tick's domain work; it posts a news line once per finished building and
+  drops requests older than a year. `GameSession.blueprintsReady()` lists buildings waiting for their set-up.
+- Entry points: "Save as blueprint", "Apply a blueprint" and "Configure from ..." on the facility screen, "Build from a
+  blueprint" on the build screen, and the Blueprints route (`Route.Blueprints`) from the More menu.
+  `GameSession.applyBlueprint` (in `BlueprintApplyRunner.kt`) runs a plan through `issueNow`.
+
 ## Not done
 
-
+A pending build is matched to its finished building by region, type, name and "did not exist before"; the build command
+does not return the facility it will create. The shipped content packs hold no machines, so machine steps are covered by
+test content only.
