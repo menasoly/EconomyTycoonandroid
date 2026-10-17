@@ -56,6 +56,7 @@ fun MarketScreen(ui: GameUi) {
                     SecondaryButton("Who makes what", { ui.open(Route.Sectors) }, Modifier.weight(1f))
                 }
             }
+            item { SecondaryButton("Marketing", { ui.open(Route.Marketing) }, Modifier.fillMaxWidth()) }
             item { SecondaryButton("Trade finder", { ui.open(Route.Trade) }, Modifier.fillMaxWidth()) }
             item { SecondaryButton("Watchlist", { ui.open(Route.Watch) }, Modifier.fillMaxWidth()) }
             item { SecondaryButton("Supply chain planner", { ui.open(Route.Planner) }, Modifier.fillMaxWidth()) }
