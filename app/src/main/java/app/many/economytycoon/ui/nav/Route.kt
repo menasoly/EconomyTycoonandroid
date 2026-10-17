@@ -66,6 +66,10 @@ sealed class Route(val tab: Tab, val name: String) {
     object Outlook : Route(Tab.FINANCE, "outlook") { override val args = emptyList<String>() }
     object Grants : Route(Tab.FINANCE, "grants") { override val args = emptyList<String>() }
     object Carbon : Route(Tab.FINANCE, "carbon") { override val args = emptyList<String>() }
+    object Banking : Route(Tab.FINANCE, "banking") { override val args = emptyList<String>() }
+    data class BankDetail(val bank: Long) : Route(Tab.FINANCE, "bank") { override val args = listOf(bank.toString()) }
+    object BankStress : Route(Tab.FINANCE, "bank-stress") { override val args = emptyList<String>() }
+    object FoundBank : Route(Tab.FINANCE, "found-bank") { override val args = emptyList<String>() }
     object Group : Route(Tab.FINANCE, "group") { override val args = emptyList<String>() }
     object Reports : Route(Tab.FINANCE, "reports") { override val args = emptyList<String>() }
     object Valuation : Route(Tab.FINANCE, "valuation") { override val args = emptyList<String>() }
@@ -148,6 +152,10 @@ sealed class Route(val tab: Tab, val name: String) {
                 "outlook" -> Outlook
                 "grants" -> Grants
                 "carbon" -> Carbon
+                "banking" -> Banking
+                "bank" -> number(0)?.let { BankDetail(it) }
+                "bank-stress" -> BankStress
+                "found-bank" -> FoundBank
                 "group" -> Group
                 "sectors" -> Sectors
                 "reports" -> Reports
