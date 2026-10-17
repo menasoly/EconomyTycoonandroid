@@ -51,6 +51,7 @@ object Tips {
         Tip("electricity", "A short grid sells at scarcity prices and cuts customers off in order. Own a plant, or sign a power agreement, before the peak.", "World", Route.Electricity),
         Tip("carbon-deadline", "Check the carbon deadline before the year ends. Missing it costs a fine on every tonne you could not cover.", "Government", Route.Carbon),
         Tip("carbon-lapse", "Spare permits lapse after a few years. Use them, or sell what you will not need, before they expire.", "Government", Route.Carbon),
+        Tip("banking", "A bank earns the gap between what it lends at and what it pays. Keep capital above the buffer and do not lend more than your deposits can support when depositors get nervous.", "Finance", Route.Banking),
         Tip("carbon-cheapest", "The cheapest tonne is the one you do not emit. Compare each measure's cost per tonne with the carbon price.", "Government", Route.Carbon),
     )
 
