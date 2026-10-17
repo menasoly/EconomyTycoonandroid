@@ -47,6 +47,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         marketing(company, out)
         energy(company, out)
         carbon(company, out)
+        banks(company, out)
         regulation(company, out)
         bonds(company, out)
         unions(company, out)
@@ -293,6 +294,20 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
             for (i in advisor.advise(facts, thresholds.gridAlertPriority)) {
                 val mine = (draws && (i.code == "low-reserve" || i.code == "recent-blackout")) || (sells && i.code == "ppa-shortfall")
                 if (mine) out += Alert("energy.${i.code}", g.id.value, Severity.WARNING, i.title, i.detail)
+            }
+        }
+    }
+
+    /** Supervision, capital breaches and runs at the banks the company runs. */
+    private fun banks(id: CompanyId, out: MutableList<Alert>) {
+        if (!e.bankingRunner.active) return
+        for (b in e.banking.banksOf(id)) {
+            if (!b.status.isOperating) continue
+            val view = e.banking.view(b.id, e.bankingInputs) ?: continue
+            for (text in app.many.economytycoon.ui.present.BankingPresenter.alerts(e.banking, view)) {
+                val serious = text.startsWith("Under supervision") || text.startsWith("Capital:") || text.startsWith("Depositors are leaving")
+                val slug = text.lowercase().filter { it.isLetterOrDigit() }.take(24)
+                out += Alert("bank.$slug", b.id.value, if (serious) Severity.WARNING else Severity.INFO, "${b.name}: $text", "Open the bank to see why and what the advisor suggests.")
             }
         }
     }

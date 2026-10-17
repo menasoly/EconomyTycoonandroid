@@ -205,6 +205,10 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
                 else -> Unit
             }
         }
+        for (ev in summary.bankingEvents) {
+            val h = app.many.economytycoon.ui.present.BankEventText.headline(ev, { id -> e.banking.bank(id)?.name ?: "A bank" }, Formatting::money)
+            if (h.important) add(NewsItem(t, NewsKind.FINANCE, h.text))
+        }
         for (ev in summary.marketingEvents) {
             val company = e.companies.company(ev.company) ?: continue
             val name = company.name

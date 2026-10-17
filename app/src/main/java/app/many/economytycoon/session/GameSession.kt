@@ -113,6 +113,47 @@ class GameSession(
     /** The carbon advisor's suggestions for the selected company. */
     fun carbonInsights(): List<app.many.economytycoon.advisor.Insight> = carbonDesk()?.insights().orEmpty()
 
+    // ---- commercial banks ----
+
+    /** True once the game has commercial banks; older saves and test worlds keep only the simple lender. */
+    val hasBanking: Boolean get() = simulation.economy.bankingRunner.active
+
+    private fun ownsBank(id: app.many.economytycoon.banking.BankId): Boolean =
+        simulation.economy.banking.bank(id)?.let { it.operator == app.many.economytycoon.banking.BankOperator.PLAYER && it.owner == selectedCompany } ?: false
+
+    /** The banking sector of the selected company's country, or null before a company is chosen or when there are no banks. */
+    fun bankingOverview(): app.many.economytycoon.ui.present.BankingOverview? {
+        val e = simulation.economy
+        if (!hasBanking) return null
+        val company = selectedCompany?.let { e.companies.company(it) } ?: return null
+        return app.many.economytycoon.ui.present.BankingPresenter.overview(e.banking, e.bankingInputs, company.country, company.id, settings::money)
+    }
+
+    fun bankDetail(id: app.many.economytycoon.banking.BankId): app.many.economytycoon.ui.present.BankDetail? {
+        val e = simulation.economy
+        return app.many.economytycoon.ui.present.BankDetailPresenter.build(e.banking, id, e.bankingInputs, tick.value, settings::money, manageable = ownsBank(id))
+    }
+
+    fun bankAdvice(id: app.many.economytycoon.banking.BankId): List<app.many.economytycoon.ui.present.AdviceCard> {
+        val e = simulation.economy
+        return app.many.economytycoon.ui.present.BankAdvicePresenter.cards(e.banking.advice(id, e.bankingInputs, e.tick))
+    }
+
+    /** Runs a stress scenario against every bank in the selected company's country. Changes nothing. */
+    fun bankStress(scenarioId: String): app.many.economytycoon.ui.present.StressView? {
+        val e = simulation.economy
+        val scenario = app.many.economytycoon.banking.StressScenario.byId(scenarioId) ?: return null
+        val company = selectedCompany?.let { e.companies.company(it) } ?: return null
+        return app.many.economytycoon.ui.present.BankStressPresenter.build(e.banking.stressReport(company.country, scenario, e.bankingInputs, e.tick), settings::money)
+    }
+
+    /** Sets a piece of advice aside for a while. A view preference, not a command. */
+    fun hideBankAdvice(code: String) {
+        val e = simulation.economy
+        e.banking.hideAdvice(code, e.tick)
+        notify(SessionChange.ADVICE)
+    }
+
     private val analysisReader = AnalysisReader(simulation.economy, reports, stats)
 
     /** Ratios, cost structure, runway, outlook and peer standing of the selected company. */
