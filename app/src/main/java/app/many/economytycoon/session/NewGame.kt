@@ -63,6 +63,8 @@ object NewGame {
         sim.execute(Actor.System, Command.EstablishIp)
         // Towns that draw visitors get hotels, attractions and booking channels, and every region sends travellers.
         sim.execute(Actor.System, Command.EstablishTourism)
+        // Every city gets a plan of districts zoned from its land, with a council, a budget and a mayor.
+        sim.execute(Actor.System, Command.EstablishUrban)
         val countries = sim.economy.world.countries().sortedBy { it.id }
         val country = countries.getOrNull(def?.countryIndex ?: options.countryIndex) ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
         val hq = country.capital

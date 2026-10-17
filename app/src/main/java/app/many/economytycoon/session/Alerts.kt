@@ -49,6 +49,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         carbon(company, out)
         patents(company, out)
         tourism(company, out)
+        urban(company, out)
         banks(company, out)
         regulation(company, out)
         bonds(company, out)
@@ -312,6 +313,30 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         }
     }
 
+    /** The votes on the company's petitions, and the books and works of the city it governs. */
+    private fun urban(id: CompanyId, out: MutableList<Alert>) {
+        if (!e.urbanRunner.active) return
+        val now = e.tick.value
+        for (plan in e.urban.plans()) {
+            for (p in plan.petitions.open()) {
+                if (p.applicant != id) continue
+                val left = p.voteAt.value - now
+                if ((p.status == app.many.economytycoon.urban.PetitionStatus.FILED || p.status == app.many.economytycoon.urban.PetitionStatus.HEARING) && left in 0..thresholds.urbanNoticeDays) {
+                    out += Alert("urban.vote", p.id.value, Severity.INFO, "${plan.name}: council votes on your petition", "The vote is in ${Formatting.plural(left, "day")}. Lobbying must be arranged before then.")
+                }
+            }
+            if (!e.urbanRunner.governs(id, plan.city)) continue
+            val budget = plan.budget
+            if (budget.consecutiveDeficitMonths >= thresholds.urbanDeficitMonths) {
+                out += Alert("urban.deficit", plan.city.value, Severity.WARNING, "${plan.name}: budget in deficit", "The city has spent more than it raised for ${Formatting.plural(budget.consecutiveDeficitMonths.toLong(), "month")} in a row.")
+            }
+            val stalled = plan.projects.all().count { it.status == app.many.economytycoon.urban.ProjectStatus.STALLED }
+            if (stalled > 0) {
+                out += Alert("urban.stalled", plan.city.value, Severity.WARNING, "${plan.name}: ${Formatting.plural(stalled.toLong(), "project")} stalled", "The city cannot pay for the work. Raise money or cancel the project.")
+            }
+        }
+    }
+
     /** Supervision, capital breaches and runs at the banks the company runs. */
     private fun banks(id: CompanyId, out: MutableList<Alert>) {
         if (!e.bankingRunner.active) return
@@ -435,6 +460,8 @@ data class AlertThresholds(
     val marketingNoticeDays: Long = 10,
     val gridAlertPriority: Int = 70,
     val tourismAlertPriority: Int = 70,
+    val urbanNoticeDays: Long = 10,
+    val urbanDeficitMonths: Int = 3,
     val lawNoticeDays: Long = 10,
     val bondNoticeDays: Long = 10,
     val demandUrgentDays: Long = 3,

@@ -2,6 +2,7 @@ package app.many.economytycoon.session
 
 import app.many.economytycoon.companies.CompanyKind
 import app.many.economytycoon.content.ContentRepository
+import app.many.economytycoon.core.CityId
 import app.many.economytycoon.core.CompanyId
 import app.many.economytycoon.core.Outcome
 import app.many.economytycoon.core.Tick
@@ -113,6 +114,24 @@ class GameSession(
             }
         }
     }
+
+    /** The city planning screens' desk; it shows nothing until the cities have plans. */
+    val urbanDesk: UrbanSessionDesk by lazy { UrbanSessionDesk(this) }
+
+    /** True once the cities have plans. */
+    val hasUrban: Boolean get() = simulation.economy.urbanRunner.active
+
+    /** Every planned city with its districts, traffic, budget, council, works and concessions. */
+    fun urbanView(): app.many.economytycoon.urban.UrbanView = urbanDesk.view()
+
+    /** The map overlay of one city, or null when it has no plan. */
+    fun urbanOverlay(city: CityId, kind: app.many.economytycoon.urban.OverlayKind): app.many.economytycoon.urban.UrbanOverlay? = urbanDesk.overlay(city, kind)
+
+    /** Sends one city order for the selected company and says what came of it. */
+    fun issueUrban(command: app.many.economytycoon.urban.UrbanCommand): String = urbanDesk.issue(command)
+
+    /** The planner's warnings about the city the selected company governs. */
+    fun urbanInsights(): List<app.many.economytycoon.advisor.Insight> = urbanDesk.insights()
 
     private val marketingReader = MarketingReader(simulation.economy)
 
