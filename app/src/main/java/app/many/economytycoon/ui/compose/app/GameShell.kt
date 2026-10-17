@@ -35,6 +35,7 @@ import app.many.economytycoon.ui.compose.screens.AgendaScreen
 import app.many.economytycoon.ui.compose.screens.ExportScreen
 import app.many.economytycoon.ui.compose.screens.GlossaryScreen
 import app.many.economytycoon.ui.compose.screens.EnergyGridScreen
+import app.many.economytycoon.ui.compose.screens.TourismScreen
 import app.many.economytycoon.ui.compose.screens.MultiplayerScreen
 import app.many.economytycoon.ui.compose.screens.CarbonScreen
 import app.many.economytycoon.ui.compose.screens.GrantsScreen
@@ -202,6 +203,7 @@ private fun Router(ui: GameUi, host: AppHost) {
         is Route.Region -> RegionScreen(ui, r.region)
         Route.Government -> GovernmentScreen(ui)
         Route.Electricity -> EnergyGridScreen(ui, ui.session.energyGrids, ui.session.tick.value)
+        Route.Tourism -> TourismScreen(ui, ui.session.tourism, ui.session.tick.value)
         Route.Multiplayer -> ui.multiplayerSource.let { src ->
             if (src != null) MultiplayerScreen(ui, src)
             else ScreenFrame("Multiplayer", onBack = { ui.back() }) {
