@@ -34,3 +34,4 @@ Later volumes add per-module detail: public API, owned entities, events produced
 | blueprint | Facility blueprints | Capture facility layouts, share them as text codes, plan and apply them as ordinary commands | core, content, world, workforce, production, companies, facilityprofit, simulation, session, persistence |
 | marketing | Marketing | Campaigns, channels, awareness and loyalty stocks, demand lift, optimiser | core, content, finance, markets, world, advisor |
 | energygrid | Electricity grids | Regional grids, merit-order dispatch, spot prices, outages, power purchase agreements | core, finance, world |
+| net | Multiplayer | Wire protocol, authoritative shard, lockstep client, lobby, escrow trades, season scoring | core, content, finance, companies, persistence, simulation, replay |
