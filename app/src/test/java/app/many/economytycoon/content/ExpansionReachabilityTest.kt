@@ -62,7 +62,7 @@ class ExpansionReachabilityTest {
     }
 
     @Test fun theImportDeskGoodsAreTheSameAsBeforeMinusTheNewlyMade() {
-        val before = app.many.economytycoon.content.audit.GoodFlows(ShippedContent.repository).unmade().map { it.id.key }.toSet()
+        val before = app.many.economytycoon.content.audit.GoodFlows(ContentRepository.of(ExpandedContent.basePacks)).unmade().map { it.id.key }.toSet()
         val after = flows.unmade().map { it.id.key }.toSet()
         assertTrue(after.size < before.size)
         assertTrue(after.all { it in before })
