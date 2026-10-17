@@ -69,11 +69,18 @@ point at known banks) and hashed by `BankingService.hashInto`. Events, advice an
 
 - The cost of a bank does not depend on how many loans it has made. Per-borrower detail (which company owes what) is
   not available; the loan market is a pool, and lending to a specific player company would need a separate path.
-- The banking sector is self-consistent but loosely coupled to the rest of the economy until the adapter over the
-  macro service is written. Until then `StaticBankingInputs` gives a calm economy and the sector only reacts to its own
-  shocks.
-- Because the sector is not mirrored in the ledger, the global money identity checked by the invariants is unaffected,
-  and banking has its own invariant (every bank balances, interbank lent equals borrowed) tested in the package.
+- The sector reads the economy through `MacroBankingInputs` (policy rate, the latest macro review, the state's bond
+  curve and stability, the national accounts' investment and consumption flows). `StaticBankingInputs` stays for tests.
+- The sector is optional. A game starts with the simple lender in `finance` (the loan book, `LedgerOwner.bank()`) and no
+  commercial banks; the system-only `EstablishBanks` command seeds three to five computer-run banks per country and
+  new games issue it. Nothing is saved, hashed or ticked until then, so older saves and test worlds are unchanged.
+  Companies keep borrowing from the simple lender; the pools lend to households and businesses that are not modelled
+  one by one, so no loan is created twice.
+- Money in the ledger. The pools are not mirrored, but the flows that touch real owners are settled in the day's batch.
+  Customers who are not modelled are the households account, so interest, fees and wages move money that already exists.
+  Share capital paid in by investors (computer-run banks at opening, later capital raises) is a designated creation of
+  money like founding capital (`ReasonCode.CAPITAL`), so the money identity in the finance invariants holds. Banking also
+  has its own invariant (every bank balances, interbank lent equals borrowed) checked by `Invariants.banks`.
 - Adding a lever means a `BankAction` variant, a case in `BankingActions`, a tag in `BankActionCodec`, a description in
   the presenters and a test for each. The tag numbers in the action codec never change meaning.
 - The daily round and the monthly close are ordinary services behind `BankingService.step`, which makes them testable
