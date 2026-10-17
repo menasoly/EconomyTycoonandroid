@@ -47,6 +47,9 @@ sealed class Route(val tab: Tab, val name: String) {
     object Planner : Route(Tab.MARKET, "planner") { override val args = emptyList<String>() }
     object Watch : Route(Tab.MARKET, "watch") { override val args = emptyList<String>() }
     object Industries : Route(Tab.MARKET, "industries") { override val args = emptyList<String>() }
+    object Workshop : Route(Tab.MORE, "workshop") { override val args = emptyList<String>() }
+    object WorkshopReport : Route(Tab.MORE, "workshop-report") { override val args = emptyList<String>() }
+    object WorkshopLibrary : Route(Tab.MORE, "workshop-library") { override val args = emptyList<String>() }
     object Managers : Route(Tab.MORE, "managers") { override val args = emptyList<String>() }
     object Trade : Route(Tab.MARKET, "trade") { override val args = emptyList<String>() }
     data class Good(val good: String) : Route(Tab.MARKET, "good") { override val args = listOf(good) }
@@ -201,6 +204,9 @@ sealed class Route(val tab: Tab, val name: String) {
                 "industries" -> Industries
                 "blueprints" -> Blueprints
                 "managers" -> Managers
+                "workshop" -> Workshop
+                "workshop-report" -> WorkshopReport
+                "workshop-library" -> WorkshopLibrary
                 "planner" -> Planner
                 "agenda" -> Agenda
                 "export" -> Export
