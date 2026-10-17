@@ -67,6 +67,7 @@ object CommandSanity {
             is Command.LobbyLaw -> if (badMoney(command.amount, allowZero = true)) "impossible_value" else null
             is Command.BuyPolicy -> if (badPpm(command.coveragePpm)) "impossible_value" else null
             is Command.MakeOffer -> if (command.shares <= 0L || badMoney(command.pricePerShare)) "impossible_value" else null
+            is Command.EscrowTransfer -> "server_only"
             else -> null
         }
     }

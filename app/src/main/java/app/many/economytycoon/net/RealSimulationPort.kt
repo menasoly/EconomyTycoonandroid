@@ -8,25 +8,35 @@ import app.many.economytycoon.core.Outcome
 import app.many.economytycoon.core.Rules
 import app.many.economytycoon.core.Tick
 import app.many.economytycoon.companies.CompanyKind
-import app.many.economytycoon.finance.Chart
-import app.many.economytycoon.finance.Entry
-import app.many.economytycoon.finance.AccountRef
 import app.many.economytycoon.finance.Holder
 import app.many.economytycoon.finance.LedgerOwner
-import app.many.economytycoon.finance.ReasonCode
-import app.many.economytycoon.finance.TransactionDraft
 import app.many.economytycoon.persistence.IncompatibleContentException
 import app.many.economytycoon.persistence.SimulationSnapshot
 import app.many.economytycoon.replay.TraceRecorder
 import app.many.economytycoon.simulation.Actor
 import app.many.economytycoon.simulation.Command
+import app.many.economytycoon.simulation.CommandExecutor
+import app.many.economytycoon.simulation.TickSummary
 import app.many.economytycoon.simulation.Simulation
+
+/**
+ * How a port moves a game that something else owns, such as the session on screen: [step] runs one tick including
+ * the owner's own after-tick work, and [replace] swaps in a game restored from a snapshot (false when it cannot).
+ */
+interface SimulationDriver {
+    fun step(): TickSummary
+    fun replace(next: Simulation): Boolean
+}
 
 /**
  * Drives the real economy. Cash trades go through the ledger as ordinary transfers between company accounts and
  * a single escrow account; goods are not tradable between players until the economy has a command for it.
  */
-class RealSimulationPort(private var sim: Simulation, private val content: ContentRepository) : SimulationPort {
+class RealSimulationPort(
+    private var sim: Simulation,
+    private val content: ContentRepository,
+    private val driver: SimulationDriver? = null,
+) : SimulationPort {
     override val tick: Long get() = sim.tick.value
 
     override val fingerprint: String =
@@ -35,14 +45,12 @@ class RealSimulationPort(private var sim: Simulation, private val content: Conte
     /** The underlying simulation, for read models. */
     val simulation: Simulation get() = sim
 
-    private var transferCounter = 0L
-
     override fun stateHash(): ByteArray = Hmac.sha256(sim.hash().toByteArray(Charsets.UTF_8))
 
     override fun enqueue(player: PlayerId, command: Command) { sim.submit(Actor.Player(player.value), command) }
 
     override fun advance(): List<AppliedCommand> {
-        val summary = sim.advance()
+        val summary = driver?.step() ?: sim.advance()
         return summary.commandOutcomes.mapNotNull { o ->
             val actor = o.actor
             if (actor is Actor.Player) AppliedCommand(PlayerId(actor.id), o.accepted, o.rule) else null
@@ -67,30 +75,26 @@ class RealSimulationPort(private var sim: Simulation, private val content: Conte
     }
 
     private fun ownerOf(company: Long): LedgerOwner? =
-        if (company == ESCROW) ESCROW_OWNER
+        if (company == ESCROW) CommandExecutor.ESCROW_OWNER
         else sim.economy.companies.company(CompanyId(company))?.takeIf { it.isActive }?.owner
 
-    override fun applyTransfers(transfers: List<Transfer>): List<Boolean> = transfers.map { t ->
-        if (t.asset.kind != AssetKind.CASH || t.asset.amount <= 0L) return@map false
-        val from = ownerOf(t.from) ?: return@map false
-        val to = ownerOf(t.to) ?: return@map false
-        val ledger = sim.economy.finance.ledger
-        if (ledger.cash(from).raw < t.asset.amount) return@map false
-        val key = "net:${t.trade.value}:${sim.tick.value}:${transferCounter++}"
-        val draft = TransactionDraft(
-            key, Tick(sim.tick.value), ReasonCode.TRANSFER,
-            listOf(Entry(AccountRef(from, Chart.CASH), Money(-t.asset.amount)), Entry(AccountRef(to, Chart.CASH), Money(t.asset.amount))),
-            "player trade ${t.trade.value}",
-        )
-        ledger.post(draft) is Outcome.Ok
+    /** Each transfer is a logged system command, so the move of money is part of the replayable history of every copy. */
+    override fun applyTransfers(transfers: List<Transfer>): List<Boolean> = transfers.mapIndexed { index, t ->
+        if (t.asset.kind != AssetKind.CASH || t.asset.amount <= 0L) return@mapIndexed false
+        val cmd = Command.EscrowTransfer(t.trade.value, t.from, t.to, Money(t.asset.amount), index)
+        sim.execute(Actor.System, cmd) is Outcome.Ok
     }
 
     override fun snapshot(): ByteArray = SimulationSnapshot.save(sim)
 
     override fun restore(bytes: ByteArray): Outcome<Unit> = try {
-        sim = SimulationSnapshot.load(bytes, content)
-        transferCounter = 0L
-        Outcome.ok(Unit)
+        val loaded = SimulationSnapshot.load(bytes, content)
+        if (driver != null && !driver.replace(loaded)) {
+            Outcome.reject(Rules.WRONG_STATE, "this game cannot be replaced while it is on screen")
+        } else {
+            sim = loaded
+            Outcome.ok(Unit)
+        }
     } catch (e: ByteReader.CorruptDataException) {
         Outcome.reject(Rules.INVALID_ARGUMENT, "snapshot is damaged: ${e.message}")
     } catch (e: IncompatibleContentException) {
@@ -112,7 +116,6 @@ class RealSimulationPort(private var sim: Simulation, private val content: Conte
 
     companion object {
         /** Company number that stands for the escrow account in transfers. */
-        const val ESCROW = 0L
-        private val ESCROW_OWNER = LedgerOwner.bank(900_001L)
+        const val ESCROW = CommandExecutor.ESCROW_COMPANY
     }
 }

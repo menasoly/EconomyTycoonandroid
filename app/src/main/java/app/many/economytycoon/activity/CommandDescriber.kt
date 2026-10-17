@@ -126,6 +126,7 @@ object CommandDescriber {
         is Command.LaunchPromotion -> "Launched a ${pct(cmd.discountPpm)} price promotion on ${n.good(cmd.good)} for ${cmd.days} days"
         is Command.CancelPromotion -> "Cancelled promotion ${cmd.promotion.value}"
         is Command.EstablishGrids -> "Set up the electricity grids"
+        is Command.EscrowTransfer -> "Moved ${n.money(cmd.amount)} for player trade ${cmd.trade}"
         is Command.ConnectFacilityToGrid, is Command.DisconnectFacilityFromGrid, is Command.ReclassifyGridLoad, is Command.SetGridLoadDraw,
         is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement ->
@@ -165,7 +166,7 @@ object CommandDescriber {
         is Command.SetStaffing, is Command.SetBenefits, is Command.SetTraining, is Command.RespondDemand -> ActivityArea.PEOPLE
         is Command.PlaceOrder, is Command.CancelOrder, is Command.SetSellRule, is Command.RemoveSellRule, is Command.SetBuyRule,
         is Command.RemoveBuyRule, is Command.OpenFuture, is Command.CloseFuture, is Command.AddMargin -> ActivityArea.TRADE
-        is Command.SetDividend, is Command.Borrow, is Command.Repay, is Command.SetBudget, is Command.SubscribeBond, is Command.TradeBond -> ActivityArea.FINANCE
+        is Command.EscrowTransfer, is Command.SetDividend, is Command.Borrow, is Command.Repay, is Command.SetBudget, is Command.SubscribeBond, is Command.TradeBond -> ActivityArea.FINANCE
         is Command.StartResearch, is Command.QueueResearch, is Command.CancelResearch, is Command.LicenseTech -> ActivityArea.RESEARCH
         is Command.Ship, is Command.MoveLocal, is Command.BuyVehicle, is Command.SellVehicle, is Command.RepairVehicle,
         is Command.LeaseWarehouse, is Command.CloseWarehouse -> ActivityArea.LOGISTICS
@@ -188,7 +189,7 @@ object CommandDescriber {
         is Command.LicenseTech, is Command.SubscribeBond, is Command.TradeBond, is Command.LobbyLaw, is Command.AddMargin,
         is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials, is Command.CreateCampaign,
         is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest, is Command.OrderGridUnit,
-        is Command.TerminatePowerAgreement -> true
+        is Command.TerminatePowerAgreement, is Command.EscrowTransfer -> true
         else -> false
     }
 }

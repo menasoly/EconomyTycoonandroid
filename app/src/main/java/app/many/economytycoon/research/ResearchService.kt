@@ -40,6 +40,8 @@ class ResearchService(
     private val states = java.util.TreeMap<CompanyId, CompanyResearch>()
 
     fun of(company: CompanyId): CompanyResearch = states.getOrPut(company) { CompanyResearch(company) }
+    /** A company's research for reading only: a company that never researched gets an empty record that is not kept, so looking changes nothing. */
+    fun read(company: CompanyId): CompanyResearch = states[company] ?: CompanyResearch(company)
     fun peek(company: CompanyId): CompanyResearch? = states[company]
     fun companies(): List<CompanyId> = states.keys.toList()
 
