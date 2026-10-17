@@ -31,7 +31,7 @@ class PropertyRunner(private val e: Economy) {
     fun appraise(p: Parcel): Money {
         val city = p.city?.let { e.world.cityOrNull(it) }
         val people = city?.let { e.world.population(it.id).total } ?: 0L
-        val value = LandPricing.price(p, people, city?.location)
+        val value = LandPricing.price(p, people, city?.location, e.urbanRunner.landFactorPpm(p.city))
         return if (value.raw > 0L) value else p.lastPrice
     }
 

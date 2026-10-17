@@ -16,6 +16,12 @@ object UrbanReader {
         return cityView(service, plan, now, service.ranking())
     }
 
+    /** The map overlay of one city, or null when it has no plan. */
+    fun overlay(service: UrbanService, city: CityId, kind: OverlayKind, now: Tick): UrbanOverlay? {
+        val plan = service.state.plan(city) ?: return null
+        return UrbanOverlays.build(plan, UrbanAnalysis.analyse(plan, service.params), kind, service.params, now)
+    }
+
     private fun cityView(service: UrbanService, plan: CityPlan, now: Tick, ranking: List<RankEntry>): CityView {
         val params = service.params
         val analysis = UrbanAnalysis.analyse(plan, params)

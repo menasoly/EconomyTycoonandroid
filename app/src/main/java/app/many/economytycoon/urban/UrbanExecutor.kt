@@ -12,6 +12,14 @@ internal class UrbanExecutor(private val state: UrbanState) {
 
     fun execute(cmd: UrbanCommand, now: Tick): Outcome<UrbanReceipt> {
         val plan = state.plan(cmd.city) ?: return Outcome.reject(Rules.UNKNOWN_ENTITY, "no urban plan for that city")
+        // A refused order changes nothing, so the ids it reserved are given back.
+        val ids = state.ids.snapshot()
+        val result = apply(plan, cmd, now)
+        if (result is Outcome.Rejected) state.ids.restore(ids)
+        return result
+    }
+
+    private fun apply(plan: CityPlan, cmd: UrbanCommand, now: Tick): Outcome<UrbanReceipt> {
         return when (cmd) {
             is UrbanCommand.SetTaxRates -> ok("Tax rates set.") { plan.budget.setRates(cmd.rates) }
             is UrbanCommand.SetServiceLevel -> plan.budget.setLevel(cmd.service, cmd.level).map { UrbanReceipt("${cmd.service.label} level set to ${cmd.level}.") }

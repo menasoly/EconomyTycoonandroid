@@ -68,6 +68,8 @@ class TickSummary(val tick: Tick) {
     /** What the tourist destinations did today, and the month's tourism bills on the last day of a month; null in a game without tourism. */
     var tourismReport: app.many.economytycoon.tourism.DayReport? = null
     var tourismSettlement: app.many.economytycoon.tourism.SettlementRun? = null
+    /** What happened in the cities' councils, works and concessions today; empty in a game without city plans. */
+    var urbanNotices: List<app.many.economytycoon.urban.UrbanNotice> = emptyList()
     var riskEvents: List<app.many.economytycoon.risk.RiskEvent> = emptyList()
     var contractEvents: List<app.many.economytycoon.contracts.ContractEvent> = emptyList()
     var closedBooks: Boolean = false
@@ -112,6 +114,7 @@ class TickPipeline(
     private val aiHedging = AiHedging(e, executor)
     private val aiLandlords = AiLandlords(e, executor)
     private val aiHoteliers = AiHoteliers(e)
+    private val aiUrban = AiUrban(e, executor)
     private val liquidator = Liquidator(e)
     private val generator = EventGenerator(e)
 
@@ -150,6 +153,7 @@ class TickPipeline(
             aiHedging.run(tick)
             aiLandlords.run(tick)
             aiHoteliers.run(tick)
+            aiUrban.run(tick)
             e.insolvency.step(tick)
         }
         phase(Phase.COMMAND_APPLICATION) {
@@ -194,6 +198,7 @@ class TickPipeline(
             s.contractsMissed = contractEvents.count { it is app.many.economytycoon.contracts.ContractEvent.Missed }
             e.logistics.step(tick, e.random)
             e.tourismRunner.advance(tick, s)
+            e.urbanRunner.advance(tick, s)
         }
         phase(Phase.PRODUCTION) {
             val ctx = TickContext(tick, e.random, e.labor, e.grid, e.resources, e.modifiers, e.prices)
@@ -323,6 +328,8 @@ class TickPipeline(
         intents += e.ipRunner.drain()
         // The month's tourism bills close the batch, after every other group, so existing order is unchanged.
         intents += e.tourismRunner.settlementIntents(tick, s)
+        // The cities' concession payments and the mayors' compensation follow, again after every other group.
+        intents += e.urbanRunner.drain()
 
         val results = e.finance.settleTick(tick, intents)
         for (draft in carbon.adjustments) e.finance.ledger.post(draft)

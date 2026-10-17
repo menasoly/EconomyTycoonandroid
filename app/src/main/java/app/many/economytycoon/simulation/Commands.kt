@@ -230,6 +230,18 @@ sealed class Command {
         override val company: CompanyId? get() = command.company
     }
 
+    // ---- city planning ----
+    /** Draws up the plans of the world's cities, zoned from their land; only the system gives it, once, when a new game is set up. */
+    object EstablishUrban : Command() {
+        override val company: CompanyId? get() = null
+        override fun toString() = "EstablishUrban"
+    }
+    /**
+     * Any order of the urban module given by [company]: its own petitions, lobbying and bids, or (for the player whose
+     * headquarters stands in the city) the orders of the city government such as taxes, services, roads, lines and works.
+     */
+    data class Urban(override val company: CompanyId, val command: app.many.economytycoon.urban.UrbanCommand) : Command()
+
     // ---- labour relations ----
     data class OpenFuture(override val company: CompanyId, val good: GoodId, val side: app.many.economytycoon.futures.Side, val contracts: Long, val tenor: Int) : Command()
     data class CloseFuture(override val company: CompanyId, val position: Long) : Command()

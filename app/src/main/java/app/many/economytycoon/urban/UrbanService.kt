@@ -34,11 +34,11 @@ class UrbanService(val state: UrbanState) {
     fun addLobbyingHook(h: LobbyingHook) { hooks += h }
 
     /** Starts planning a city and settles its first month so that every surface and rent has a value. */
-    fun addCity(city: CityId, country: CountryId, name: String, inputs: CityInputs, now: Tick): Outcome<CityPlan> {
+    fun addCity(city: CityId, country: CountryId, name: String, inputs: CityInputs, now: Tick, layout: List<ZoneUse>? = null): Outcome<CityPlan> {
         if (state.has(city)) return Outcome.reject(Rules.DUPLICATE, "that city already has a plan")
         if (name.isBlank()) return Outcome.reject(Rules.INVALID_ARGUMENT, "a city needs a name")
         if (inputs.population <= 0L) return Outcome.reject(Rules.INVALID_ARGUMENT, "a city needs people")
-        val plan = CityFactory.create(state, city, country, name, inputs)
+        val plan = CityFactory.create(state, city, country, name, inputs, layout)
         state.put(plan)
         val first = UrbanMonthly.run(state, plan, inputs, now)
         lastScores[city] = first.score

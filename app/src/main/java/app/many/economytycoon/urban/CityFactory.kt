@@ -44,12 +44,16 @@ object CityFactory {
         }
     }
 
-    fun create(state: UrbanState, city: CityId, country: CountryId, name: String, inputs: CityInputs): CityPlan {
+    /**
+     * [layout] gives the zone of every district when the caller knows it (for instance from the land of the real city);
+     * it must have one entry per district. Without it the zones are drawn from the layout stream.
+     */
+    fun create(state: UrbanState, city: CityId, country: CountryId, name: String, inputs: CityInputs, layout: List<ZoneUse>? = null): CityPlan {
         val params = state.params
         val random = state.stream("layout", city)
         val side = params.districtsPerSide
         val count = params.districtCount
-        val zones = (0 until count).map { zoneFor(ring(it, side), random) }.toMutableList()
+        val zones = (if (layout != null && layout.size == count) layout else (0 until count).map { zoneFor(ring(it, side), random) }).toMutableList()
         // Every city needs somewhere to live; larger ones also get some industry and a park.
         if (zones.none { it == ZoneUse.RESIDENTIAL || it == ZoneUse.MIXED }) zones[count - 1] = ZoneUse.RESIDENTIAL
         if (count >= 4) {
