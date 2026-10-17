@@ -44,6 +44,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         cover(company, out)
         tenders(company, out)
         grants(company, out)
+        marketing(company, out)
         regulation(company, out)
         bonds(company, out)
         unions(company, out)
@@ -278,6 +279,25 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         }
     }
 
+    private fun marketing(id: CompanyId, out: MutableList<Alert>) {
+        if (e.marketing.state.campaignMap.isEmpty() && e.marketing.state.damageMap.isEmpty()) return
+        val now = e.tick.value
+        for (c in e.marketing.state.campaignsOf(id)) {
+            val ended = c.endedAt?.value
+            if (c.status == app.many.economytycoon.marketing.CampaignStatus.SUSPENDED && ended != null && now - ended <= thresholds.marketingNoticeDays) {
+                out += Alert("marketing.suspended", c.id.value, Severity.WARNING, "A ${c.channel.label.lowercase()} campaign was suspended", "The bills went unpaid, so the agency stopped it. Restore cash before booking it again.")
+            }
+            if (c.status == app.many.economytycoon.marketing.CampaignStatus.ACTIVE && c.creative.freshnessPpm < app.many.economytycoon.marketing.MarketingEngine.WORN_LINE) {
+                out += Alert("marketing.worn", c.id.value, Severity.INFO, "An advertisement has worn out", "People have seen the ${c.channel.label.lowercase()} creative too often. A new one restores its strength.")
+            }
+        }
+        for (d in e.marketing.state.damagesOf(id)) {
+            if (now - d.tick.value <= thresholds.marketingNoticeDays) {
+                out += Alert("marketing.damage", d.id.value, Severity.WARNING, "Your brand took a hit: ${d.kind.label.lowercase()}", "Distrust blunts new advertising until it fades. Steady, modest campaigns rebuild it.")
+            }
+        }
+    }
+
     private fun cover(id: CompanyId, out: MutableList<Alert>) {
         val now = e.tick.value
         for (p in e.risk.policiesOf(id)) {
@@ -332,6 +352,7 @@ data class AlertThresholds(
     val lapseNoticeDays: Long = 15,
     val tenderWarnDays: Long = 5,
     val grantNoticeDays: Long = 4,
+    val marketingNoticeDays: Long = 10,
     val lawNoticeDays: Long = 10,
     val bondNoticeDays: Long = 10,
     val demandUrgentDays: Long = 3,

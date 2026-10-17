@@ -23,6 +23,7 @@ import app.many.economytycoon.core.ParcelId
 import app.many.economytycoon.core.Price
 import app.many.economytycoon.core.ProjectId
 import app.many.economytycoon.core.Quantity
+import app.many.economytycoon.core.Tick
 import app.many.economytycoon.core.RecipeId
 import app.many.economytycoon.core.RegionId
 import app.many.economytycoon.core.RoleId
@@ -138,6 +139,25 @@ sealed class Command {
     // ---- grants ----
     data class ApplyGrant(override val company: CompanyId, val program: app.many.economytycoon.core.GrantId) : Command()
     data class WithdrawGrant(override val company: CompanyId, val program: app.many.economytycoon.core.GrantId) : Command()
+
+    // ---- marketing ----
+    data class CreateCampaign(
+        override val company: CompanyId, val good: GoodId, val region: RegionId, val city: CityId?, val channel: app.many.economytycoon.marketing.Channel,
+        val segment: app.many.economytycoon.marketing.TargetSegment, val dailyBudget: Money, val days: Int,
+        val tier: app.many.economytycoon.marketing.CreativeTier, val startTick: Tick?,
+    ) : Command()
+    data class PauseCampaign(override val company: CompanyId, val campaign: app.many.economytycoon.marketing.CampaignId) : Command()
+    data class ResumeCampaign(override val company: CompanyId, val campaign: app.many.economytycoon.marketing.CampaignId) : Command()
+    data class ExtendCampaign(override val company: CompanyId, val campaign: app.many.economytycoon.marketing.CampaignId, val extraDays: Int) : Command()
+    data class SetCampaignBudget(override val company: CompanyId, val campaign: app.many.economytycoon.marketing.CampaignId, val dailyBudget: Money) : Command()
+    data class RefreshCreative(override val company: CompanyId, val campaign: app.many.economytycoon.marketing.CampaignId, val tier: app.many.economytycoon.marketing.CreativeTier) : Command()
+    data class CancelCampaign(override val company: CompanyId, val campaign: app.many.economytycoon.marketing.CampaignId) : Command()
+    data class StartAbTest(override val company: CompanyId, val campaign: app.many.economytycoon.marketing.CampaignId, val challenger: app.many.economytycoon.marketing.CreativeTier, val days: Int) : Command()
+    data class LaunchPromotion(
+        override val company: CompanyId, val good: GoodId, val region: RegionId, val days: Int, val discountPpm: Long,
+        val listPrice: Money, val unitCost: Money, val elasticityPpm: Long, val clearance: Boolean,
+    ) : Command()
+    data class CancelPromotion(override val company: CompanyId, val promotion: app.many.economytycoon.marketing.PromotionId) : Command()
 
     // ---- labour relations ----
     data class OpenFuture(override val company: CompanyId, val good: GoodId, val side: app.many.economytycoon.futures.Side, val contracts: Long, val tenor: Int) : Command()

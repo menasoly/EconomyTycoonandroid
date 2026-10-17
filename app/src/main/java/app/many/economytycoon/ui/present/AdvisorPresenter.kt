@@ -23,7 +23,7 @@ object AdvisorPresenter {
         "concentration" -> Route.Facilities
         "idle-land" -> Route.Property
         "contract-offers" -> Route.Contracts
-        else -> null
+        else -> if (code.startsWith("mkt-")) Route.Marketing else null
     }
 
     private fun actionLabel(route: Route?): String? = when (route) {
@@ -36,6 +36,7 @@ object AdvisorPresenter {
         Route.Research -> "Open research"
         Route.Property -> "Open property"
         Route.Contracts -> "Open contracts"
+        Route.Marketing -> "Open marketing"
         else -> "Open"
     }
 
@@ -57,15 +58,17 @@ object AdvisorPresenter {
         else -> "$count suggestions. Most pressing: ${top?.title}"
     }
 
-    fun build(advisor: Advisor, facts: AdvisorFacts, limit: Int = 12): AdviceModel {
-        val shown = advisor.advise(facts)
-        val hidden = advisor.all(facts).size - shown.size
+    fun build(advisor: Advisor, facts: AdvisorFacts, limit: Int = 12, extra: List<Insight> = emptyList()): AdviceModel {
+        val byPriority = compareByDescending<Insight> { it.priority }.thenBy { it.code }
+        val more = extra.filter { !advisor.isHidden(it.code, facts.tick) }
+        val shown = (advisor.advise(facts) + more).sortedWith(byPriority)
+        val hidden = advisor.all(facts).size + extra.size - shown.size
         return AdviceModel(shown.take(limit).map { item(it) }, hidden, headline(shown.size, shown.firstOrNull()))
     }
 
     /** Suggestions for the selected company of a running game; null before one is chosen. */
     fun build(session: app.many.economytycoon.session.GameSession, limit: Int = 12): AdviceModel? =
-        session.adviceFacts()?.let { build(session.advisor, it, limit) }
+        session.adviceFacts()?.let { build(session.advisor, it, limit, session.marketingInsights()) }
 
     fun topics(): List<String> = Topic.values().map { it.label }
 }

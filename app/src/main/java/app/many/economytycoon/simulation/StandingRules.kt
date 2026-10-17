@@ -58,10 +58,12 @@ class StandingRules(private val e: Economy) {
             if (f.owner != company || f.status == FacilityStatus.DEMOLISHED) continue
             val key = MarketKey(f.region, rule.good)
             val plan = RulePlanner.sellPlan(
-                rule, f.inventory.available(rule.good), f.inventory.unitCost(rule.good), e.markets.price(key), premium(company),
+                rule, f.inventory.available(rule.good), f.inventory.unitCost(rule.good), e.markets.price(key),
+                e.marketingRunner.premium(company, rule.good, f.region, premium(company)),
             ) ?: continue
             if (f.inventory.reserve(rule.good, plan.quantity) is app.many.economytycoon.core.Outcome.Rejected) continue
-            val placed = e.markets.placeOrder(party, key, Side.SELL, plan.limit, plan.quantity, 1, f.id.value, e.tick)
+            val shelf = e.marketingRunner.shelfPrice(company, rule.good, f.region, e.tick, plan.limit)
+            val placed = e.markets.placeOrder(party, key, Side.SELL, shelf, plan.quantity, 1, f.id.value, e.tick)
             if (placed is app.many.economytycoon.core.Outcome.Rejected) f.inventory.release(rule.good, plan.quantity) else report.sellOrders++
         }
     }

@@ -78,6 +78,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "marketing", "Marketing", "Advertising, promotions and your brand.",
+            listOf(
+                "Book a campaign for a product in a place: choose a channel, a daily budget and how long it runs. Reach grows with the budget but flattens, so a second channel often adds more than a bigger first one.",
+                "Awareness rises while a campaign runs and fades once it stops. Loyalty follows awareness and the quality you deliver. A well-known, well-liked brand draws more buyers to the whole category and can ask a higher price.",
+                "Advertisements wear out; renew them when the screen says so, or test a new one against the old. The marketing budget in your policies pays for campaigns first, and only what is left over is general marketing. Unpaid bills suspend a campaign.",
+            ),
+        ),
+        HelpTopic(
             "research", "Research", "Unlock better machines, recipes and buildings.",
             listOf(
                 "Spend research points to unlock technologies. Each has a cost, a minimum time and prerequisites. Unlocked technology can open new facility types, recipes and machines, or improve what you already have.",

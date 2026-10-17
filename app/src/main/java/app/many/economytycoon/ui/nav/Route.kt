@@ -57,6 +57,7 @@ sealed class Route(val tab: Tab, val name: String) {
     object Property : Route(Tab.OPERATIONS, "property") { override val args = emptyList<String>() }
 
     object Futures : Route(Tab.MARKET, "futures") { override val args = emptyList<String>() }
+    object Marketing : Route(Tab.MARKET, "marketing") { override val args = emptyList<String>() }
 
     object Finance : Route(Tab.FINANCE, "finance") { override val args = emptyList<String>() }
     object Loans : Route(Tab.FINANCE, "loans") { override val args = emptyList<String>() }
@@ -135,6 +136,7 @@ sealed class Route(val tab: Tab, val name: String) {
                 "insurance" -> Insurance
                 "bonds" -> Bonds
                 "futures" -> Futures
+                "marketing" -> Marketing
                 "property" -> Property
                 "finance" -> Finance
                 "loans" -> Loans

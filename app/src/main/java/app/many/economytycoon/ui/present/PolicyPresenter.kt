@@ -13,7 +13,7 @@ data class PolicyModel(val departments: List<DepartmentItem>, val dividend: Divi
 object PolicyPresenter {
     fun blurb(d: Department): String = when (d) {
         Department.RESEARCH -> "Turns money into research points."
-        Department.MARKETING -> "Builds your brand, which lets you charge more."
+        Department.MARKETING -> "Pays for your advertising campaigns first; what is left is general marketing. Book campaigns on the Marketing page."
         Department.HR -> "Raises morale and makes hiring easier."
         Department.LEGAL -> "Lowers the cost of fines and disputes."
         Department.OPERATIONS -> "Keeps equipment running and cuts waste."

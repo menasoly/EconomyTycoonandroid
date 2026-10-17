@@ -79,6 +79,17 @@ class GameSession(
         notify(SessionChange.ADVICE)
     }
 
+    private val marketingReader = MarketingReader(simulation.economy)
+
+    /** Reads campaigns, brands, results and plans for the marketing screen. */
+    fun marketing(): MarketingReader = marketingReader
+
+    /** A company's campaigns, brand standing, promotions and bad news. */
+    fun marketingOverview(company: CompanyId): app.many.economytycoon.marketing.MarketingOverview = marketingReader.overview(company)
+
+    /** The marketing advisor's suggestions for the selected company. */
+    fun marketingInsights(): List<app.many.economytycoon.advisor.Insight> = selectedCompany?.let { marketingReader.insights(it) }.orEmpty()
+
     private val analysisReader = AnalysisReader(simulation.economy, reports, stats)
 
     /** Ratios, cost structure, runway, outlook and peer standing of the selected company. */

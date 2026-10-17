@@ -59,7 +59,7 @@ class CommandCodecTest {
 
     @Test fun theTestListCoversEveryCommandClass() {
         val covered = every().map { it.javaClass.name }.toSet()
-        assertEquals("command classes covered by the codec test", 80, covered.size)
+        assertEquals("command classes covered by the codec test", 90, covered.size)
     }
 
     @Test fun logsKeepOrderActorsAndFlags() {
