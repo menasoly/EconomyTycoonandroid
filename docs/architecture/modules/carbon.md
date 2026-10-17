@@ -180,7 +180,16 @@ Tests mirror the source paths under `app/src/test/java/app/many/economytycoon/ca
 `CarbonTestSupport` holds the shared fixture: a service on a fixed environment, helpers to feed days of activity,
 and `busy(...)`, a standard multi-country story.
 
+## Integration
+
+- Commands: `EstablishCarbonPolicies(delayYears)` (system only, codec tag 105) and eleven player commands (tags 106-116), run by `simulation/CarbonRunner` through `CarbonCommandMap`. Settlement is immediate: a refused payment rejects the command and nothing is booked.
+- Policy switch: regimes exist only after `EstablishCarbonPolicies`, which `NewGame.start` issues (first rules two years in) and the command log replays. Without it the state is pristine: no hash contribution, no snapshot section `carbon`, no random streams.
+- Tick: the runner reads the day's `ProductionReport` (fuel burned, goods made, power-plant output) in the production phase, assesses cross-border trade from `FulfillmentReport.crossBorder`, and adds levy, auction and offset payments to the day's settlement intents; adjustments are posted as drafts after settlement.
+- Grid plants: units on a regional grid are accounted as the fuel they burn (heat based, from `EnergyGridRunner.plantFuelToday`). The dispatch carbon price in `DayInputs.carbonPrice` is the permit price, scaled so one tonne costs the same per unit of heat as the facility accounts use.
+- Retrofits: `CarbonModifiers` wraps the research modifiers and gives `ProductionEngine` per-facility fuel and electricity savings from installed efficiency retrofits. `CarbonParams.efficiencyRealisedInProduction` is set so the footprint is not reduced a second time.
+- Computer competitors: `AiCarbon` (every 15 ticks) runs `CarbonAi` for active companies once a policy exists.
+- Session and UI: `CarbonSessionDesk`, `GameSession.carbonDesk/carbonInsights`, news, alerts, agenda entries, `Route.Carbon`, a button on the Finance screen, glossary, tips and a help topic.
+
 ## Known limits
 
-Efficiency savings are reported but not realised in production; border flows need a
-fulfilment hook; the rating spread is published but not consumed.
+Retrofits other than efficiency (capture, fuel switching) change reported emissions only. The rating spread is published but not consumed by lending. Catalog text for the carbon screens is not yet in the string tables.
