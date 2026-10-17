@@ -58,6 +58,7 @@ object HelpContent {
             listOf(
                 "The Finance tab shows how much you earned and spent, what you own and owe, and where your cash went. The three statements always agree with each other.",
                 "Banks lend according to your credit rating, your earnings and your net worth. A loan is paid back in instalments with interest; missing instalments damages your rating and can end in default.",
+                "A game with a banking sector also has commercial banks. Computer-run banks compete for deposits and loans; a company can found its own, set its rates and standards, and watch capital, liquidity and depositor confidence. A bank that loses depositors' trust can fail.",
                 "If liabilities exceed what the company can pay, it enters administration. A company that is wound up pays its lenders first and owners last.",
             ),
         ),
