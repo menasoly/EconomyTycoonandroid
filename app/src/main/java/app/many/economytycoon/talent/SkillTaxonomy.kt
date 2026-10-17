@@ -185,6 +185,17 @@ object DefaultTaxonomy {
         Spec("analyst", false, listOf(r(ANALYSIS, 650_000, 700_000), r(COMMUNICATION, 500_000, 300_000))),
         Spec("manager", true, listOf(r(MANAGEMENT, 650_000, 600_000), r(LEADERSHIP, 600_000, 250_000), r(COMMUNICATION, 500_000, 150_000))),
         Spec("executive", true, listOf(r(LEADERSHIP, 800_000, 550_000), r(MANAGEMENT, 750_000, 450_000))),
+        // roles that the industry packs bring
+        Spec("textile_technician", false, listOf(r(MACHINING, 500_000, 600_000), r(MAINTENANCE, 350_000, 250_000), r(GENERAL, 300_000, 150_000))),
+        Spec("welder", false, listOf(r(MACHINING, 550_000, 700_000), r(SAFETY, 400_000, 300_000))),
+        Spec("aerospace_technician", false, listOf(r(MAINTENANCE, 650_000, 450_000), r(ELECTRICAL, 500_000, 250_000), r(ENGINEERING, 400_000, 300_000))),
+        Spec("biotechnologist", false, listOf(r(RESEARCH, 750_000, 700_000), r(ANALYSIS, 600_000, 300_000))),
+        Spec("lab_technician", false, listOf(r(ANALYSIS, 500_000, 500_000), r(RESEARCH, 300_000, 300_000), r(SAFETY, 350_000, 200_000))),
+        Spec("mason", false, listOf(r(MINING, 450_000, 500_000), r(SAFETY, 350_000, 200_000), r(GENERAL, 300_000, 300_000))),
+        Spec("assembler", false, listOf(r(ELECTRICAL, 450_000, 500_000), r(MACHINING, 350_000, 300_000), r(GENERAL, 300_000, 200_000))),
+        Spec("quality_inspector", false, listOf(r(ANALYSIS, 500_000, 500_000), r(MACHINING, 400_000, 300_000), r(COMMUNICATION, 300_000, 200_000))),
+        Spec("clinical_engineer", false, listOf(r(ENGINEERING, 600_000, 500_000), r(MEDICINE, 350_000, 250_000), r(ANALYSIS, 450_000, 250_000))),
+        Spec("chemist", false, listOf(r(RESEARCH, 600_000, 450_000), r(PROCESS_OPS, 500_000, 350_000), r(SAFETY, 450_000, 200_000))),
     )
 
     /** Level a role of the band asks of its main skill when content brings a role this taxonomy has not heard of. */

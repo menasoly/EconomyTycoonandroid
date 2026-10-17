@@ -59,6 +59,12 @@ class LaborSupplyUpdater(
     private val workforce: WorkforceService,
     private val markets: LaborMarkets,
 ) {
+    /**
+     * Where a region's education level comes from, when something other than the world's own figure should decide how
+     * many job seekers fit each skill tier. Null, or a null answer for a region, keeps the world's figure.
+     */
+    var educationSource: ((app.many.economytycoon.core.RegionId) -> Long?)? = null
+
     private val roles = content.allRoles
     private val byTier: Map<SkillTier, List<app.many.economytycoon.content.RoleDef>> =
         roles.groupBy { RoleCatalogs.tierOf(it.skillBand) }
@@ -79,7 +85,7 @@ class LaborSupplyUpdater(
             val labor = cities.sumOf { world.population(it.id).laborForce }
             val education = cities.sumOf { world.population(it.id).educationPpm * world.population(it.id).total } /
                 cities.sumOf { world.population(it.id).total }.coerceAtLeast(1L)
-            val shares = tierShares(education)
+            val shares = tierShares(educationSource?.invoke(region.id) ?: education)
             val employed = java.util.HashMap<app.many.economytycoon.core.RoleId, Long>()
             for (c in workforce.all()) if (c.key.region == region.id) employed.merge(c.key.role, c.headcount + c.pendingCount, Long::plus)
             for ((tier, defs) in byTier) {

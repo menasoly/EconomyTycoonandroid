@@ -187,6 +187,9 @@ object CommandCodec {
             is Command.Tourism -> { tag(w, 123); co(w, c.command.company); TourismCommandCodec.write(c.command, w) }
             is Command.EstablishUrban -> tag(w, 124)
             is Command.Urban -> { tag(w, 125); co(w, c.company); UrbanCommandCodec.write(c.command, w) }
+            is Command.EstablishTalent -> tag(w, 126)
+            is Command.Talent -> { tag(w, 127); co(w, c.company); TalentCommandCodec.write(c.command, w) }
+            is Command.SetImmigrationPolicy -> { tag(w, 128); w.writeVarLong(c.country.value); w.writeVarLong(c.opennessPpm); w.writeVarLong(c.quotaPpm); w.writeBoolean(c.skilledOnly) }
             is Command.FoundBank -> { tag(w, 118); co(w, c.company); w.writeString(c.name); w.writeVarLong(c.country.value); w.writeMoney(c.capital) }
             is Command.BankDecision -> { tag(w, 119); co(w, c.company); app.many.economytycoon.banking.BankActionCodec.write(c.action, w) }
             is Command.BidCarbonAuction -> { tag(w, 106); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.quantity.raw); w.writeMoney(c.limit) }
@@ -265,6 +268,8 @@ object CommandCodec {
         if (t == 120) return Command.EstablishIp
         if (t == 122) return Command.EstablishTourism
         if (t == 124) return Command.EstablishUrban
+        if (t == 126) return Command.EstablishTalent
+        if (t == 128) return Command.SetImmigrationPolicy(CountryId(r.readVarLong()), r.readVarLong(), r.readVarLong(), r.readBoolean())
         if (t == 104) return Command.EscrowTransfer(r.readVarLong(), r.readVarLong(), r.readVarLong(), r.readMoney(), r.readVarInt())
         val company = CompanyId(r.readVarLong())
         return when (t) {
@@ -387,6 +392,7 @@ object CommandCodec {
             }
             123 -> Command.Tourism(TourismCommandCodec.read(r, company))
             125 -> Command.Urban(company, UrbanCommandCodec.read(r))
+            127 -> Command.Talent(company, TalentCommandCodec.read(r, company))
             73 -> Command.ListParcel(company, ParcelId(r.readVarLong()), r.readMoney())
             74 -> Command.DelistParcel(company, ParcelId(r.readVarLong()))
             75 -> Command.BuyListed(company, ParcelId(r.readVarLong()))

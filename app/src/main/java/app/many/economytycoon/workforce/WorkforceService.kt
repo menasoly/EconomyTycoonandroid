@@ -65,6 +65,15 @@ class WorkforceService(
     private val layoffShock = java.util.TreeMap<CohortKey, Long>()
     private var lastPayTick = Tick(0)
 
+    /**
+     * Where the skill term of productivity comes from instead of the cohort's own plain skill number. Null (the default)
+     * keeps the plain number; the talent module sets it, and only for a cohort it knows, once it is switched on.
+     */
+    var skillSource: ((CohortKey) -> Long?)? = null
+
+    /** Share of a cohort away on a course today, ppm. Set by the talent module each tick; empty (and not saved) otherwise. */
+    private val awayPpm = java.util.TreeMap<CohortKey, Long>()
+
     fun cohort(key: CohortKey): Cohort? = cohorts[key]
     fun cohort(id: CohortId): Cohort? = byId[id]
     fun all(): List<Cohort> = cohorts.values.toList()
@@ -135,12 +144,15 @@ class WorkforceService(
         return if (market.raw == 0L) 1_000_000L else mulDiv(c.wage.raw, 1_000_000L, market.raw)
     }
 
-    fun productivity(c: Cohort, tick: Tick): Long = Morale.productivity(c.skillPpm, c.moralePpm, c.burnoutPpm, c.onStrike(tick))
+    fun productivity(c: Cohort, tick: Tick): Long =
+        Morale.productivity(skillSource?.invoke(c.key) ?: c.skillPpm, c.moralePpm, c.burnoutPpm, c.onStrike(tick))
 
     /** Labor units delivered per tick: heads at work times their productivity, in 1/1000 of a head. */
     fun effectiveLabor(key: CohortKey, tick: Tick): Long {
         val c = cohorts[key] ?: return 0L
-        val atWork = c.headcount * (1_000_000L - c.trainingPpm / 2) / 1_000_000L
+        var atWork = c.headcount * (1_000_000L - c.trainingPpm / 2) / 1_000_000L
+        val away = awayPpm[key] ?: 0L
+        if (away > 0L) atWork = atWork * (1_000_000L - away.coerceAtMost(1_000_000L)) / 1_000_000L
         return mulDiv(atWork * 1000L, productivity(c, tick), 1_000_000L)
     }
 
@@ -174,7 +186,62 @@ class WorkforceService(
 
     // ----- the tick -------------------------------------------------------------------------
 
-    fun beginTick() { markets.beginTick() }
+    fun beginTick() {
+        markets.beginTick()
+        if (awayPpm.isNotEmpty()) awayPpm.clear()
+    }
+
+    // ----- changes asked for by the talent module -----------------------------------------------
+
+    /** Records the share of a cohort that is away on a course for today's output. */
+    fun setAwayShare(key: CohortKey, ppm: Long) {
+        if (cohorts[key] == null) return
+        if (ppm <= 0L) awayPpm.remove(key) else awayPpm[key] = ppm.coerceAtMost(1_000_000L)
+    }
+
+    /** Adds people who have just been hired (graduates, key hires) to a cohort, up to its open places. Returns how many joined. */
+    fun addPeople(key: CohortKey, count: Long): Long {
+        val c = cohorts[key] ?: return 0L
+        val n = count.coerceAtMost(c.openings)
+        if (n <= 0L) return 0L
+        markets.take(MarketKey(key.region, key.role), n)
+        join(c, n)
+        return n
+    }
+
+    /** Moves people between two cohorts of the same or different companies; the destination is created if missing and never left under its head count. */
+    fun movePeople(from: CohortKey, to: CohortKey, count: Long, newWage: Money?): Long {
+        val src = cohorts[from] ?: return 0L
+        val n = count.coerceIn(0L, src.headcount)
+        if (n <= 0L) return 0L
+        src.headcount -= n
+        val dst = ensure(to)
+        join(dst, n)
+        if (dst.target < dst.headcount) dst.target = dst.headcount
+        if (newWage != null && newWage > dst.wage) dst.wage = newWage
+        return n
+    }
+
+    /** Removes people for good (retirement, a key person leaving, emigration). They do not return to the local job seekers. */
+    fun removePeople(key: CohortKey, count: Long): Long {
+        val c = cohorts[key] ?: return 0L
+        val n = count.coerceIn(0L, c.headcount)
+        c.headcount -= n
+        return n
+    }
+
+    /** Raises a cohort's wage to [wage]; never lowers it. */
+    fun raiseWageTo(key: CohortKey, wage: Money) {
+        val c = cohorts[key] ?: return
+        if (wage > c.wage) c.wage = wage
+    }
+
+    private fun join(c: Cohort, joined: Long) {
+        val total = c.headcount + joined
+        c.tenureTicks = c.tenureTicks * c.headcount / total
+        c.moralePpm = (c.moralePpm * c.headcount + 650_000L * joined) / total
+        c.headcount = total
+    }
 
     /** Hiring, attrition, morale and skill dynamics for one tick. */
     fun step(tick: Tick, random: RandomProvider) {

@@ -242,6 +242,19 @@ sealed class Command {
      */
     data class Urban(override val company: CompanyId, val command: app.many.economytycoon.urban.UrbanCommand) : Command()
 
+    // ---- skills and people ----
+    /** Switches on skills, education, training, migration and poaching, with a public school system in every region; only the system gives it, once, when a new game is set up. */
+    object EstablishTalent : Command() {
+        override val company: CompanyId? get() = null
+        override fun toString() = "EstablishTalent"
+    }
+    /** Any decision of a company in the talent module (schools, courses, training, offers, campaigns, ladders, key people). */
+    data class Talent(override val company: CompanyId, val command: app.many.economytycoon.talent.TalentCommand) : Command()
+    /** A country's immigration rules. Only the system gives it (scenarios and the policy layer); a company cannot. */
+    data class SetImmigrationPolicy(val country: CountryId, val opennessPpm: Long, val quotaPpm: Long, val skilledOnly: Boolean) : Command() {
+        override val company: CompanyId? get() = null
+    }
+
     // ---- labour relations ----
     data class OpenFuture(override val company: CompanyId, val good: GoodId, val side: app.many.economytycoon.futures.Side, val contracts: Long, val tenor: Int) : Command()
     data class CloseFuture(override val company: CompanyId, val position: Long) : Command()

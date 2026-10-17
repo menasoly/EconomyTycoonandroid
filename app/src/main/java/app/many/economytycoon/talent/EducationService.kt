@@ -94,6 +94,25 @@ class EducationService(private val state: TalentState, private val taxonomy: Ski
         return Outcome.ok(inst)
     }
 
+    /**
+     * Gives a region the qualified people it already has when the module is switched on, so that the education index
+     * starts where the world says it is. Most people are taken to have finished school; the rest of the weight is
+     * split between college and university graduates.
+     */
+    fun seedQualifications(region: RegionId, workingAge: Long, indexPpm: Long) {
+        if (workingAge <= 0L || state.qualifications.containsKey(region)) return
+        val total = Ppm.of(workingAge, indexPpm.coerceIn(0L, Ppm.ONE))
+        val school = minOf(Ppm.of(workingAge, 900_000L), total * Ppm.ONE / 350_000L)
+        val rest = (total - school * 350_000L / Ppm.ONE).coerceAtLeast(0L)
+        val university = rest * 400_000L / Ppm.ONE
+        val vocational = (rest - university) * Ppm.ONE / 700_000L
+        val q = QualificationStock()
+        q.byKind[InstitutionKind.SCHOOL.ordinal] = school
+        q.byKind[InstitutionKind.VOCATIONAL.ordinal] = vocational
+        q.byKind[InstitutionKind.UNIVERSITY.ordinal] = university
+        state.qualifications[region] = q
+    }
+
     private fun owned(id: InstitutionId, company: CompanyId): Outcome<Institution> {
         val i = state.institutions[id] ?: return Outcome.reject(Rules.UNKNOWN_ENTITY, "unknown institution")
         if (i.owner != company) return Outcome.reject(Rules.NOT_OWNER, "that institution is not yours")

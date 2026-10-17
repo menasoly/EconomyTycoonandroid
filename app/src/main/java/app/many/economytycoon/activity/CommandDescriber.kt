@@ -147,6 +147,9 @@ object CommandDescriber {
         is Command.EstablishTourism -> "Set up the tourist destinations"
         is Command.EstablishUrban -> "Drew up the city plans"
         is Command.Urban -> UrbanCommandDescriber.describe(cmd.command, n)
+        is Command.EstablishTalent -> "Set up skills and education"
+        is Command.Talent -> TalentCommandDescriber.describe(cmd.command, n)
+        is Command.SetImmigrationPolicy -> "Set the immigration rules of country ${cmd.country.value}"
         is Command.Tourism -> app.many.economytycoon.tourism.TourismCommandExecutor.describe(cmd.command)
         is Command.EstablishIp -> "Opened the patent office"
         is Command.Ip -> app.many.economytycoon.ip.IpCommandDescriber.describe(cmd.command)
@@ -196,7 +199,8 @@ object CommandDescriber {
         is Command.SetRecipe, is Command.SetLineEnabled, is Command.SetLinePriority, is Command.SetSchedulePolicy, is Command.SetQuality,
         is Command.InstallMachine, is Command.RemoveMachine, is Command.Maintain, is Command.DisposeWaste, is Command.Shutdown,
         is Command.Reopen, is Command.Demolish, is Command.BuyPolicy, is Command.CancelPolicy -> ActivityArea.FACILITIES
-        is Command.SetStaffing, is Command.SetBenefits, is Command.SetTraining, is Command.RespondDemand -> ActivityArea.PEOPLE
+        is Command.SetStaffing, is Command.SetBenefits, is Command.SetTraining, is Command.RespondDemand, is Command.EstablishTalent, is Command.Talent -> ActivityArea.PEOPLE
+        is Command.SetImmigrationPolicy -> ActivityArea.PUBLIC
         is Command.PlaceOrder, is Command.CancelOrder, is Command.SetSellRule, is Command.RemoveSellRule, is Command.SetBuyRule,
         is Command.RemoveBuyRule, is Command.OpenFuture, is Command.CloseFuture, is Command.AddMargin -> ActivityArea.TRADE
         is Command.EstablishBanks, is Command.FoundBank, is Command.BankDecision,
@@ -237,6 +241,7 @@ object CommandDescriber {
             else -> false
         }
         is Command.Urban -> UrbanCommandDescriber.movesMoney(cmd.command)
+        is Command.Talent -> TalentCommandDescriber.movesMoney(cmd.command)
         is Command.Ip -> when (cmd.command) {
             is app.many.economytycoon.ip.IpCommand.FilePatent, is app.many.economytycoon.ip.IpCommand.PayMaintenance, is app.many.economytycoon.ip.IpCommand.InvestInSecret,
             is app.many.economytycoon.ip.IpCommand.BuyPatent, is app.many.economytycoon.ip.IpCommand.StartDesignAround, is app.many.economytycoon.ip.IpCommand.FileSuit -> true

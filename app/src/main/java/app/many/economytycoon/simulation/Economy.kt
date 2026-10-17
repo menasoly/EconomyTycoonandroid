@@ -140,6 +140,14 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
     val urban = app.many.economytycoon.urban.UrbanState(app.many.economytycoon.urban.UrbanParams(), config.seed)
     val urbanService = app.many.economytycoon.urban.UrbanService(urban)
     val urbanRunner = UrbanRunner(this)
+    /** Skills, education, training, migration and poaching; empty (and not saved, hashed or run) until [Command.EstablishTalent]. */
+    val talent = app.many.economytycoon.talent.TalentSystem(
+        app.many.economytycoon.talent.TalentState(), app.many.economytycoon.talent.DefaultTaxonomy.forRoles(content.allRoles), config.seed,
+    )
+    /** True once the talent module has been switched on (or a saved one loaded); before that nothing is saved, hashed or run. */
+    var talentActive: Boolean = false
+        private set
+    val talentRunner = TalentRunner(this)
     val banking = app.many.economytycoon.banking.BankingService()
     val bankingInputs = MacroBankingInputs(this)
     val bankingRunner = BankingRunner(this)
@@ -194,6 +202,19 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         ipActive = true
     }
 
+    /**
+     * Switches the talent module on. From here the skill term of productivity comes from the module for every cohort it
+     * knows (a factor of exactly the plain skill number's for any other), and the qualified share of a region's people
+     * decides how its job seekers split over the skill tiers.
+     */
+    internal fun openTalent() {
+        talentActive = true
+        workforce.skillSource = { key -> talent.skills.skillPpm(key) }
+        laborSupply.educationSource = { region ->
+            talent.education.educationIndex(region, talentRunner.world.workingAge(region)).takeIf { talent.education.qualifications(region).byKind.any { n -> n > 0L } }
+        }
+    }
+
     /** Puts a loaded patent state in place of the empty one. */
     internal fun restoreIp(state: app.many.economytycoon.ip.IpState) {
         ip = newIpEngine(state)
@@ -233,6 +254,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         tourismRunner.forget(id, tick)
         urbanRunner.forget(id, tick)
         grantRunner.forget(id)
+        talentRunner.forget(id, tick)
         marketingRunner.forget(id, tick)
         energyGridRunner.forget(id, tick)
         bondRunner.forget(id)
@@ -279,6 +301,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         if (ipActive) { ip.state.hashInto(h); ipSales.hashInto(h) }
         if (!tourism.isEmpty) tourism.hashInto(h)
         if (urban.size > 0) urban.hashInto(h)
+        if (talentActive) talent.state.hashInto(h)
         regulation.hashInto(h)
         bonds.hashInto(h)
         unions.hashInto(h)
