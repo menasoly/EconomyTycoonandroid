@@ -76,8 +76,16 @@ fun MoreMenuScreen(ui: GameUi, onQuit: () -> Unit) {
             val researchAt = entries.indexOfFirst { it.third == Route.Research }
             val withIp: List<Triple<String, String, Route>> =
                 if (ui.session.economy.ipRunner.active && researchAt >= 0) entries.take(researchAt + 1) + Triple("Patents and secrets", "Protect what you research", Route.Ip) + entries.drop(researchAt + 1) else entries
-            items(withIp.size) { i ->
-                val (title, subtitle, route) = withIp[i]
+            val tourismAt = withIp.indexOfFirst { it.third == Route.Tourism }
+            val withUrban: List<Triple<String, String, Route>> =
+                if (ui.session.hasUrban && tourismAt >= 0) withIp.take(tourismAt + 1) + listOf(
+                    Triple("Cities", "Districts, land value, housing and the map", Route.Urban),
+                    Triple("Council and petitions", "Rezoning petitions, lobbying and concessions", Route.UrbanCouncil),
+                    Triple("Transport", "Roads, transit lines and commutes", Route.UrbanTransit),
+                    Triple("City budget", "Taxes, services, works and debt", Route.UrbanBudget),
+                ) + withIp.drop(tourismAt + 1) else withIp
+            items(withUrban.size) { i ->
+                val (title, subtitle, route) = withUrban[i]
                 Card(onClick = { ui.open(route) }) { ListRow(title, subtitle = subtitle) }
             }
             item { SecondaryButton("Save and quit to menu", { confirmQuit = true }, Modifier.fillMaxWidth()) }
