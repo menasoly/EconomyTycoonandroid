@@ -30,6 +30,18 @@ import app.many.economytycoon.core.RoleId
 import app.many.economytycoon.core.TechId
 import app.many.economytycoon.core.Tick
 import app.many.economytycoon.core.VehicleId
+import app.many.economytycoon.talent.TalentCommand as TC
+import app.many.economytycoon.talent.CourseId
+import app.many.economytycoon.talent.CovenantId
+import app.many.economytycoon.talent.InstitutionId
+import app.many.economytycoon.talent.LadderId
+import app.many.economytycoon.talent.PersonId
+import app.many.economytycoon.talent.PositionId
+import app.many.economytycoon.talent.ProgrammeId
+import app.many.economytycoon.talent.ProviderId
+import app.many.economytycoon.talent.RecruitCampaignId
+import app.many.economytycoon.talent.SkillId
+import app.many.economytycoon.workforce.CohortKey
 import app.many.economytycoon.core.VehicleTypeId
 import app.many.economytycoon.core.WarehouseId
 import app.many.economytycoon.logistics.StockRef
@@ -215,5 +227,44 @@ object CommandSamples {
         Command.Urban(c, app.many.economytycoon.urban.UrbanCommand.WithdrawPetition(CityId(4), app.many.economytycoon.urban.PetitionId(8), c)),
         Command.Urban(c, app.many.economytycoon.urban.UrbanCommand.LobbyPetition(CityId(4), app.many.economytycoon.urban.PetitionId(8), c, 3, Money.units(5_000))),
         Command.Urban(c, app.many.economytycoon.urban.UrbanCommand.BidConcession(CityId(4), app.many.economytycoon.urban.ConcessionId(5), c, 80_000L)),
+        Command.EstablishTalent,
+        Command.SetImmigrationPolicy(CountryId(2), 400_000L, 5_000L, true),
+        Command.Talent(c, TC.OpenInstitution(c, CountryId(2), RegionId(2), app.many.economytycoon.talent.InstitutionKind.UNIVERSITY, "Harbour College", 800L, Money.units(4_000), Money.units(9_000), listOf(SkillId("engineering"), SkillId("general")))),
+        Command.Talent(c, TC.SetInstitutionTuition(c, InstitutionId(3), Money.units(4_500))),
+        Command.Talent(c, TC.SetInstitutionSpend(c, InstitutionId(3), Money.units(9_500))),
+        Command.Talent(c, TC.SetInstitutionFields(c, InstitutionId(3), listOf(SkillId("engineering")))),
+        Command.Talent(c, TC.ExpandInstitution(c, InstitutionId(3), 200L)),
+        Command.Talent(c, TC.CloseInstitution(c, InstitutionId(3))),
+        Command.Talent(c, TC.StartTraining(c, CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), SkillId("engineering"), app.many.economytycoon.talent.ProgrammeKind.values().last(), 12L, 60, app.many.economytycoon.talent.RetentionClause(360, 500_000L))),
+        Command.Talent(c, TC.StartTraining(c, CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), SkillId("engineering"), app.many.economytycoon.talent.ProgrammeKind.values().first(), 5L, 30, null)),
+        Command.Talent(c, TC.CancelTraining(c, ProgrammeId(4))),
+        Command.Talent(c, TC.OpenProvider(c, RegionId(2), "Skills Hub")),
+        Command.Talent(c, TC.AddCourse(c, ProviderId(1), "Welding basics", SkillId("engineering"), app.many.economytycoon.talent.CourseKind.CERTIFICATE, 30L, Money.units(1_200))),
+        Command.Talent(c, TC.SetCourseTuition(c, CourseId(2), Money.units(1_300))),
+        Command.Talent(c, TC.SetCourseSeats(c, CourseId(2), 40L)),
+        Command.Talent(c, TC.CloseCourse(c, CourseId(2))),
+        Command.Talent(c, TC.SetTeaching(c, ProviderId(1), 1_200_000L)),
+        Command.Talent(c, TC.AccreditProvider(c, ProviderId(1), app.many.economytycoon.talent.Accreditation.values().last())),
+        Command.Talent(c, TC.CloseProvider(c, ProviderId(1))),
+        Command.Talent(c, TC.BuyCourseSeats(c, CourseId(2), CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), 6L, app.many.economytycoon.talent.RetentionClause(180, 250_000L))),
+        Command.Talent(c, TC.BuyCourseSeats(c, CourseId(2), CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), 3L, null)),
+        Command.Talent(c, TC.SubmitOffer(c, CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), app.many.economytycoon.talent.PoachTarget.Group(CohortKey(CompanyId(9), FacilityId(0), RoleId("welder"), RegionId(2)), 4L, 300_000L), Money.units(95), Money.units(500), app.many.economytycoon.talent.CovenantStance.BUY_OUT)),
+        Command.Talent(c, TC.SubmitOffer(c, CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), app.many.economytycoon.talent.PoachTarget.Individual(PersonId(11)), Money.units(120), Money.units(0), app.many.economytycoon.talent.CovenantStance.RESPECT)),
+        Command.Talent(c, TC.SetCounterPolicy(c, true, 250_000L)),
+        Command.Talent(c, TC.SignNonCompete(c, CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), null, 12, Money.units(2_000))),
+        Command.Talent(c, TC.SignNonCompete(c, null, PersonId(11), 6, Money.units(5_000))),
+        Command.Talent(c, TC.ReleaseNonCompete(c, CovenantId(2))),
+        Command.Talent(c, TC.GrantRetention(c, CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), 400_000L, 90)),
+        Command.Talent(c, TC.LaunchCampaign(c, RegionId(2), RoleId("welder"), Money.units(30_000), 45)),
+        Command.Talent(c, TC.CancelCampaign(c, RecruitCampaignId(3))),
+        Command.Talent(c, TC.CreateLadder(c, "Shop floor", listOf(app.many.economytycoon.talent.Rung(CohortKey(c, FacilityId(0), RoleId("welder"), RegionId(2)), 90L, 300_000L, 80_000L), app.many.economytycoon.talent.Rung(CohortKey(c, FacilityId(0), RoleId("quality_inspector"), RegionId(2)), 180L, 500_000L, 120_000L)))),
+        Command.Talent(c, TC.SetLadderEnabled(c, LadderId(2), false)),
+        Command.Talent(c, TC.RemoveLadder(c, LadderId(2))),
+        Command.Talent(c, TC.HirePerson(c, "Ada Mora", RoleId("welder"), RegionId(2), Money.units(140), 41)),
+        Command.Talent(c, TC.OpenPosition(c, RoleId("welder"), RegionId(2), "Head of works")),
+        Command.Talent(c, TC.AppointPerson(c, PositionId(5), PersonId(11))),
+        Command.Talent(c, TC.NameSuccessor(c, PositionId(5), PersonId(12), app.many.economytycoon.talent.DevelopmentKind.MENTORING)),
+        Command.Talent(c, TC.RemoveSuccessor(c, PositionId(5), PersonId(12))),
+        Command.Talent(c, TC.SetDevelopment(c, PositionId(5), PersonId(12), app.many.economytycoon.talent.DevelopmentKind.values().last())),
     )
 }
