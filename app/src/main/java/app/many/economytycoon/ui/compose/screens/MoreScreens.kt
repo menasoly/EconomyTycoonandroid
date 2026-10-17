@@ -72,8 +72,11 @@ fun MoreMenuScreen(ui: GameUi, onQuit: () -> Unit) {
                 if (ui.session.economy.scenario.run != null) base.take(2) + Triple("Scenario", "Targets and time left", Route.Scenario) + base.drop(2) else base
             val entries: List<Triple<String, String, Route>> =
                 if (ui.session.hasBanking) withScenario.take(1) + Triple("Banks", "Deposits, lending and stress tests", Route.Banking) + withScenario.drop(1) else withScenario
-            items(entries.size) { i ->
-                val (title, subtitle, route) = entries[i]
+            val researchAt = entries.indexOfFirst { it.third == Route.Research }
+            val withIp: List<Triple<String, String, Route>> =
+                if (ui.session.economy.ipRunner.active && researchAt >= 0) entries.take(researchAt + 1) + Triple("Patents and secrets", "Protect what you research", Route.Ip) + entries.drop(researchAt + 1) else entries
+            items(withIp.size) { i ->
+                val (title, subtitle, route) = withIp[i]
                 Card(onClick = { ui.open(route) }) { ListRow(title, subtitle = subtitle) }
             }
             item { SecondaryButton("Save and quit to menu", { confirmQuit = true }, Modifier.fillMaxWidth()) }

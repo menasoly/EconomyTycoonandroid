@@ -47,6 +47,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         marketing(company, out)
         energy(company, out)
         carbon(company, out)
+        patents(company, out)
         banks(company, out)
         regulation(company, out)
         bonds(company, out)
@@ -312,6 +313,19 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         }
     }
 
+    /** What the patent office, the courts and rivals did to the company in the last few days. */
+    private fun patents(id: CompanyId, out: MutableList<Alert>) {
+        if (!e.ipRunner.active) return
+        val from = e.tick.value - thresholds.ipNoticeDays
+        val names = IpSessionAdapter.names(e)
+        for ((i, ev) in e.ipRunner.recentEvents().withIndex()) {
+            if (ev.tick.value < from) continue
+            val text = app.many.economytycoon.ip.IpNews.alertFor(ev, id, e.ip.state, names) ?: continue
+            val severity = if (ev is app.many.economytycoon.ip.IpEvent.JudgmentGiven || ev is app.many.economytycoon.ip.IpEvent.DemandReceived) Severity.WARNING else Severity.INFO
+            out += Alert("ip.event", ev.tick.value * 1_000L + i, severity, text, "Open Patents and secrets to see what you can do about it.")
+        }
+    }
+
     /** Deadlines for permits and carbon obligations, a shortfall that is near, and permits about to lapse. */
     private fun carbon(id: CompanyId, out: MutableList<Alert>) {
         if (!e.carbonRunner.active || e.carbonState.compliance.accountsOf(id).isEmpty()) return
@@ -415,5 +429,6 @@ data class AlertThresholds(
     val bondCashCover: Long = 20,
     val fineNoticeDays: Long = 20,
     val carbonNoticeDays: Long = 20,
+    val ipNoticeDays: Long = 3,
     val uninsuredValue: Money = Money.units(250_000),
 )

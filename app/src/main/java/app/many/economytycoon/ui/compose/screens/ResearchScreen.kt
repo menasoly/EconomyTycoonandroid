@@ -71,6 +71,7 @@ private fun TechCard(ui: GameUi, company: app.many.economytycoon.core.CompanyId,
             if (t.canStart) SecondaryButton("Research now", { ui.issue(Command.StartResearch(company, t.id), "Research started.") }, Modifier.weight(1f))
             if (t.canQueue) SecondaryButton("Queue", { ui.issue(Command.QueueResearch(company, t.id), "Queued.") }, Modifier.weight(1f))
             if (t.canCancel) LinkButton("Cancel", { ui.issue(Command.CancelResearch(company, t.id), "Cancelled.") })
+            if (t.state == app.many.economytycoon.session.TechState.UNLOCKED && ui.session.economy.ipRunner.active) LinkButton("Protect this", { ui.open(app.many.economytycoon.ui.nav.Route.Ip) })
         }
     }
 }

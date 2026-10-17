@@ -64,6 +64,7 @@ class TickSummary(val tick: Tick) {
     var regulationEvents: List<app.many.economytycoon.regulation.RegulationEvent> = emptyList()
     var carbonEvents: List<app.many.economytycoon.carbon.CarbonEvent> = emptyList()
     var bankingEvents: List<app.many.economytycoon.banking.BankEvent> = emptyList()
+    var ipEvents: List<app.many.economytycoon.ip.IpEvent> = emptyList()
     var riskEvents: List<app.many.economytycoon.risk.RiskEvent> = emptyList()
     var contractEvents: List<app.many.economytycoon.contracts.ContractEvent> = emptyList()
     var closedBooks: Boolean = false
@@ -100,6 +101,7 @@ class TickPipeline(
     private val aiGrants = AiGrants(e, executor)
     private val aiMarketing = AiMarketing(e, executor)
     private val aiCarbon = AiCarbon(e, executor)
+    private val aiIp = AiIp(e, executor)
     private val aiUtilities = AiUtilities(e)
     private val aiLobbying = AiLobbying(e, executor)
     private val aiBonds = AiBonds(e, executor)
@@ -233,6 +235,8 @@ class TickPipeline(
             val m = market!!
             fulfilled = fulfillment.run(m)
             e.carbonRunner.assessTrade(tick, fulfilled!!.crossBorder)
+            // The patent module takes its turn once the day's sales are on record; its payments join today's settlement.
+            s.ipEvents = e.ipRunner.step(tick)
             s.consumerSpend = fulfilled!!.consumerSpend
             for (o in m.expired) e.releaseReservation(o)
         }
@@ -245,6 +249,7 @@ class TickPipeline(
             e.world.updateTick(tick, e.random)
             val events = e.research.step(tick)
             s.researchCompleted = events.count { it is app.many.economytycoon.research.ResearchEvent.Completed }
+            aiIp.onResearch(tick, events)
             e.companies.advanceDepartments { id -> Money.max(Money.units(1_000), wagesPerTick(id) * 30L) }
             e.companies.advanceBrands(
                 { id -> e.companies.progress(id).efficiencyPpm.coerceAtLeast(0L) },
@@ -308,6 +313,8 @@ class TickPipeline(
         val bank = e.bankingRunner.step(tick)
         intents += bank.second
         s.bankingEvents = bank.first
+        // Royalties, patent fees, court awards and research credits: after every other group, so existing order is unchanged.
+        intents += e.ipRunner.drain()
 
         val results = e.finance.settleTick(tick, intents)
         for (draft in carbon.adjustments) e.finance.ledger.post(draft)

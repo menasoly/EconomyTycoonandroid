@@ -129,6 +129,15 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "ip", "Protecting what you research", "Patents, trade secrets and licences.",
+            listOf(
+                "Patent or secret. A patent is public, lasts a fixed term and can be licensed or enforced in court, but it costs fees and may be narrowed or refused. A secret costs little and gives an edge until someone leaks or steals it, so it suits what rivals cannot copy from your products.",
+                "Filing. After you research a technology, open Patents and secrets from the More menu. The screen compares the two ways of protecting it and shows the fees. A patent is granted country by country, so file where you sell and where rivals make the product.",
+                "Licences and royalties. Selling a product that uses someone else's patent without a licence invites a suit, and a court can bar the sales. You can offer licences on your own patents, form pools and cross-license with rivals. Royalties are settled with your other bills.",
+                "Disputes. Accuse a company that uses your patent, settle, or go to court. Outside investors that make nothing also buy patents and send demands; compare the price of settling with the cost of a defence before you decide.",
+            ),
+        ),
+        HelpTopic(
             "saving", "Saving", "Slots, autosave and backups.",
             listOf(
                 "The game saves automatically at the interval you choose in Settings and when you leave to the menu. You can also save to a named slot at any time from the Saves screen.",

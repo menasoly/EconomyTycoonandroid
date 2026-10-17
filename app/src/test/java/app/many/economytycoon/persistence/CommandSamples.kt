@@ -161,6 +161,11 @@ object CommandSamples {
         Command.BankDecision(c, app.many.economytycoon.banking.BankAction.RaiseCapital(app.many.economytycoon.banking.BankId(3), app.many.economytycoon.banking.CapitalInstrument.TIER2, Money.units(90_000))),
         Command.BankDecision(c, app.many.economytycoon.banking.BankAction.SetFundingPolicy(app.many.economytycoon.banking.BankId(3), app.many.economytycoon.core.Rate.percent(20), app.many.economytycoon.core.Rate.percent(10), app.many.economytycoon.core.Rate.percent(120))),
         Command.BankDecision(c, app.many.economytycoon.banking.BankAction.RunStressTest(app.many.economytycoon.banking.BankId(3), "adverse")),
+        Command.EstablishIp,
+        Command.Ip(app.many.economytycoon.ip.IpCommand.FilePatent(c, TechId("milling"), listOf(CountryId(2), CountryId(3)), app.many.economytycoon.ip.BreadthChoice.BROAD, 14)),
+        Command.Ip(app.many.economytycoon.ip.IpCommand.KeepSecret(c, TechId("milling"))),
+        Command.Ip(app.many.economytycoon.ip.IpCommand.AcceptLicense(c, app.many.economytycoon.ip.LicenseId(5))),
+        Command.Ip(app.many.economytycoon.ip.IpCommand.FileSuit(c, app.many.economytycoon.ip.DisputeId(2))),
         Command.EscrowTransfer(3L, 5L, 0L, Money.units(250), 1),
     )
 }

@@ -71,6 +71,8 @@ object SimulationSnapshot {
     private const val ENERGY = "energygrid"
     private const val CARBON = "carbon"
     private const val BANKING = "banking"
+    private const val IP = "ip"
+    private const val IP_SALES = "ipsales"
     private const val REGULATION = "regulation"
     private const val BONDS = "bonds"
     private const val UNIONS = "unions"
@@ -128,6 +130,11 @@ object SimulationSnapshot {
         if (!e.carbonState.isPristine) add(CARBON) { app.many.economytycoon.carbon.CarbonCodec.write(e.carbonState, it) }
         // And once the commercial banks have been opened.
         if (!e.banking.isPristine) add(BANKING) { app.many.economytycoon.banking.BankingCodec.write(e.banking, it) }
+        // And once the patent office has been opened; the sales history it prices royalties from is saved beside it.
+        if (e.ipActive) {
+            add(IP) { app.many.economytycoon.ip.IpCodec.write(e.ip.state, it) }
+            add(IP_SALES) { e.ipSales.write(it) }
+        }
         add(REGULATION) { RegulationCodec.write(e.regulation, it) }
         add(BONDS) { BondCodec.write(e.bonds, it) }
         add(UNIONS) { UnionCodec.write(e.unions, it) }
@@ -189,6 +196,8 @@ object SimulationSnapshot {
         sections[ENERGY]?.let { EnergyGridCodec.read(ByteReader(it.payload), e.energyGrids) }
         sections[CARBON]?.let { app.many.economytycoon.carbon.CarbonCodec.read(ByteReader(it.payload), e.carbonState) }
         sections[BANKING]?.let { app.many.economytycoon.banking.BankingCodec.read(ByteReader(it.payload), e.banking) }
+        sections[IP]?.let { e.restoreIp(app.many.economytycoon.ip.IpCodec.read(ByteReader(it.payload))) }
+        sections[IP_SALES]?.let { e.ipSales.read(ByteReader(it.payload)) }
         RegulationCodec.read(reader(REGULATION), e.regulation)
         BondCodec.read(reader(BONDS), e.bonds)
         UnionCodec.read(reader(UNIONS), e.unions)

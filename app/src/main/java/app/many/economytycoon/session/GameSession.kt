@@ -113,6 +113,12 @@ class GameSession(
     /** The carbon advisor's suggestions for the selected company. */
     fun carbonInsights(): List<app.many.economytycoon.advisor.Insight> = carbonDesk()?.insights().orEmpty()
 
+    /** The patent screens' view of the running game; it shows nothing until the patent office is open. */
+    val ipView: app.many.economytycoon.ui.present.IpSessionView by lazy { IpSessionAdapter(this) }
+
+    /** The patent advisor's suggestions for the selected company. */
+    fun ipInsights(): List<app.many.economytycoon.advisor.Insight> = ipView.ipModel()?.insights.orEmpty()
+
     // ---- commercial banks ----
 
     /** True once the game has commercial banks; older saves and test worlds keep only the simple lender. */

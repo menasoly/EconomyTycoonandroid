@@ -208,6 +208,17 @@ sealed class Command {
     data class CancelAbatement(override val company: CompanyId, val project: app.many.economytycoon.carbon.AbatementId) : Command()
     data class SetCarbonPolicy(override val company: CompanyId, val country: CountryId, val autoOffsets: Boolean, val autoBorrow: Boolean) : Command()
 
+    // ---- intellectual property ----
+    /** Opens the patent office and seeds the scripted patent holders; only the system gives it, once, when a new game is set up. */
+    object EstablishIp : Command() {
+        override val company: CompanyId? get() = null
+        override fun toString() = "EstablishIp"
+    }
+    /** Any decision of the intellectual property module (filing, licensing, disputes, secrets, the patent market). */
+    data class Ip(val command: app.many.economytycoon.ip.IpCommand) : Command() {
+        override val company: CompanyId? get() = command.actor
+    }
+
     // ---- labour relations ----
     data class OpenFuture(override val company: CompanyId, val good: GoodId, val side: app.many.economytycoon.futures.Side, val contracts: Long, val tenor: Int) : Command()
     data class CloseFuture(override val company: CompanyId, val position: Long) : Command()
