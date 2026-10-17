@@ -77,3 +77,13 @@ trimmed to their caps.
 One test class per rule and service, plus `GridScenarioTest` (storage, links, outages, investment, capacity market,
 price caps), `GridDeterminismTest` (same seed, save in the middle, repeatable billing), `EnergyGridCodecTest`, and the
 presenter test. Shared worlds are in `GridTestSupport.kt`.
+
+## Integration
+
+- Commands: `EstablishGrids` (system only, codec tag 91) and twelve player commands (tags 92-103), run by `simulation/EnergyGridRunner` through `GridCommandMap`.
+- Per-region switch: grids exist only after `EstablishGrids`, which `NewGame.start` issues and the command log replays. Regions with a grid skip the legacy `Grid` ledger in the tick pipeline; engine-level simulations and old saves stay legacy.
+- Snapshot section `energygrid` and the hash contribution are written only when grids exist. `plantMap` links power-plant facilities to generating units.
+- Tick: the runner advances in procurement (after grant events) and adds fuel, capex and monthly bill intents in settlement. Household bills are paid from the household pool.
+- Money: grid pool accounts are `SYSTEM:<gridId>` owners; invariant INV-02 and money supply exclude only the id 0 system owner, so those balances count as money. Settlement lets a system payer go negative.
+- Computer competitors: `AiUtilities` (every 30 ticks) answers offers, orders units and seeks power agreements.
+- Session and UI: `GameSession.energyGrids/gridFacts/gridNews`, news and alerts, `Route.Electricity`, menu entry, glossary, tip and help topic.
