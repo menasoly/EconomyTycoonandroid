@@ -205,6 +205,12 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
                 else -> Unit
             }
         }
+        if (summary.ipEvents.isNotEmpty()) {
+            val own = { company: app.many.economytycoon.core.CompanyId -> e.companies.company(company)?.kind == app.many.economytycoon.companies.CompanyKind.PLAYER }
+            for (h in app.many.economytycoon.ip.IpNews.headlines(summary.ipEvents, e.ip.state, IpSessionAdapter.names(e))) {
+                if (h.weight != app.many.economytycoon.ip.NewsWeight.MINOR || h.companies.any(own)) add(NewsItem(h.tick, NewsKind.COMPANY, h.text))
+            }
+        }
         for (ev in summary.bankingEvents) {
             val h = app.many.economytycoon.ui.present.BankEventText.headline(ev, { id -> e.banking.bank(id)?.name ?: "A bank" }, Formatting::money)
             if (h.important) add(NewsItem(t, NewsKind.FINANCE, h.text))
