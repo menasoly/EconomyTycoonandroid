@@ -94,6 +94,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "multiplayer", "Playing with others", "The lobby, the connection banner, trades and what happens when the link drops.",
+            listOf(
+                "Open Play with others from the More menu. In the lobby, mark yourself ready; the host starts the game once everyone is. Anyone who would rather not run a company can watch instead. Everybody then plays the same economy: orders travel between devices, not the whole game.",
+                "An order you give takes a moment to take effect, a few ticks, because the host has to put it in order with everyone else's and pass it on. The banner at the top shows how well you are connected. If your game ever drifts from the host's, the host notices within ten ticks and sends you a fresh copy.",
+                "If the connection is lost, the game keeps your company for 60 seconds while you reconnect, and you rejoin with the same seat. Money trades go through the host's escrow account: each side's money waits there until both have kept their promise, and an offer nobody answers runs out of time and is returned.",
+            ),
+        ),
+        HelpTopic(
             "research", "Research", "Unlock better machines, recipes and buildings.",
             listOf(
                 "Spend research points to unlock technologies. Each has a cost, a minimum time and prerequisites. Unlocked technology can open new facility types, recipes and machines, or improve what you already have.",
