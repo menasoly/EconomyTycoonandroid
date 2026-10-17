@@ -10,9 +10,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import app.many.economytycoon.blueprint.ApplyPlan
 import app.many.economytycoon.core.FacilityId
 import app.many.economytycoon.core.LineId
 import app.many.economytycoon.core.Money
+import app.many.economytycoon.core.Outcome
 import app.many.economytycoon.core.RoleId
 import app.many.economytycoon.production.SchedulePolicy
 import app.many.economytycoon.simulation.Command
@@ -39,7 +41,10 @@ import app.many.economytycoon.ui.compose.design.color
 import app.many.economytycoon.ui.model.FormResult
 import app.many.economytycoon.ui.model.StaffingForm
 import app.many.economytycoon.ui.present.FacilitiesPresenter
+import app.many.economytycoon.ui.present.BlueprintApplyPresenter
+import app.many.economytycoon.ui.present.BlueprintLibraryPresenter
 import app.many.economytycoon.ui.present.FacilityDetailPresenter
+import app.many.economytycoon.ui.present.applyBlueprint
 import app.many.economytycoon.ui.present.RecipeChoice
 import app.many.economytycoon.ui.present.RoleChoice
 
@@ -52,6 +57,8 @@ fun FacilityDetailScreen(ui: GameUi, facilityId: Long) {
     var recipeLine by remember { mutableStateOf<LineId?>(null) }
     var staffRole by remember { mutableStateOf<RoleChoice?>(null) }
     var maintainText by remember { mutableStateOf("") }
+    var pickBlueprint by remember { mutableStateOf(false) }
+    var blueprintPlan by remember { mutableStateOf<ApplyPlan?>(null) }
 
     ScreenFrame(model?.title ?: "Facility", onBack = { ui.back() }) {
         if (model == null || company == null) {
@@ -70,6 +77,26 @@ fun FacilityDetailScreen(ui: GameUi, facilityId: Long) {
                         ui.issue(Command.SetSchedulePolicy(company, id, next))
                     }, Modifier.weight(1f))
                 }
+            }
+            item {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    SecondaryButton("Save as blueprint", {
+                        when (val saved = ui.session.blueprints.capture(id)) {
+                            is Outcome.Ok -> ui.showMessage("Saved as '${saved.value.name}'.")
+                            is Outcome.Rejected -> ui.showMessage(saved.rejection.message)
+                        }
+                    }, Modifier.weight(1f))
+                    SecondaryButton("Apply a blueprint", { pickBlueprint = true }, Modifier.weight(1f))
+                }
+            }
+            val waiting = ui.session.blueprintsReady().firstOrNull { it.facility == id }
+            if (waiting != null) item {
+                PrimaryButton("Configure from '${waiting.pending.blueprint.name}'", {
+                    when (val planned = ui.session.blueprints.finishPending(waiting)) {
+                        is Outcome.Ok -> blueprintPlan = planned.value
+                        is Outcome.Rejected -> ui.showMessage(planned.rejection.message)
+                    }
+                }, Modifier.fillMaxWidth())
             }
             item { SectionHeader("Production lines", action = if (model.canAddLine) "Add line" else null, onAction = { ui.issue(Command.AddLine(company, id), "Line added.") }) }
             items(model.lines.size) { i ->
@@ -118,6 +145,56 @@ fun FacilityDetailScreen(ui: GameUi, facilityId: Long) {
                 confirmDemolish = false
                 if (ui.issue(Command.Demolish(company, id), "Demolished.")) ui.back()
             }, { confirmDemolish = false }, destructive = true)
+        }
+        if (pickBlueprint) {
+            val library = BlueprintLibraryPresenter.build(ui.session.blueprints)
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { pickBlueprint = false },
+                containerColor = Theme.tokens.surface,
+                title = { Text("Apply a blueprint", style = Type.Title, color = Theme.tokens.textPrimary) },
+                text = {
+                    androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        val rows = library?.rows.orEmpty()
+                        if (rows.isEmpty()) Text(library?.empty ?: "Start or load a game first.", style = Type.Body, color = Theme.tokens.textSecondary)
+                        for (r in rows) ListRow(r.name, subtitle = r.subtitle, badge = r.status, badgeTone = r.statusTone, onClick = {
+                            pickBlueprint = false
+                            when (val planned = ui.session.blueprints.planExisting(r.id, id)) {
+                                is Outcome.Ok -> blueprintPlan = planned.value
+                                is Outcome.Rejected -> ui.showMessage(planned.rejection.message)
+                            }
+                        })
+                    }
+                },
+                confirmButton = {},
+                dismissButton = { LinkButton("Cancel", { pickBlueprint = false }) },
+            )
+        }
+        val plan = blueprintPlan
+        if (plan != null) {
+            val preview = BlueprintApplyPresenter.model(plan)
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { blueprintPlan = null },
+                containerColor = Theme.tokens.surface,
+                title = { Text(preview.title, style = Type.Title, color = Theme.tokens.textPrimary) },
+                text = {
+                    androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text(preview.summary, style = Type.Body, color = Theme.tokens.textSecondary)
+                        for (g in preview.groups) {
+                            Text(g.label, style = Type.Heading, color = Theme.tokens.textPrimary)
+                            for (row in g.rows) Text("${row.number}. ${row.text}" + (row.cost?.let { " ($it)" } ?: ""), style = Type.Caption, color = Theme.tokens.textSecondary)
+                        }
+                        for (q in preview.problems) Text("- ${q.text}: ${q.reason}", style = Type.Caption, color = Theme.tokens.warning)
+                    }
+                },
+                confirmButton = {
+                    PrimaryButton(preview.button, {
+                        val result = ui.session.applyBlueprint(plan, id)
+                        blueprintPlan = null
+                        ui.showMessage(BlueprintApplyPresenter.report(result.report).headline)
+                    }, enabled = preview.canApply)
+                },
+                dismissButton = { LinkButton("Cancel", { blueprintPlan = null }) },
+            )
         }
         val line = recipeLine
         if (line != null) RecipePicker(model.recipes, onPick = { r -> recipeLine = null; ui.issue(Command.SetRecipe(company, id, line, r?.id)) }, onDismiss = { recipeLine = null })
