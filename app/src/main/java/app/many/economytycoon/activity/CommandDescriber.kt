@@ -53,6 +53,17 @@ object CommandDescriber {
     private fun word(e: Enum<*>): String = e.name.lowercase().replace('_', ' ')
     private fun pct(ppm: Long): String = if (ppm % 10_000L == 0L) "${ppm / 10_000L}%" else "%.1f%%".format(ppm / 10_000.0)
 
+    private fun bankDecision(a: app.many.economytycoon.banking.BankAction, n: DescribeNames): String = when (a) {
+        is app.many.economytycoon.banking.BankAction.RaiseCapital -> "Raised ${n.money(a.amount)} of capital for bank ${a.bank.value}"
+        is app.many.economytycoon.banking.BankAction.PayDividend -> "Paid a dividend of ${n.money(a.amount)} from bank ${a.bank.value}"
+        is app.many.economytycoon.banking.BankAction.ReassureDepositors -> "Spent ${n.money(a.spend)} reassuring the depositors of bank ${a.bank.value}"
+        is app.many.economytycoon.banking.BankAction.RunStressTest -> "Ran a stress test on bank ${a.bank.value}"
+        is app.many.economytycoon.banking.BankAction.RequestEmergencyLiquidity -> "Asked for ${n.money(a.amount)} of emergency liquidity for bank ${a.bank.value}"
+        is app.many.economytycoon.banking.BankAction.BuySecurities, is app.many.economytycoon.banking.BankAction.SellSecurities,
+        is app.many.economytycoon.banking.BankAction.BorrowWholesale, is app.many.economytycoon.banking.BankAction.RepayWholesale -> "Changed the funding of bank ${a.bank.value}"
+        else -> "Changed the lending policy of bank ${a.bank.value}"
+    }
+
     fun describe(cmd: Command, n: DescribeNames = DescribeNames.PLAIN): String = when (cmd) {
         is Command.FoundCompany -> "Founded ${cmd.name} with ${n.money(cmd.capital)}"
         is Command.Rename -> "Renamed ${n.company(cmd.company)} to ${cmd.name}"
@@ -131,6 +142,9 @@ object CommandDescriber {
         is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement ->
             app.many.economytycoon.simulation.GridCommandMap.of(cmd)?.let { app.many.economytycoon.energygrid.GridCommandExecutor.describe(it) } ?: "Changed the electricity grid"
+        is Command.EstablishBanks -> "Opened the banks"
+        is Command.FoundBank -> "Founded bank ${cmd.name} with ${n.money(cmd.capital)}"
+        is Command.BankDecision -> bankDecision(cmd.action, n)
         is Command.EstablishCarbonPolicies -> "Put the carbon policies in force"
         is Command.BidCarbonAuction -> "Bid for ${cmd.quantity.format()} t of permits in country ${cmd.country.value}"
         is Command.CancelCarbonBid -> "Withdrew an auction bid"
@@ -178,6 +192,7 @@ object CommandDescriber {
         is Command.SetStaffing, is Command.SetBenefits, is Command.SetTraining, is Command.RespondDemand -> ActivityArea.PEOPLE
         is Command.PlaceOrder, is Command.CancelOrder, is Command.SetSellRule, is Command.RemoveSellRule, is Command.SetBuyRule,
         is Command.RemoveBuyRule, is Command.OpenFuture, is Command.CloseFuture, is Command.AddMargin -> ActivityArea.TRADE
+        is Command.EstablishBanks, is Command.FoundBank, is Command.BankDecision,
         is Command.EscrowTransfer, is Command.SetDividend, is Command.Borrow, is Command.Repay, is Command.SetBudget, is Command.SubscribeBond, is Command.TradeBond -> ActivityArea.FINANCE
         is Command.StartResearch, is Command.QueueResearch, is Command.CancelResearch, is Command.LicenseTech -> ActivityArea.RESEARCH
         is Command.Ship, is Command.MoveLocal, is Command.BuyVehicle, is Command.SellVehicle, is Command.RepairVehicle,
@@ -204,7 +219,7 @@ object CommandDescriber {
         is Command.LicenseTech, is Command.SubscribeBond, is Command.TradeBond, is Command.LobbyLaw, is Command.AddMargin,
         is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials, is Command.CreateCampaign,
         is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest, is Command.OrderGridUnit,
-        is Command.TerminatePowerAgreement, is Command.EscrowTransfer, is Command.BuyCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement -> true
+        is Command.TerminatePowerAgreement, is Command.EscrowTransfer, is Command.FoundBank, is Command.BuyCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement -> true
         else -> false
     }
 }

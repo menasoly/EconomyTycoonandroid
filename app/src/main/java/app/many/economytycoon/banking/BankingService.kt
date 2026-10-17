@@ -219,6 +219,9 @@ class BankingService(val params: BankingParams = BankingParams()) {
 
     fun hashInto(h: CanonicalHasher) = book.hashInto(h)
 
+    /** True while nothing has ever been set up here: a game without banks saves, hashes and ticks exactly as before. */
+    val isPristine: Boolean get() = book.banks.isEmpty() && book.funds.isEmpty() && book.hiddenAdvice.isEmpty() && book.stress.isEmpty() && book.nextBankId == 1L
+
     fun stateHash(): StateHash = CanonicalHasher().also { book.hashInto(it) }.finish()
 
     internal fun clearAll() { book.clear(); log.clear() }

@@ -41,6 +41,7 @@ class CommandExecutor(private val e: Economy) {
         val tick = e.tick
         if (cmd is Command.FoundCompany) return found(actor, cmd, tick)
         if (cmd is Command.EstablishGrids) return if (actor is Actor.System) e.energyGridRunner.establish(tick) else fail(Rules.NOT_OWNER, "only the game sets up the grids")
+        if (cmd is Command.EstablishBanks) return if (actor is Actor.System) e.bankingRunner.establish(tick) else fail(Rules.NOT_OWNER, "only the game opens the banks")
         if (cmd is Command.EstablishCarbonPolicies) return if (actor is Actor.System) e.carbonRunner.establish(tick, cmd.delayYears) else fail(Rules.NOT_OWNER, "only the game sets the carbon policies")
         if (cmd is Command.EscrowTransfer) return if (actor is Actor.System) escrowTransfer(cmd, tick) else fail(Rules.NOT_OWNER, "only the host moves escrow money")
         val id = cmd.company ?: return fail(Rules.INVALID_ARGUMENT, "command needs a company")
@@ -50,7 +51,7 @@ class CommandExecutor(private val e: Economy) {
             return fail(Rules.WRONG_STATE, "${company.name} is not trading")
         }
         return when (cmd) {
-            is Command.FoundCompany, is Command.EstablishGrids, is Command.EstablishCarbonPolicies, is Command.EscrowTransfer -> fail(Rules.INVALID_ARGUMENT, "unreachable")
+            is Command.FoundCompany, is Command.EstablishGrids, is Command.EstablishCarbonPolicies, is Command.EstablishBanks, is Command.EscrowTransfer -> fail(Rules.INVALID_ARGUMENT, "unreachable")
             is Command.Rename -> e.companies.rename(id, cmd.name).map { CommandResult() }
             is Command.SetHeadquarters -> {
                 if (e.world.cityOrNull(cmd.city) == null) fail(Rules.UNKNOWN_ENTITY, "unknown city")
@@ -168,6 +169,8 @@ class CommandExecutor(private val e: Economy) {
             is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
             is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement ->
                 e.energyGridRunner.execute(cmd, tick)
+            is Command.FoundBank -> e.bankingRunner.found(actor, cmd, tick)
+            is Command.BankDecision -> e.bankingRunner.decide(actor, cmd, tick)
             is Command.BidCarbonAuction, is Command.CancelCarbonBid, is Command.PlacePermitOrder, is Command.CancelPermitOrder,
             is Command.SurrenderPermits, is Command.BuyCarbonOffsets, is Command.RetireCarbonOffsets, is Command.FundOffsetProject,
             is Command.StartAbatement, is Command.CancelAbatement, is Command.SetCarbonPolicy ->

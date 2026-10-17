@@ -70,6 +70,7 @@ object SimulationSnapshot {
     private const val MARKETING = "marketing"
     private const val ENERGY = "energygrid"
     private const val CARBON = "carbon"
+    private const val BANKING = "banking"
     private const val REGULATION = "regulation"
     private const val BONDS = "bonds"
     private const val UNIONS = "unions"
@@ -125,6 +126,8 @@ object SimulationSnapshot {
         if (!e.energyGrids.isEmpty) add(ENERGY) { EnergyGridCodec.write(e.energyGrids, it) }
         // And again only once a government has a carbon policy.
         if (!e.carbonState.isPristine) add(CARBON) { app.many.economytycoon.carbon.CarbonCodec.write(e.carbonState, it) }
+        // And once the commercial banks have been opened.
+        if (!e.banking.isPristine) add(BANKING) { app.many.economytycoon.banking.BankingCodec.write(e.banking, it) }
         add(REGULATION) { RegulationCodec.write(e.regulation, it) }
         add(BONDS) { BondCodec.write(e.bonds, it) }
         add(UNIONS) { UnionCodec.write(e.unions, it) }
@@ -185,6 +188,7 @@ object SimulationSnapshot {
         sections[MARKETING]?.let { MarketingCodec.read(ByteReader(it.payload), e.marketing.state) }
         sections[ENERGY]?.let { EnergyGridCodec.read(ByteReader(it.payload), e.energyGrids) }
         sections[CARBON]?.let { app.many.economytycoon.carbon.CarbonCodec.read(ByteReader(it.payload), e.carbonState) }
+        sections[BANKING]?.let { app.many.economytycoon.banking.BankingCodec.read(ByteReader(it.payload), e.banking) }
         RegulationCodec.read(reader(REGULATION), e.regulation)
         BondCodec.read(reader(BONDS), e.bonds)
         UnionCodec.read(reader(UNIONS), e.unions)

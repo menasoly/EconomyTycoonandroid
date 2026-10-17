@@ -19,6 +19,20 @@ object Invariants {
         out += inventoryBooks(e)
         out += population(e)
         out += app.many.economytycoon.marketing.MarketingInvariants.check(e.marketing.state).map { "MKT: $it" }
+        out += banks(e)
+        return out
+    }
+
+    /** SIM-04: every bank's books balance, and what banks lent each other in a country equals what they borrowed. */
+    fun banks(e: Economy): List<String> {
+        val out = ArrayList<String>()
+        val banks = e.banking.banks()
+        for (b in banks) if (b.imbalance != Money.ZERO) out += "SIM-04: bank ${b.name} books are out of balance by ${b.imbalance}"
+        for ((country, group) in banks.groupBy { it.country }) {
+            val lent = Money.sum(group.map { it.interbankLent })
+            val borrowed = Money.sum(group.map { it.interbankBorrowed })
+            if (lent != borrowed) out += "SIM-04: interbank lending $lent differs from borrowing $borrowed in country ${country.value}"
+        }
         return out
     }
 

@@ -181,6 +181,16 @@ sealed class Command {
     data class DeclinePowerAgreement(override val company: CompanyId, val ppa: Long) : Command()
     data class TerminatePowerAgreement(override val company: CompanyId, val ppa: Long) : Command()
 
+    // ---- banks ----
+    /** Opens the computer-run banks a world starts with; only the system gives it, once, when a new game is set up. */
+    object EstablishBanks : Command() {
+        override val company: CompanyId? get() = null
+        override fun toString() = "EstablishBanks"
+    }
+    data class FoundBank(override val company: CompanyId, val name: String, val country: CountryId, val capital: Money) : Command()
+    /** A decision of the management of a bank the company runs. Never carries the action that founds a bank. */
+    data class BankDecision(override val company: CompanyId, val action: app.many.economytycoon.banking.BankAction) : Command()
+
     // ---- carbon ----
     /** Puts the carbon policies the world starts with in force; only the system gives it, once, when a new game is set up. */
     data class EstablishCarbonPolicies(val delayYears: Int = 2) : Command() {
