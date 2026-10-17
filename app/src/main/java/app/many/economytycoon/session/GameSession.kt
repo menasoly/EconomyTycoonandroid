@@ -135,6 +135,20 @@ class GameSession(
     /** Looks up text in the language chosen in the settings. */
     val translator: app.many.economytycoon.i18n.Translator get() = app.many.economytycoon.i18n.Translator(settings.language)
 
+    /** The player's progress through the step-by-step tutorial. */
+    val tutorial = app.many.economytycoon.tutorial.TutorialTracker()
+
+    /** Records that the player opened a screen, which some tutorial steps ask for. */
+    fun noteVisit(route: String) { tutorial.noteVisit(route) }
+
+    /** The tutorial as it stands now, brought up to date with the game. */
+    fun tutorialView(): app.many.economytycoon.tutorial.TutorialView? {
+        val company = selectedCompany ?: return null
+        val facts = app.many.economytycoon.tutorial.TutorialFactsReader.read(simulation.economy, company, tutorial.visitedScreens)
+        tutorial.update(facts)
+        return tutorial.view(facts)
+    }
+
     private val valuationReader = app.many.economytycoon.valuation.ValuationReader(simulation.economy)
 
     /** What the selected company is worth under the given assumptions, from several angles. */
