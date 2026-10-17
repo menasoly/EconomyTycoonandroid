@@ -50,6 +50,7 @@ object Tips {
         Tip("marketing", "Awareness builds with steady spending and fades when it stops. A modest campaign that runs for weeks beats a big one that ends in days.", "Marketing", Route.Marketing),
         Tip("electricity", "A short grid sells at scarcity prices and cuts customers off in order. Own a plant, or sign a power agreement, before the peak.", "World", Route.Electricity),
         Tip("tourism", "Visitors book weeks ahead. Price by season, watch the review score, and do not rely on one channel.", "World", Route.Tourism),
+        Tip("cities", "Rents climb where homes run short. Rezone for more housing, or add a transit line, before the poorest districts are priced out.", "World", Route.Urban),
         Tip("carbon-deadline", "Check the carbon deadline before the year ends. Missing it costs a fine on every tonne you could not cover.", "Government", Route.Carbon),
         Tip("carbon-lapse", "Spare permits lapse after a few years. Use them, or sell what you will not need, before they expire.", "Government", Route.Carbon),
         Tip("banking", "A bank earns the gap between what it lends at and what it pays. Keep capital above the buffer and do not lend more than your deposits can support when depositors get nervous.", "Finance", Route.Banking),
