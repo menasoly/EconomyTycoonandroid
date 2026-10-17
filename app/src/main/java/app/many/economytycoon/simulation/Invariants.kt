@@ -20,6 +20,7 @@ object Invariants {
         out += population(e)
         out += app.many.economytycoon.marketing.MarketingInvariants.check(e.marketing.state).map { "MKT: $it" }
         out += banks(e)
+        if (e.talentActive) out += app.many.economytycoon.talent.TalentInvariants.violations(e.talent.state, e.talent.taxonomy, null, e.tick).map { "TAL: $it" }
         return out
     }
 

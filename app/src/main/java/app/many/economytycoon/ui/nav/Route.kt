@@ -32,6 +32,12 @@ sealed class Route(val tab: Tab, val name: String) {
     data class Build(val region: Long) : Route(Tab.OPERATIONS, "build") { override val args = listOf(region.toString()) }
     object People : Route(Tab.OPERATIONS, "people") { override val args = emptyList<String>() }
     object Unions : Route(Tab.OPERATIONS, "unions") { override val args = emptyList<String>() }
+    object Talent : Route(Tab.OPERATIONS, "talent") { override val args = emptyList<String>() }
+    object TalentEducation : Route(Tab.OPERATIONS, "talent-education") { override val args = emptyList<String>() }
+    object TalentTraining : Route(Tab.OPERATIONS, "talent-training") { override val args = emptyList<String>() }
+    object TalentRecruiting : Route(Tab.OPERATIONS, "talent-recruiting") { override val args = emptyList<String>() }
+    object TalentCareers : Route(Tab.OPERATIONS, "talent-careers") { override val args = emptyList<String>() }
+    object TalentProviders : Route(Tab.OPERATIONS, "talent-providers") { override val args = emptyList<String>() }
     object Research : Route(Tab.OPERATIONS, "research") { override val args = emptyList<String>() }
     object Logistics : Route(Tab.OPERATIONS, "logistics") { override val args = emptyList<String>() }
     object Blueprints : Route(Tab.OPERATIONS, "blueprints") { override val args = emptyList<String>() }
@@ -137,6 +143,12 @@ sealed class Route(val tab: Tab, val name: String) {
                 "build" -> number(0)?.let { Build(it) }
                 "people" -> People
                 "unions" -> Unions
+                "talent" -> Talent
+                "talent-education" -> TalentEducation
+                "talent-training" -> TalentTraining
+                "talent-recruiting" -> TalentRecruiting
+                "talent-careers" -> TalentCareers
+                "talent-providers" -> TalentProviders
                 "research" -> Research
                 "logistics" -> Logistics
                 "market" -> Market

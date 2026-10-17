@@ -163,6 +163,24 @@ object Glossary {
         GlossaryTerm("urban-availability-payment", "Availability payment", "A monthly sum the city pays a concessionaire for keeping an asset open and in good order, whatever the traffic.", listOf("urban-concession", "urban-availability"), WORLD),
         GlossaryTerm("urban-availability", "Availability", "How much of the time a road or line was open and in good order. Poor availability cuts the city's payments.", listOf("urban-availability-payment"), WORLD),
         GlossaryTerm("urban-liveability", "Liveability", "A city's score from housing, travel, safety, services, environment and public finances. It decides how the city ranks.", listOf("urban-gentrification"), WORLD),
+    ) + listOf(
+        GlossaryTerm("skill-level", "Skill level", "How well a person does a job, from untrained to expert. It builds with training and experience and fades when the skill goes unused.", listOf("talent-skill-match"), PEOPLE),
+        GlossaryTerm("talent-skill-match", "Skill match", "How closely a team's skills fit what the job asks. A good match raises output; a poor one cuts it.", listOf("skill-level"), PEOPLE),
+        GlossaryTerm("talent-shortage", "Skills shortage", "Too few people with a skill in a region, or people who lack it. Wages for that skill climb until schools and migration catch up.", listOf("talent-wage-premium"), PEOPLE),
+        GlossaryTerm("talent-wage-premium", "Wage premium", "The extra pay a scarce or high skill earns over the going wage for the job.", listOf("talent-shortage"), PEOPLE),
+        GlossaryTerm("talent-intake", "Intake", "The number of students a school or course takes in each year.", listOf("talent-accreditation"), PEOPLE),
+        GlossaryTerm("talent-accreditation", "Accreditation", "A rating of a training provider's quality. A higher rating draws more students and lets it charge more.", listOf("talent-intake"), PEOPLE),
+        GlossaryTerm("talent-bond", "Training bond", "An agreement that a trainee stays for a set time after a course paid for by the employer.", listOf("talent-clawback"), PEOPLE),
+        GlossaryTerm("talent-clawback", "Clawback", "Money charged back when a trainee leaves before the bond ends.", listOf("talent-bond"), PEOPLE),
+        GlossaryTerm("talent-non-compete", "Non-compete", "A promise not to hire from a rival for a set time. Breaking it costs a penalty.", listOf("talent-counter-offer"), PEOPLE),
+        GlossaryTerm("talent-counter-offer", "Counter-offer", "A raise offered to people who have been approached by a rival, to keep them.", listOf("talent-non-compete"), PEOPLE),
+        GlossaryTerm("talent-employer-brand", "Employer brand", "How attractive a company is as a place to work. It builds slowly with pay, training and recruiting campaigns.", emptyList(), PEOPLE),
+        GlossaryTerm("talent-ladder", "Career ladder", "The steps a person can climb inside a company, each with its own pay and requirements.", listOf("talent-rung"), PEOPLE),
+        GlossaryTerm("talent-rung", "Rung", "One step on a career ladder, with its own pay and what it asks of a person.", listOf("talent-ladder"), PEOPLE),
+        GlossaryTerm("talent-key-position", "Key position", "A post whose loss hurts the company until it is filled.", listOf("talent-successor"), PEOPLE),
+        GlossaryTerm("talent-successor", "Successor", "The person named to take over a key position when it falls empty.", listOf("talent-key-position"), PEOPLE),
+        GlossaryTerm("talent-brain-drain", "Brain drain", "Skilled people leaving a country for better pay or conditions abroad.", listOf("talent-diaspora"), PEOPLE),
+        GlossaryTerm("talent-diaspora", "Diaspora", "People who have left a country and keep ties to it. Their ties make later migration easier.", listOf("talent-brain-drain"), PEOPLE),
     )
 
     private val byId: Map<String, GlossaryTerm> = terms.associateBy { it.id }

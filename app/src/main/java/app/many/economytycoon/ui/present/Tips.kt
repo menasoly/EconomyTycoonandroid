@@ -56,6 +56,8 @@ object Tips {
         Tip("banking", "A bank earns the gap between what it lends at and what it pays. Keep capital above the buffer and do not lend more than your deposits can support when depositors get nervous.", "Finance", Route.Banking),
         Tip("ip-protect", "A new technology can be patented or kept secret. A patent lasts and can earn licence fees; a secret is free until it leaks.", "Research", Route.Ip),
         Tip("ip-renew", "Patents need a renewal fee every year. Turn on automatic renewal for the ones that matter, or they lapse for good.", "Research", Route.Ip),
+        Tip("talent-train", "A trained team produces more than a cheap one. Train where the skill match is weakest, and tie trainees in with a bond so the investment stays.", "People", Route.TalentTraining),
+        Tip("talent-poach", "Rivals hunt the people you trained. Keep pay close to the market and answer offers before they settle.", "People", Route.TalentRecruiting),
         Tip("carbon-cheapest", "The cheapest tonne is the one you do not emit. Compare each measure's cost per tonne with the carbon price.", "Government", Route.Carbon),
     )
 

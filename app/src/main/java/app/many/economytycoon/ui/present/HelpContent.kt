@@ -111,6 +111,14 @@ object HelpContent {
             ),
         ),
         HelpTopic(
+            "people-skills", "Skills and training", "What skill does, how people are educated, trained and hired away, and how careers work.",
+            listOf(
+                "Every team has a skill level for its job. A team whose skills match the job well produces more; a poor match costs output. Skills build with training and experience and fade when unused. Schools, colleges and universities turn young people into qualified workers, so a region with more of them draws on a better pool.",
+                "Training takes part of a team away from work for a while, which costs output now for a better skill later. A bond keeps trainees with you for a set time, and a clawback charges you back if they leave early. Providers sell courses; their accreditation shows how good they are.",
+                "Rivals can offer your people more to leave. A counter-offer or a raise keeps them, and a non-compete stops a rival hiring from you. Employer brand makes hiring easier, careers and named successors keep key posts filled, and migration moves skilled people between countries as pay and openness change.",
+            ),
+        ),
+        HelpTopic(
             "multiplayer", "Playing with others", "The lobby, the connection banner, trades and what happens when the link drops.",
             listOf(
                 "Open Play with others from the More menu. In the lobby, mark yourself ready; the host starts the game once everyone is. Anyone who would rather not run a company can watch instead. Everybody then plays the same economy: orders travel between devices, not the whole game.",

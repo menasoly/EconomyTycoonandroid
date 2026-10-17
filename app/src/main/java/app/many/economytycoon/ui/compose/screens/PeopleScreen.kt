@@ -53,6 +53,7 @@ fun PeopleScreen(ui: GameUi) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     LinkButton("Change benefits", { benefitsOpen = true })
                     LinkButton("Labour relations", { ui.open(Route.Unions) })
+                    if (ui.session.hasTalent) LinkButton("Skills", { ui.open(Route.Talent) })
                 }
             }
             item { SectionHeader("Teams") }

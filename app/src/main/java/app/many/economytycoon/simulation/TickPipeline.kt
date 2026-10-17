@@ -70,6 +70,8 @@ class TickSummary(val tick: Tick) {
     var tourismSettlement: app.many.economytycoon.tourism.SettlementRun? = null
     /** What happened in the cities' councils, works and concessions today; empty in a game without city plans. */
     var urbanNotices: List<app.many.economytycoon.urban.UrbanNotice> = emptyList()
+    /** What happened to skills, schools, training and poaching today; empty in a game without the talent module. */
+    var talentEvents: List<app.many.economytycoon.talent.TalentEvent> = emptyList()
     var riskEvents: List<app.many.economytycoon.risk.RiskEvent> = emptyList()
     var contractEvents: List<app.many.economytycoon.contracts.ContractEvent> = emptyList()
     var closedBooks: Boolean = false
@@ -115,6 +117,7 @@ class TickPipeline(
     private val aiLandlords = AiLandlords(e, executor)
     private val aiHoteliers = AiHoteliers(e)
     private val aiUrban = AiUrban(e, executor)
+    private val aiTalent = AiTalent(e, executor)
     private val liquidator = Liquidator(e)
     private val generator = EventGenerator(e)
 
@@ -154,6 +157,7 @@ class TickPipeline(
             aiLandlords.run(tick)
             aiHoteliers.run(tick)
             aiUrban.run(tick)
+            aiTalent.run(tick)
             e.insolvency.step(tick)
         }
         phase(Phase.COMMAND_APPLICATION) {
@@ -199,6 +203,8 @@ class TickPipeline(
             e.logistics.step(tick, e.random)
             e.tourismRunner.advance(tick, s)
             e.urbanRunner.advance(tick, s)
+            // Skills and people take their turn once the day's orders are in and before production, so what they change is felt today.
+            e.talentRunner.advance(tick, s)
         }
         phase(Phase.PRODUCTION) {
             val ctx = TickContext(tick, e.random, e.labor, e.grid, e.resources, e.modifiers, e.prices)
@@ -330,6 +336,8 @@ class TickPipeline(
         intents += e.tourismRunner.settlementIntents(tick, s)
         // The cities' concession payments and the mayors' compensation follow, again after every other group.
         intents += e.urbanRunner.drain()
+        // The schools' and training bills come last of all.
+        intents += e.talentRunner.drain(tick)
 
         val results = e.finance.settleTick(tick, intents)
         for (draft in carbon.adjustments) e.finance.ledger.post(draft)

@@ -19,6 +19,7 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
     private val gridHeadlines = HashMap<String, Long>()
     private val tourismHeadlines = HashMap<String, Long>()
     private val urbanHeadlines = HashMap<String, Long>()
+    private val talentHeadlines = HashMap<String, Long>()
 
     fun items(): List<NewsItem> = items.toList().reversed()
 
@@ -262,6 +263,7 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
             if (e.tourism.properties.any { it.owner in ours }) add(NewsItem(t, NewsKind.FINANCE, app.many.economytycoon.tourism.TourismNews(e.tourism) { Formatting.money(it) }.summary(run).let { "${it.headline}: ${it.detail}" }))
         }
         if (summary.urbanNotices.isNotEmpty()) urbanNews(summary.urbanNotices, t)
+        if (summary.talentEvents.isNotEmpty()) talentNews(summary.talentEvents, t)
         if (summary.closedBooks) add(NewsItem(t, NewsKind.FINANCE, "Companies closed their books for the month"))
         if (summary.problems.isNotEmpty()) add(NewsItem(t, NewsKind.WORLD, "Ledger check found ${Formatting.plural(summary.problems.size.toLong(), "problem")}"))
     }
@@ -296,6 +298,46 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
         if (urbanHeadlines.size > 200) urbanHeadlines.entries.removeAll { t - it.value >= URBAN_REPEAT_DAYS }
     }
 
+    /**
+     * Shortages where a player has people, migration, new schools and providers, accreditation, breached covenants and
+     * successful headhunts that touch a player's company. Repeats are held back.
+     */
+    private fun talentNews(events: List<app.many.economytycoon.talent.TalentEvent>, t: Long) {
+        val ours = e.companies.all().filter { it.kind == app.many.economytycoon.companies.CompanyKind.PLAYER && it.isActive }.map { it.id }.toSet()
+        val regionsOurs = e.workforce.all().filter { it.key.company in ours }.map { it.key.region }.toSet()
+        fun region(id: app.many.economytycoon.core.RegionId) = e.world.regions().firstOrNull { it.id == id }?.name ?: "region ${id.value}"
+        fun company(id: app.many.economytycoon.core.CompanyId) = e.companies.company(id)?.name ?: "a company"
+        for (n in events) {
+            val line: Pair<NewsKind, String>? = when (n) {
+                is app.many.economytycoon.talent.TalentEvent.ShortageRaised ->
+                    if (n.region in regionsOurs) NewsKind.WORLD to "Shortage of ${n.skill.key.replace('_', ' ')} in ${region(n.region)}" else null
+                is app.many.economytycoon.talent.TalentEvent.MigrationWave ->
+                    NewsKind.WORLD to "Skilled workers are leaving for another country"
+                is app.many.economytycoon.talent.TalentEvent.ProviderOpened ->
+                    if (n.owner in ours) NewsKind.COMPANY to "Your training provider opened" else null
+                is app.many.economytycoon.talent.TalentEvent.AccreditationChanged ->
+                    e.talent.providers.provider(n.provider)?.owner?.takeIf { it in ours }?.let { NewsKind.COMPANY to "A training provider is now rated ${n.level.label}" }
+                is app.many.economytycoon.talent.TalentEvent.InstitutionOpened ->
+                    if (n.owner != null && n.owner in ours) NewsKind.COMPANY to "Your ${n.kind.label.lowercase()} opened in ${region(n.region)}" else null
+                is app.many.economytycoon.talent.TalentEvent.PoachSucceeded ->
+                    when {
+                        n.victim in ours -> NewsKind.COMPANY to "${company(n.hunter)} hired ${n.heads} of your people"
+                        n.hunter in ours -> NewsKind.COMPANY to "You hired ${n.heads} people from ${company(n.victim)}"
+                        else -> null
+                    }
+                is app.many.economytycoon.talent.TalentEvent.CovenantBreached ->
+                    if (n.company in ours || n.hunter in ours) NewsKind.COMPANY to "A non-compete covenant was breached by ${company(n.hunter)}" else null
+                else -> null
+            }
+            if (line == null) continue
+            val last = talentHeadlines[line.second]
+            if (last != null && t - last < TALENT_REPEAT_DAYS) continue
+            talentHeadlines[line.second] = t
+            add(NewsItem(t, line.first, line.second))
+        }
+        if (talentHeadlines.size > 200) talentHeadlines.entries.removeAll { t - it.value >= TALENT_REPEAT_DAYS }
+    }
+
     private fun kindOf(ev: EconomicEvent): NewsKind = when (ev) {
         is EconomicEvent.SupplyShock, is EconomicEvent.DemandShift, is EconomicEvent.DemandRestored -> NewsKind.MARKET
         is EconomicEvent.ConfidenceShock -> NewsKind.WORLD
@@ -315,5 +357,6 @@ class NewsFeed(private val e: Economy, private val capacity: Int = 200) {
         const val GRID_REPEAT_DAYS = 14L
         const val TOURISM_REPEAT_DAYS = 14L
         const val URBAN_REPEAT_DAYS = 30L
+        const val TALENT_REPEAT_DAYS = 30L
     }
 }

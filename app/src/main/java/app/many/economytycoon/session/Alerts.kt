@@ -50,6 +50,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         patents(company, out)
         tourism(company, out)
         urban(company, out)
+        talent(company, out)
         banks(company, out)
         regulation(company, out)
         bonds(company, out)
@@ -337,6 +338,28 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         }
     }
 
+    /** The people advisor's pressing points, empty key posts and headhunt offers waiting for an answer. */
+    private fun talent(id: CompanyId, out: MutableList<Alert>) {
+        if (!e.talentRunner.active) return
+        val now = e.tick.value
+        val runner = e.talentRunner
+        val advisor = app.many.economytycoon.talent.TalentAdvisor(e.talent)
+        for (i in advisor.advise(id, e.tick, runner.inputs(e.tick), runner.world)) {
+            if (i.priority < thresholds.talentAlertPriority) continue
+            out += Alert(i.code, id.value, Severity.WARNING, i.title, i.detail)
+        }
+        for (ev in runner.recentEvents()) {
+            if (ev is app.many.economytycoon.talent.TalentEvent.PositionVacated && ev.company == id && !ev.coveredBySuccessor && now - ev.tick.value <= thresholds.talentVacancyDays) {
+                out += Alert("talent.vacancy", ev.position.value, Severity.WARNING, "A key post is empty", "Nobody was ready to take over. Name a successor or open the position.")
+            }
+        }
+        for (o in e.talent.poaching.offers()) {
+            if (o.isPending && o.victim == id) {
+                out += Alert("talent.poach", o.id.value, Severity.WARNING, "A rival is trying to hire your people", "Answer before the offer is settled: raise pay, make a counter-offer or let them go.")
+            }
+        }
+    }
+
     /** Supervision, capital breaches and runs at the banks the company runs. */
     private fun banks(id: CompanyId, out: MutableList<Alert>) {
         if (!e.bankingRunner.active) return
@@ -462,6 +485,8 @@ data class AlertThresholds(
     val tourismAlertPriority: Int = 70,
     val urbanNoticeDays: Long = 10,
     val urbanDeficitMonths: Int = 3,
+    val talentAlertPriority: Int = 65,
+    val talentVacancyDays: Long = 30,
     val lawNoticeDays: Long = 10,
     val bondNoticeDays: Long = 10,
     val demandUrgentDays: Long = 3,

@@ -75,6 +75,7 @@ object SimulationSnapshot {
     private const val IP_SALES = "ipsales"
     private const val TOURISM = "tourism"
     private const val URBAN = "urban"
+    private const val TALENT = "talent"
     private const val REGULATION = "regulation"
     private const val BONDS = "bonds"
     private const val UNIONS = "unions"
@@ -141,6 +142,8 @@ object SimulationSnapshot {
         if (!e.tourism.isEmpty) add(TOURISM) { app.many.economytycoon.tourism.TourismCodec.write(e.tourism, it) }
         // And once the cities have been planned.
         if (e.urban.size > 0) add(URBAN) { app.many.economytycoon.urban.UrbanCodec.write(e.urban, it) }
+        // And once skills and education have been switched on.
+        if (e.talentActive) add(TALENT) { app.many.economytycoon.talent.TalentCodec.write(e.talent.state, it) }
         add(REGULATION) { RegulationCodec.write(e.regulation, it) }
         add(BONDS) { BondCodec.write(e.bonds, it) }
         add(UNIONS) { UnionCodec.write(e.unions, it) }
@@ -208,6 +211,10 @@ object SimulationSnapshot {
         sections[URBAN]?.let {
             app.many.economytycoon.urban.UrbanCodec.read(ByteReader(it.payload), e.urban)
             e.urbanService.refreshScores()
+        }
+        sections[TALENT]?.let {
+            app.many.economytycoon.talent.TalentCodec.read(ByteReader(it.payload), e.talent.state)
+            e.openTalent()
         }
         RegulationCodec.read(reader(REGULATION), e.regulation)
         BondCodec.read(reader(BONDS), e.bonds)

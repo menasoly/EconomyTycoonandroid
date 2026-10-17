@@ -17,6 +17,7 @@ class AgendaBuilder(private val e: Economy) {
         carbon(company, now, end, items)
         tourism(company, now, end, items)
         urban(company, now, end, items)
+        talent(company, now, end, items)
         val sorted = items.sortedWith(compareBy<AgendaItem>({ it.day }, { it.kind.ordinal }, { it.title }))
         return Agenda(now, end, sorted)
     }
@@ -90,6 +91,20 @@ class AgendaBuilder(private val e: Economy) {
                 if (c.bidsCloseAt.value !in now..end || c.bids.any { it.company == company }) continue
                 out += AgendaItem(c.bidsCloseAt.value, AgendaKind.CONCESSION_BIDS, plan.name, "${c.name}: bids close")
             }
+        }
+    }
+
+    /** Training programmes that finish in the window, and offers for staff (made by the company or against it) that are about to be decided. */
+    private fun talent(company: CompanyId, now: Long, end: Long, out: MutableList<AgendaItem>) {
+        if (!e.talentRunner.active) return
+        for (p in e.talent.training.activeOf(company)) {
+            if (p.endTick.value !in now..end) continue
+            out += AgendaItem(p.endTick.value, AgendaKind.TRAINING_ENDS, "Training in ${p.skill.key.replace('_', ' ')}", "${p.seats} staff come back with the new skill")
+        }
+        for (o in e.talent.poaching.offers()) {
+            if (!o.isPending || (o.hunter != company && o.victim != company) || o.resolveAt.value !in now..end) continue
+            val mine = o.hunter == company
+            out += AgendaItem(o.resolveAt.value, AgendaKind.OFFER_DECIDED, "Offer ${o.id.value}", if (mine) "The people you approached decide" else "Your people decide whether to leave", risky = !mine)
         }
     }
 

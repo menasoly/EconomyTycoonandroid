@@ -46,6 +46,8 @@ class CommandExecutor(private val e: Economy) {
         if (cmd is Command.EstablishIp) return if (actor is Actor.System) e.ipRunner.establish(tick) else fail(Rules.NOT_OWNER, "only the game opens the patent office")
         if (cmd is Command.EstablishTourism) return if (actor is Actor.System) e.tourismRunner.establish(tick) else fail(Rules.NOT_OWNER, "only the game sets up tourism")
         if (cmd is Command.EstablishUrban) return if (actor is Actor.System) e.urbanRunner.establish(tick) else fail(Rules.NOT_OWNER, "only the game draws up the city plans")
+        if (cmd is Command.EstablishTalent) return if (actor is Actor.System) e.talentRunner.establish(tick) else fail(Rules.NOT_OWNER, "only the game sets up skills and education")
+        if (cmd is Command.SetImmigrationPolicy) return if (actor is Actor.System) e.talentRunner.setPolicy(cmd, tick) else fail("talent.policy-not-allowed", "only the government makes immigration law")
         if (cmd is Command.EscrowTransfer) return if (actor is Actor.System) escrowTransfer(cmd, tick) else fail(Rules.NOT_OWNER, "only the host moves escrow money")
         val id = cmd.company ?: return fail(Rules.INVALID_ARGUMENT, "command needs a company")
         val company = e.companies.company(id) ?: return fail(Rules.UNKNOWN_ENTITY, "unknown company")
@@ -54,7 +56,7 @@ class CommandExecutor(private val e: Economy) {
             return fail(Rules.WRONG_STATE, "${company.name} is not trading")
         }
         return when (cmd) {
-            is Command.FoundCompany, is Command.EstablishGrids, is Command.EstablishCarbonPolicies, is Command.EstablishBanks, is Command.EstablishIp, is Command.EstablishTourism, is Command.EstablishUrban, is Command.EscrowTransfer -> fail(Rules.INVALID_ARGUMENT, "unreachable")
+            is Command.FoundCompany, is Command.EstablishGrids, is Command.EstablishCarbonPolicies, is Command.EstablishBanks, is Command.EstablishIp, is Command.EstablishTourism, is Command.EstablishUrban, is Command.EstablishTalent, is Command.SetImmigrationPolicy, is Command.EscrowTransfer -> fail(Rules.INVALID_ARGUMENT, "unreachable")
             is Command.Rename -> e.companies.rename(id, cmd.name).map { CommandResult() }
             is Command.SetHeadquarters -> {
                 if (e.world.cityOrNull(cmd.city) == null) fail(Rules.UNKNOWN_ENTITY, "unknown city")
@@ -181,6 +183,7 @@ class CommandExecutor(private val e: Economy) {
             is Command.Ip -> e.ipRunner.execute(cmd.command, tick)
             is Command.Tourism -> e.tourismRunner.execute(cmd.command, tick)
             is Command.Urban -> e.urbanRunner.execute(id, cmd.command, tick)
+            is Command.Talent -> e.talentRunner.execute(id, cmd.command, tick)
             is Command.RespondDemand -> e.unionRunner.respond(id, cmd.demand, cmd.response, cmd.counterPpm, tick).map { CommandResult(message = when (it) { is app.many.economytycoon.unions.UnionEvent.Struck -> "the workers walk out"; is app.many.economytycoon.unions.UnionEvent.Agreed -> "agreed"; else -> "the union backs down" }) }
             is Command.ListParcel -> e.propertyRunner.list(id, cmd.parcel, cmd.ask, tick).map { CommandResult(message = "listed for ${cmd.ask}") }
             is Command.DelistParcel -> e.propertyRunner.delist(id, cmd.parcel).map { CommandResult() }
