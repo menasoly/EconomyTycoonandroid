@@ -42,6 +42,12 @@ interface ProductionModifiers {
     fun qualityBonus(owner: CompanyId, recipe: RecipeDef): Rate = Rate.ZERO
     fun laborSavings(owner: CompanyId, recipe: RecipeDef): Rate = Rate.ZERO
     fun storageBonus(owner: CompanyId): Rate = Rate.ZERO
+
+    /** Share of [good] that one particular facility saves on top of the owner-wide savings, for example after a retrofit of that plant. */
+    fun facilityInputSavings(facility: app.many.economytycoon.core.FacilityId, good: app.many.economytycoon.core.GoodId): Rate = Rate.ZERO
+
+    /** Share of the energy one particular facility saves on top of the owner-wide savings. */
+    fun facilityEnergySavings(facility: app.many.economytycoon.core.FacilityId): Rate = Rate.ZERO
 }
 
 object NoModifiers : ProductionModifiers

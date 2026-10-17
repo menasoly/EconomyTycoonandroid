@@ -46,6 +46,7 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         grants(company, out)
         marketing(company, out)
         energy(company, out)
+        carbon(company, out)
         regulation(company, out)
         bonds(company, out)
         unions(company, out)
@@ -296,6 +297,26 @@ class AlertScanner(private val e: Economy, private val thresholds: AlertThreshol
         }
     }
 
+    /** Deadlines for permits and carbon obligations, a shortfall that is near, and permits about to lapse. */
+    private fun carbon(id: CompanyId, out: MutableList<Alert>) {
+        if (!e.carbonRunner.active || e.carbonState.compliance.accountsOf(id).isEmpty()) return
+        val view = e.carbonViews.company(id, e.tick)
+        for (a in view.accounts) {
+            val p = a.pending
+            if (p != null && p.outstanding.isPositive) {
+                val days = p.daysLeft.toLong()
+                if (p.projectedShortfall.isPositive && days <= 7L) {
+                    out += Alert("carbon.shortfall", a.country.value, Severity.CRITICAL, "Carbon shortfall in ${Formatting.plural(days, "day")}", "You are short by ${p.projectedShortfall.format()} t after the permits and credits you hold; the rest is fined.")
+                } else if (days <= thresholds.carbonNoticeDays) {
+                    out += Alert("carbon.deadline", a.country.value, Severity.WARNING, "Carbon deadline in ${Formatting.plural(days, "day")}", "You still owe ${p.outstanding.format()} t for ${p.year}.")
+                }
+            }
+            if (a.expiringNext.isPositive && app.many.economytycoon.carbon.CarbonCalendar.dayOfYear(e.tick) >= app.many.economytycoon.core.Calendar.DAYS_PER_YEAR * 3 / 4) {
+                out += Alert("carbon.lapsing", a.country.value, Severity.INFO, "Permits will lapse at the year end", "${a.expiringNext.format()} t of permits expire unused; use or sell them.")
+            }
+        }
+    }
+
     private fun marketing(id: CompanyId, out: MutableList<Alert>) {
         if (e.marketing.state.campaignMap.isEmpty() && e.marketing.state.damageMap.isEmpty()) return
         val now = e.tick.value
@@ -378,5 +399,6 @@ data class AlertThresholds(
     val propertyNoticeDays: Long = 10,
     val bondCashCover: Long = 20,
     val fineNoticeDays: Long = 20,
+    val carbonNoticeDays: Long = 20,
     val uninsuredValue: Money = Money.units(250_000),
 )

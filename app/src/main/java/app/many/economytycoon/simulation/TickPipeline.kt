@@ -62,6 +62,7 @@ class TickSummary(val tick: Tick) {
     var unionEvents: List<app.many.economytycoon.unions.UnionEvent> = emptyList()
     var bondEvents: List<app.many.economytycoon.bonds.BondEvent> = emptyList()
     var regulationEvents: List<app.many.economytycoon.regulation.RegulationEvent> = emptyList()
+    var carbonEvents: List<app.many.economytycoon.carbon.CarbonEvent> = emptyList()
     var riskEvents: List<app.many.economytycoon.risk.RiskEvent> = emptyList()
     var contractEvents: List<app.many.economytycoon.contracts.ContractEvent> = emptyList()
     var closedBooks: Boolean = false
@@ -97,6 +98,7 @@ class TickPipeline(
     private val aiTenders = AiTenders(e, executor)
     private val aiGrants = AiGrants(e, executor)
     private val aiMarketing = AiMarketing(e, executor)
+    private val aiCarbon = AiCarbon(e, executor)
     private val aiUtilities = AiUtilities(e)
     private val aiLobbying = AiLobbying(e, executor)
     private val aiBonds = AiBonds(e, executor)
@@ -133,6 +135,7 @@ class TickPipeline(
             aiTenders.run(tick)
             aiGrants.run(tick)
             aiMarketing.run(tick)
+            aiCarbon.run(tick)
             aiUtilities.run(tick)
             aiLobbying.run(tick)
             aiBonds.run(tick)
@@ -199,6 +202,7 @@ class TickPipeline(
                     }
                 }
             }
+            s.carbonEvents = e.carbonRunner.run(tick, report)
             for ((company, amount) in e.payer.drainCapital()) {
                 val country = e.companies.company(company)?.country ?: continue
                 e.macro.record(country, GdpKind.INVESTMENT, amount)
@@ -227,6 +231,7 @@ class TickPipeline(
         phase(Phase.FULFILLMENT) {
             val m = market!!
             fulfilled = fulfillment.run(m)
+            e.carbonRunner.assessTrade(tick, fulfilled!!.crossBorder)
             s.consumerSpend = fulfilled!!.consumerSpend
             for (o in m.expired) e.releaseReservation(o)
         }
@@ -296,8 +301,11 @@ class TickPipeline(
         intents += gridIntents(tick)
         intents += e.energyGridRunner.settlementIntents(tick)
         intents += e.marketingRunner.settlementIntents(e.companies.departmentIntents(tick, households))
+        val carbon = e.carbonRunner.drain()
+        intents += carbon.payments
 
         val results = e.finance.settleTick(tick, intents)
+        for (draft in carbon.adjustments) e.finance.ledger.post(draft)
         val marketingEvents = e.marketingRunner.reportPayments(tick, results)
         if (marketingEvents.isNotEmpty()) s.marketingEvents = s.marketingEvents + marketingEvents
         for (r in results) {

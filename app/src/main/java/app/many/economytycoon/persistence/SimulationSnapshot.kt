@@ -69,6 +69,7 @@ object SimulationSnapshot {
     private const val GRANTS = "grants"
     private const val MARKETING = "marketing"
     private const val ENERGY = "energygrid"
+    private const val CARBON = "carbon"
     private const val REGULATION = "regulation"
     private const val BONDS = "bonds"
     private const val UNIONS = "unions"
@@ -122,6 +123,8 @@ object SimulationSnapshot {
         if (!e.marketing.state.isPristine()) add(MARKETING) { MarketingCodec.write(e.marketing.state, it) }
         // Likewise written only once grids have been set up, so a game on the simple electricity pool saves exactly as before.
         if (!e.energyGrids.isEmpty) add(ENERGY) { EnergyGridCodec.write(e.energyGrids, it) }
+        // And again only once a government has a carbon policy.
+        if (!e.carbonState.isPristine) add(CARBON) { app.many.economytycoon.carbon.CarbonCodec.write(e.carbonState, it) }
         add(REGULATION) { RegulationCodec.write(e.regulation, it) }
         add(BONDS) { BondCodec.write(e.bonds, it) }
         add(UNIONS) { UnionCodec.write(e.unions, it) }
@@ -181,6 +184,7 @@ object SimulationSnapshot {
         GrantCodec.read(reader(GRANTS), e.grants)
         sections[MARKETING]?.let { MarketingCodec.read(ByteReader(it.payload), e.marketing.state) }
         sections[ENERGY]?.let { EnergyGridCodec.read(ByteReader(it.payload), e.energyGrids) }
+        sections[CARBON]?.let { app.many.economytycoon.carbon.CarbonCodec.read(ByteReader(it.payload), e.carbonState) }
         RegulationCodec.read(reader(REGULATION), e.regulation)
         BondCodec.read(reader(BONDS), e.bonds)
         UnionCodec.read(reader(UNIONS), e.unions)

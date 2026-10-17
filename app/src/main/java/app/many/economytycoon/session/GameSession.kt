@@ -107,6 +107,12 @@ class GameSession(
     /** The marketing advisor's suggestions for the selected company. */
     fun marketingInsights(): List<app.many.economytycoon.advisor.Insight> = selectedCompany?.let { marketingReader.insights(it) }.orEmpty()
 
+    /** The carbon screens' desk for the selected company, or null before one is chosen. */
+    fun carbonDesk(): CarbonSessionDesk? = selectedCompany?.let { CarbonSessionDesk(this, it) }
+
+    /** The carbon advisor's suggestions for the selected company. */
+    fun carbonInsights(): List<app.many.economytycoon.advisor.Insight> = carbonDesk()?.insights().orEmpty()
+
     private val analysisReader = AnalysisReader(simulation.economy, reports, stats)
 
     /** Ratios, cost structure, runway, outlook and peer standing of the selected company. */

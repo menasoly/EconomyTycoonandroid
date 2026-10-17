@@ -179,6 +179,18 @@ object CommandCodec {
             }
             is Command.CancelPromotion -> { tag(w, 90); co(w, c.company); w.writeVarLong(c.promotion.value) }
             is Command.EstablishGrids -> tag(w, 91)
+            is Command.EstablishCarbonPolicies -> { tag(w, 105); w.writeVarInt(c.delayYears) }
+            is Command.BidCarbonAuction -> { tag(w, 106); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.quantity.raw); w.writeMoney(c.limit) }
+            is Command.CancelCarbonBid -> { tag(w, 107); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.bid.value) }
+            is Command.PlacePermitOrder -> { tag(w, 108); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarInt(c.side.ordinal); w.writeVarLong(c.quantity.raw); w.writeMoney(c.limit) }
+            is Command.CancelPermitOrder -> { tag(w, 109); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.order.value) }
+            is Command.SurrenderPermits -> { tag(w, 110); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarLong(c.quantity.raw) }
+            is Command.BuyCarbonOffsets -> { tag(w, 111); co(w, c.company); w.writeVarInt(c.kind.ordinal); w.writeVarLong(c.quantity.raw) }
+            is Command.RetireCarbonOffsets -> { tag(w, 112); co(w, c.company); w.writeVarLong(c.country.value); w.writeVarInt(c.kind.ordinal); w.writeVarLong(c.quantity.raw); w.writeBoolean(c.forCompliance) }
+            is Command.FundOffsetProject -> { tag(w, 113); co(w, c.company); w.writeVarInt(c.kind.ordinal); w.writeVarLong(c.host.value); w.writeVarLong(c.annual.raw) }
+            is Command.StartAbatement -> { tag(w, 114); co(w, c.company); w.writeVarLong(c.facility.value); w.writeVarInt(c.kind.ordinal) }
+            is Command.CancelAbatement -> { tag(w, 115); co(w, c.company); w.writeVarLong(c.project.value) }
+            is Command.SetCarbonPolicy -> { tag(w, 116); co(w, c.company); w.writeVarLong(c.country.value); w.writeBoolean(c.autoOffsets); w.writeBoolean(c.autoBorrow) }
             is Command.EscrowTransfer -> { tag(w, 104); w.writeVarLong(c.trade); w.writeVarLong(c.from); w.writeVarLong(c.to); w.writeMoney(c.amount); w.writeVarInt(c.index) }
             is Command.ConnectFacilityToGrid -> { tag(w, 92); co(w, c.company); w.writeVarLong(c.grid); w.writeVarLong(c.facility.value); w.writeVarInt(c.customer); w.writeVarLong(c.baseKw) }
             is Command.DisconnectFacilityFromGrid -> { tag(w, 93); co(w, c.company); w.writeVarLong(c.facility.value) }
@@ -239,6 +251,7 @@ object CommandCodec {
             return Command.FoundCompany(name, country, hq, capital, kind)
         }
         if (t == 91) return Command.EstablishGrids
+        if (t == 105) return Command.EstablishCarbonPolicies(r.readVarInt())
         if (t == 104) return Command.EscrowTransfer(r.readVarLong(), r.readVarLong(), r.readVarLong(), r.readMoney(), r.readVarInt())
         val company = CompanyId(r.readVarLong())
         return when (t) {
@@ -336,6 +349,23 @@ object CommandCodec {
             101 -> Command.AcceptPowerAgreement(company, r.readVarLong())
             102 -> Command.DeclinePowerAgreement(company, r.readVarLong())
             103 -> Command.TerminatePowerAgreement(company, r.readVarLong())
+            106 -> Command.BidCarbonAuction(company, CountryId(r.readVarLong()), app.many.economytycoon.carbon.Tonnes(r.readVarLong()), r.readMoney())
+            107 -> Command.CancelCarbonBid(company, CountryId(r.readVarLong()), app.many.economytycoon.carbon.BidId(r.readVarLong()))
+            108 -> Command.PlacePermitOrder(
+                company, CountryId(r.readVarLong()), enumAt(app.many.economytycoon.carbon.PermitSide.values(), r.readVarInt(), "permit side"),
+                app.many.economytycoon.carbon.Tonnes(r.readVarLong()), r.readMoney(),
+            )
+            109 -> Command.CancelPermitOrder(company, CountryId(r.readVarLong()), app.many.economytycoon.carbon.PermitOrderId(r.readVarLong()))
+            110 -> Command.SurrenderPermits(company, CountryId(r.readVarLong()), app.many.economytycoon.carbon.Tonnes(r.readVarLong()))
+            111 -> Command.BuyCarbonOffsets(company, enumAt(app.many.economytycoon.carbon.OffsetKind.values(), r.readVarInt(), "offset kind"), app.many.economytycoon.carbon.Tonnes(r.readVarLong()))
+            112 -> Command.RetireCarbonOffsets(
+                company, CountryId(r.readVarLong()), enumAt(app.many.economytycoon.carbon.OffsetKind.values(), r.readVarInt(), "offset kind"),
+                app.many.economytycoon.carbon.Tonnes(r.readVarLong()), r.readBoolean(),
+            )
+            113 -> Command.FundOffsetProject(company, enumAt(app.many.economytycoon.carbon.OffsetKind.values(), r.readVarInt(), "offset kind"), CountryId(r.readVarLong()), app.many.economytycoon.carbon.Tonnes(r.readVarLong()))
+            114 -> Command.StartAbatement(company, FacilityId(r.readVarLong()), enumAt(app.many.economytycoon.carbon.AbatementKind.values(), r.readVarInt(), "abatement kind"))
+            115 -> Command.CancelAbatement(company, app.many.economytycoon.carbon.AbatementId(r.readVarLong()))
+            116 -> Command.SetCarbonPolicy(company, CountryId(r.readVarLong()), r.readBoolean(), r.readBoolean())
             73 -> Command.ListParcel(company, ParcelId(r.readVarLong()), r.readMoney())
             74 -> Command.DelistParcel(company, ParcelId(r.readVarLong()))
             75 -> Command.BuyListed(company, ParcelId(r.readVarLong()))

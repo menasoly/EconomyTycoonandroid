@@ -131,6 +131,18 @@ object CommandDescriber {
         is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement ->
             app.many.economytycoon.simulation.GridCommandMap.of(cmd)?.let { app.many.economytycoon.energygrid.GridCommandExecutor.describe(it) } ?: "Changed the electricity grid"
+        is Command.EstablishCarbonPolicies -> "Put the carbon policies in force"
+        is Command.BidCarbonAuction -> "Bid for ${cmd.quantity.format()} t of permits in country ${cmd.country.value}"
+        is Command.CancelCarbonBid -> "Withdrew an auction bid"
+        is Command.PlacePermitOrder -> "${if (cmd.side == app.many.economytycoon.carbon.PermitSide.BUY) "Asked to buy" else "Offered"} ${cmd.quantity.format()} t of permits"
+        is Command.CancelPermitOrder -> "Cancelled a permit order"
+        is Command.SurrenderPermits -> "Surrendered ${cmd.quantity.format()} t of permits"
+        is Command.BuyCarbonOffsets -> "Bought ${cmd.quantity.format()} t of ${cmd.kind.label.lowercase()} credits"
+        is Command.RetireCarbonOffsets -> "Retired ${cmd.quantity.format()} t of ${cmd.kind.label.lowercase()} credits"
+        is Command.FundOffsetProject -> "Funded a ${cmd.kind.label.lowercase()} project"
+        is Command.StartAbatement -> "Started ${cmd.kind.label.lowercase()} at ${n.facility(cmd.facility)}"
+        is Command.CancelAbatement -> "Cancelled an abatement project"
+        is Command.SetCarbonPolicy -> "Changed how carbon deadlines are met"
         is Command.OpenFuture -> "Opened a ${word(cmd.side)} position of ${cmd.contracts} futures in ${n.good(cmd.good)} for ${cmd.tenor} days"
         is Command.CloseFuture -> "Closed futures position ${cmd.position}"
         is Command.AddMargin -> "Added ${n.money(cmd.amount)} margin to futures position ${cmd.position}"
@@ -180,6 +192,9 @@ object CommandDescriber {
         is Command.EstablishGrids, is Command.ConnectFacilityToGrid, is Command.DisconnectFacilityFromGrid, is Command.ReclassifyGridLoad,
         is Command.SetGridLoadDraw, is Command.OrderGridUnit, is Command.RetireGridUnit, is Command.MothballGridUnit, is Command.RestartGridUnit,
         is Command.OfferPowerAgreement, is Command.AcceptPowerAgreement, is Command.DeclinePowerAgreement, is Command.TerminatePowerAgreement -> ActivityArea.ENERGY
+        is Command.EstablishCarbonPolicies, is Command.BidCarbonAuction, is Command.CancelCarbonBid, is Command.PlacePermitOrder, is Command.CancelPermitOrder,
+        is Command.SurrenderPermits, is Command.BuyCarbonOffsets, is Command.RetireCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement,
+        is Command.CancelAbatement, is Command.SetCarbonPolicy -> ActivityArea.PUBLIC
     }
 
     /** True for commands that spend or move money straight away, so a review of the log can pick them out. */
@@ -189,7 +204,7 @@ object CommandDescriber {
         is Command.LicenseTech, is Command.SubscribeBond, is Command.TradeBond, is Command.LobbyLaw, is Command.AddMargin,
         is Command.BuyPolicy, is Command.LeaseWarehouse, is Command.MakeOffer, is Command.DeliverMaterials, is Command.CreateCampaign,
         is Command.ExtendCampaign, is Command.SetCampaignBudget, is Command.RefreshCreative, is Command.StartAbTest, is Command.OrderGridUnit,
-        is Command.TerminatePowerAgreement, is Command.EscrowTransfer -> true
+        is Command.TerminatePowerAgreement, is Command.EscrowTransfer, is Command.BuyCarbonOffsets, is Command.FundOffsetProject, is Command.StartAbatement -> true
         else -> false
     }
 }

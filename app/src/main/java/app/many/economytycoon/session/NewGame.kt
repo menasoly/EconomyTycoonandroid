@@ -55,6 +55,8 @@ object NewGame {
         val sim = Simulation(config(options), content)
         // New games run on regional electricity grids; games saved without them keep the simple pool.
         sim.execute(Actor.System, Command.EstablishGrids)
+        // Governments set carbon policy from their environmental stance; the first rules start two years in.
+        sim.execute(Actor.System, Command.EstablishCarbonPolicies())
         val countries = sim.economy.world.countries().sortedBy { it.id }
         val country = countries.getOrNull(def?.countryIndex ?: options.countryIndex) ?: return Outcome.reject(Rules.INVALID_ARGUMENT, "no such country")
         val hq = country.capital

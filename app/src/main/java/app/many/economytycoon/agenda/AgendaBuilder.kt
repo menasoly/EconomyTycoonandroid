@@ -14,6 +14,7 @@ class AgendaBuilder(private val e: Economy) {
         contracts(company, now, end, items)
         tenders(company, now, end, items)
         grants(company, now, end, items)
+        carbon(company, now, end, items)
         val sorted = items.sortedWith(compareBy<AgendaItem>({ it.day }, { it.kind.ordinal }, { it.title }))
         return Agenda(now, end, sorted)
     }
@@ -59,6 +60,21 @@ class AgendaBuilder(private val e: Economy) {
         for (t in e.tenders.awardedTo(company)) {
             val due = t.deliverBy.value
             if (due in now..end) out += AgendaItem(due, AgendaKind.TENDER_DUE, nameOf(t.good), "Deliver the full amount or pay a penalty", cash = t.awardedValue, good = t.good, risky = true)
+        }
+    }
+
+    private fun carbon(company: CompanyId, now: Long, end: Long, out: MutableList<AgendaItem>) {
+        if (!e.carbonRunner.active || e.carbonState.compliance.accountsOf(company).isEmpty()) return
+        val view = e.carbonViews.company(company, app.many.economytycoon.core.Tick(now))
+        for (a in view.accounts) {
+            val p = a.pending
+            if (p != null && p.outstanding.isPositive && p.deadline.value in now..end) {
+                out += AgendaItem(p.deadline.value, AgendaKind.CARBON_DEADLINE, "Carbon ${p.year}", "${p.outstanding.format()} t to surrender or offset", risky = true)
+            }
+            val auction = e.carbonViews.market(a.country, app.many.economytycoon.core.Tick(now))?.nextAuction?.value ?: continue
+            if (a.kind == app.many.economytycoon.carbon.RegimeKind.CAP_AND_TRADE && auction in now..end) {
+                out += AgendaItem(auction, AgendaKind.PERMIT_AUCTION, "Permit auction", "Bids must be in before the day")
+            }
         }
     }
 

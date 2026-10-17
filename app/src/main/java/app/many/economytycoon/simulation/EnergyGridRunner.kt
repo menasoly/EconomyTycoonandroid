@@ -50,6 +50,11 @@ class EnergyGridRunner(private val e: Economy) {
     /** The day's payments (fuel, new capacity ordered by the grid operators), kept for the settlement phase of the same tick. */
     private var dayIntents: List<SettlementIntent> = emptyList()
 
+    private var plantFuel: Map<app.many.economytycoon.core.FacilityId, Pair<GoodId, app.many.economytycoon.core.Quantity>> = emptyMap()
+
+    /** The fuel each power plant facility that stands on a grid burned today; used to account for the carbon it released. */
+    fun plantFuelToday(): Map<app.many.economytycoon.core.FacilityId, Pair<GoodId, app.many.economytycoon.core.Quantity>> = plantFuel
+
     /** True once grids exist; before that nothing here does anything and nothing is saved or hashed. */
     val active: Boolean get() = !state.isEmpty
 
@@ -172,13 +177,22 @@ class EnergyGridRunner(private val e: Economy) {
      */
     fun advance(tick: Tick, summary: TickSummary) {
         dayIntents = emptyList()
+        plantFuel = emptyMap()
         if (!active || tick.value <= state.lastTick) return
         reconcile(tick)
         val burned = state.grids.flatMap { g -> g.units.filter { it.tech.isThermal } }.associate { it.id to it.lifetimeKwh }
+        val before = state.grids.flatMap { g -> g.units }.associate { it.id to it.lifetimeKwh }
         val prices = fuelPrices()
         val weather = state.grids.associate { it.id to e.world.weather.activeIn(it.region, tick) }
-        val report = service.advanceDay(tick, DayInputs(prices, weather), e.random)
+        val report = service.advanceDay(tick, DayInputs(prices, weather, e.carbonRunner.gridCarbonPrices(state.grids, tick)), e.random)
         summary.gridReport = report
+        plantFuel = java.util.TreeMap<app.many.economytycoon.core.FacilityId, Pair<GoodId, app.many.economytycoon.core.Quantity>>().also { out ->
+            for ((facility, unitId) in state.plantLinks) {
+                val unit = state.unit(unitId) ?: continue
+                val kwh = unit.lifetimeKwh - (before[unit.id] ?: unit.lifetimeKwh)
+                if (kwh > 0L) fuelBurned(unit.tech, kwh, unit.efficiencyPpm)?.let { out[facility] = it }
+            }
+        }
         for (impact in report.impacts) e.production.applyBlackout(impact.facility, impact.shedHours, impact.conditionLossPpm)
         dayIntents = report.capexIntents + fuelIntents(tick, burned, prices)
     }
@@ -366,6 +380,20 @@ class EnergyGridRunner(private val e: Economy) {
     }
 
     companion object {
+        /**
+         * The fuel good and amount a plant of [tech] burns to make [kwh] at [efficiencyPpm], from the heat the energy pack's burn
+         * recipes get out of one unit of fuel; null for technologies that burn nothing the economy counts.
+         */
+        fun fuelBurned(tech: Technology, kwh: Long, efficiencyPpm: Long): Pair<GoodId, app.many.economytycoon.core.Quantity>? {
+            val (good, kwhPerUnit) = when (tech.profile.fuel) {
+                app.many.economytycoon.energygrid.FuelKind.COAL -> GoodId("coal") to COAL_HEAT_MILLI_MWH
+                app.many.economytycoon.energygrid.FuelKind.GAS -> GoodId("natural_gas") to GAS_HEAT_MILLI_MWH
+                else -> return null
+            }
+            val heat = FuelDemand.heatKwh(tech, kwh, efficiencyPpm)
+            return good to app.many.economytycoon.core.Quantity(mulDiv(heat, app.many.economytycoon.core.Quantity.SCALE, kwhPerUnit))
+        }
+
         /** Households draw this many kilowatts for every thousand people, on average over the day. */
         const val HOUSEHOLD_KW_PER_THOUSAND = 250L
 

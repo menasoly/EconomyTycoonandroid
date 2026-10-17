@@ -24,6 +24,8 @@ class FulfillmentReport {
     var delivered: Money = Money.ZERO
     var consumerSpend: Money = Money.ZERO
     val taxIntents = ArrayList<SettlementIntent>()
+    /** Goods that crossed a border in today's trades, for the carbon border adjustment. */
+    val crossBorder = ArrayList<app.many.economytycoon.carbon.TradeFlow>()
 }
 
 /**
@@ -89,6 +91,9 @@ class Fulfillment(private val e: Economy) {
         out.executed++
         out.delivered += value
         val country = e.world.region(trade.key.region).country
+        val origin = e.world.region(sellerFacility.region).country
+        val destination = buyerFacility?.let { e.world.region(it.region).country } ?: country
+        if (origin != destination) out.crossBorder += app.many.economytycoon.carbon.TradeFlow(good, qty, origin, destination, buyerCompany.takeIf { buyerFacility != null }, seller)
         if (trade.buyer.kind == PartyKind.HOUSEHOLDS) {
             out.consumerSpend += value
             e.macro.record(country, GdpKind.CONSUMPTION, value)

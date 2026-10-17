@@ -43,4 +43,9 @@ class DayReport(
 data class DayInputs(
     val fuel: FuelPrices = FuelPrices(),
     val weather: Map<GridId, List<WeatherEvent>> = emptyMap(),
-)
+    /** The price of a tonne of carbon dioxide in force where each grid lies; a grid not listed has none. */
+    val carbonPrice: Map<GridId, Money> = emptyMap(),
+) {
+    /** The fuel prices a grid dispatches on today: the shared fuel prices with the carbon price of its country. */
+    fun fuelFor(grid: GridId): FuelPrices = carbonPrice[grid]?.let { fuel.copy(carbonPerTonne = it) } ?: fuel
+}

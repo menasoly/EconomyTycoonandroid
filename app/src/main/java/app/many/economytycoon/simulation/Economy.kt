@@ -95,7 +95,9 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
     val payer = LedgerPayer(finance, { LedgerOwner.government(it) }, { tick })
     val research = ResearchService(content, DepartmentFunding(companies), licensePayer = LedgerLicenses(finance, { tick }))
     val techEffects = TechEffects(research)
-    val modifiers = ResearchModifiers(techEffects)
+    val carbonState = app.many.economytycoon.carbon.CarbonState()
+    val modifiers: app.many.economytycoon.production.ProductionModifiers =
+        CarbonModifiers(ResearchModifiers(techEffects), carbonState, app.many.economytycoon.carbon.StandardFactors.table, content)
     val macro = MacroService(view = WorldMacroView(world, markets, { tick }))
     val outlook = WorldOutlook(content, markets, laborMarkets, world, grid)
     val competitors = CompetitorService(content, outlook)
@@ -113,6 +115,13 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
     val energyGridService = app.many.economytycoon.energygrid.EnergyGridService(energyGrids)
     val energyGridExecutor = app.many.economytycoon.energygrid.GridCommandExecutor(energyGridService)
     val energyGridRunner = EnergyGridRunner(this)
+    val carbon = app.many.economytycoon.carbon.CarbonService(
+        carbonState, CarbonLedgerEnvironment(this),
+        app.many.economytycoon.carbon.EmissionCalculator(app.many.economytycoon.carbon.StandardFactors.table, content), random,
+        app.many.economytycoon.carbon.CarbonParams(efficiencyRealisedInProduction = true),
+    )
+    val carbonViews = app.many.economytycoon.carbon.CarbonViews(carbon)
+    val carbonRunner = CarbonRunner(this)
     val regulation = app.many.economytycoon.regulation.RegulationService(ids)
     val regulationRunner = RegulationRunner(this)
     val bonds = app.many.economytycoon.bonds.BondService(ids)
@@ -224,6 +233,7 @@ class Economy(val config: SimConfig, val content: ContentRepository, restored: R
         grants.hashInto(h)
         if (!marketing.state.isPristine()) marketing.state.hashInto(h)
         if (!energyGrids.isEmpty) energyGrids.hashInto(h)
+        if (!carbonState.isPristine) carbonState.hashInto(h)
         regulation.hashInto(h)
         bonds.hashInto(h)
         unions.hashInto(h)

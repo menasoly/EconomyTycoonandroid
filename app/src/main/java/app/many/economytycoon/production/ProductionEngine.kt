@@ -110,7 +110,10 @@ class ProductionEngine(private val content: ContentRepository, private val param
 
         // Energy is drawn in proportion to the work attempted; a shortfall slows the line.
         val type = content.facilityType(f.type)
-        val energySavings = ctx.modifiers.energySavings(f.owner, recipe).ppm
+        val energySavings = ctx.modifiers.energySavings(f.owner, recipe).ppm.let { owner ->
+            val local = ctx.modifiers.facilityEnergySavings(f.id).ppm
+            if (local <= 0L) owner else ONE - mulDiv(ONE - owner.coerceIn(0, ONE), ONE - local.coerceIn(0, ONE), ONE)
+        }
         val perBatch = mulDiv(recipe.energyPerBatch.raw, rate, ONE)
         val wantedRaw = (type.baseEnergyPerLine.raw + perBatch)
         val wanted = Quantity(mulDiv(wantedRaw, ONE - energySavings.coerceIn(0, ONE), ONE))
@@ -157,7 +160,10 @@ class ProductionEngine(private val content: ContentRepository, private val param
 
     private fun tryStart(f: Facility, line: ProductionLine, recipe: RecipeDef, ctx: TickContext, rep: FacilityReport): Blocked {
         val savings = ctx.modifiers.inputSavings(f.owner, recipe).ppm.coerceIn(0, 900_000)
-        val needs = recipe.inputs.map { it to scaled(it.quantity, ONE - savings) }
+        val needs = recipe.inputs.map { input ->
+            val local = ctx.modifiers.facilityInputSavings(f.id, input.good).ppm.coerceIn(0, 900_000)
+            input to scaled(input.quantity, if (local == 0L) ONE - savings else mulDiv(ONE - savings, ONE - local, ONE))
+        }
         for ((amount, need) in needs) {
             if (f.inventory.available(amount.good) < need) return Blocked.MissingInput(amount.good)
         }
