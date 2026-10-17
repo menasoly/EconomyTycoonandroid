@@ -57,6 +57,7 @@ fun MarketScreen(ui: GameUi) {
                 }
             }
             item { SecondaryButton("Trade finder", { ui.open(Route.Trade) }, Modifier.fillMaxWidth()) }
+            item { SecondaryButton("Supply chain planner", { ui.open(Route.Planner) }, Modifier.fillMaxWidth()) }
             if (model.inflation != null) {
                 item { Text("Inflation ${model.inflation}" + (model.cpi?.let { " · consumer prices index $it" } ?: ""), style = Type.Caption, color = Theme.tokens.textSecondary) }
             }
