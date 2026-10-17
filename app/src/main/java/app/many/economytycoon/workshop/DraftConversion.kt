@@ -4,6 +4,11 @@ import app.many.economytycoon.content.ContentRepository
 import app.many.economytycoon.core.Money
 import app.many.economytycoon.core.Outcome
 import app.many.economytycoon.core.Rules
+import app.many.economytycoon.scenarios.DefEvent
+import app.many.economytycoon.scenarios.DefEventKind
+import app.many.economytycoon.scenarios.DefFail
+import app.many.economytycoon.scenarios.DefFailKind
+import app.many.economytycoon.scenarios.DefSite
 import app.many.economytycoon.scenarios.Goal
 import app.many.economytycoon.scenarios.ScenarioDef
 import app.many.economytycoon.session.Difficulty
@@ -19,7 +24,10 @@ data class NewGameParams(
     val capital: Money,
 )
 
-/** A draft turned into the game's own types, with a note for everything that did not fit. */
+/**
+ * A draft turned into the game's own types, with a note for everything that did not fit. [def] and [params] together start a
+ * game through `NewGame.startCustom`.
+ */
 data class Conversion(val def: ScenarioDef, val params: NewGameParams, val notes: List<String>) {
     /** True when nothing the author wrote was left out. */
     val lossless: Boolean get() = notes.isEmpty()
@@ -58,23 +66,22 @@ object DraftConverter {
             goals = d.requiredGoals.map { Goal(it.kind, it.target) },
             years = d.timing.years, goldDays = d.timing.goldDays, silverDays = d.timing.silverDays,
             ruinBelow = ruin?.threshold, tips = d.hints,
+            ruinAfterDay = ruin?.afterDay ?: 0,
+            events = d.events.map { DefEvent(it.day, DefEventKind.valueOf(it.kind.name), it.amount, it.text) },
+            fails = d.fails.filter { it != ruin }.map { DefFail(DefFailKind.valueOf(it.kind.name), it.threshold, it.afterDay) },
+            starters = d.company.starters.map { DefSite(it.recipe, it.regionIndex) },
         )
         val problems = def.problems()
         if (problems.isNotEmpty()) return Outcome.reject(Rules.INVALID_ARGUMENT, "the definition is unsound: ${problems.first()}")
-        return Outcome.ok(Conversion(def, params(d), notes(d, ruin)))
+        return Outcome.ok(Conversion(def, params(d), notes(d)))
     }
 
-    private fun notes(d: ScenarioDraft, ruin: FailCondition?): List<String> {
+    /** What the playable definition leaves out. Events, failure conditions, starting sites and rule overrides are all kept. */
+    private fun notes(d: ScenarioDraft): List<String> {
         val out = ArrayList<String>()
         val bonus = d.goals.count { it.bonus }
         if (bonus > 0) out += "$bonus bonus goal${if (bonus == 1) "" else "s"} left out; the definition only has goals that must be met"
         if (d.goals.any { it.weight != 1 }) out += "goal weights are not part of the definition"
-        val extraFails = d.fails.count { it != ruin }
-        if (extraFails > 0) out += "$extraFails failure condition${if (extraFails == 1) "" else "s"} left out; the definition has only one net worth floor"
-        if (ruin != null && ruin.afterDay > 0) out += "the grace period of ${ruin.afterDay} days on the net worth floor is not kept"
-        if (d.events.isNotEmpty()) out += "${d.events.size} scripted event${if (d.events.size == 1) "" else "s"} left out"
-        if (d.company.starters.isNotEmpty()) out += "${d.company.starters.size} starting site${if (d.company.starters.size == 1) "" else "s"} left out"
-        if (!d.rules.isEmpty()) out += "${d.rules.size} rule override${if (d.rules.size == 1) "" else "s"} left out; they are applied in the configuration instead"
         if (d.tags.isNotEmpty()) out += "difficulty tags are not part of the definition"
         return out
     }

@@ -18,21 +18,32 @@ sealed class ImportResult {
  * Everything the workshop screens work with in one place: the draft being edited, the shelf of saved drafts, and the
  * latest test results. It holds no rules of its own; each action calls the part that owns the rule.
  */
-class WorkshopSession(val content: ContentRepository, private val saves: SaveStore = MemorySaveStore()) {
+class WorkshopSession(
+    val content: ContentRepository,
+    private val saves: SaveStore = MemorySaveStore(),
+    executor: java.util.concurrent.Executor = WorkshopRunner.background(),
+) {
     private val libraryStore = LibraryStore(saves)
     private val harness = WorkshopHarness(content)
 
+    /** Runs studies and sweeps on another thread; the screens start tests here instead of calling [runStudy] directly. */
+    val runner = WorkshopRunner(this, executor)
+
+    /** Bumped whenever the editor is replaced, so a test that finishes after the draft was swapped is not filed under the new one. */
+    @Volatile internal var generation = 0
+        private set
+
     var library: WorkshopLibrary = libraryStore.load()
         private set
-    var editor: DraftEditor = DraftEditor(DraftTemplates.byKey("blank")?.create(library.uniqueId("new-scenario"), "New Scenario") ?: DraftDefaults.blank())
+    @Volatile var editor: DraftEditor = DraftEditor(DraftTemplates.byKey("blank")?.create(library.uniqueId("new-scenario"), "New Scenario") ?: DraftDefaults.blank())
         private set
 
     /** The library entry the editor was opened from or last saved to, if any. */
     var entryId: Long? = null
         private set
-    var lastStudy: StudyResult? = null
+    @Volatile var lastStudy: StudyResult? = null
         private set
-    var lastSweep: SweepReport? = null
+    @Volatile var lastSweep: SweepReport? = null
         private set
     var regression: RegressionReport? = null
         private set
@@ -63,6 +74,7 @@ class WorkshopSession(val content: ContentRepository, private val saves: SaveSto
     }
 
     private fun replaceEditor(d: ScenarioDraft, id: Long?): Outcome<ScenarioDraft> {
+        generation++
         editor = DraftEditor(d)
         entryId = id
         lastStudy = null; lastSweep = null; regression = null; lastParse = null
@@ -125,13 +137,19 @@ class WorkshopSession(val content: ContentRepository, private val saves: SaveSto
 
     // ---- testing --------------------------------------------------------------------------------
 
-    fun runStudy(spec: StudySpec): Outcome<StudyResult> {
-        val r = BalanceStudy(harness).run(editor.draft, spec)
-        if (r is Outcome.Ok) lastStudy = r.value
+    fun runStudy(spec: StudySpec): Outcome<StudyResult> = studyOf(editor.draft, generation, spec)
+
+    fun runSweep(spec: SweepSpec): SweepReport = sweepOf(editor.draft, generation, spec)
+
+    /** Studies [d], which was the draft when the editor was at generation [at]; the result is filed only if it still is. */
+    internal fun studyOf(d: ScenarioDraft, at: Int, spec: StudySpec): Outcome<StudyResult> {
+        val r = BalanceStudy(harness).run(d, spec)
+        if (r is Outcome.Ok && at == generation) lastStudy = r.value
         return r
     }
 
-    fun runSweep(spec: SweepSpec): SweepReport = SweepRunner(harness).run(editor.draft, spec).also { lastSweep = it }
+    internal fun sweepOf(d: ScenarioDraft, at: Int, spec: SweepSpec): SweepReport =
+        SweepRunner(harness).run(d, spec).also { if (at == generation) lastSweep = it }
 
     fun convert(): Outcome<Conversion> = DraftConverter.convert(editor.draft, content)
     fun compat(): CompatReport = PackCompat.check(editor.draft, content)
