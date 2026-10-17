@@ -148,6 +148,27 @@ class GameSession(
 
     fun saveWatch() { watchSink?.invoke() }
 
+    /** Saved facility set-ups and the builds waiting for one. The app replaces this with the saved library when a game starts. */
+    var blueprints: app.many.economytycoon.blueprint.BlueprintController =
+        app.many.economytycoon.blueprint.BlueprintController.open(app.many.economytycoon.persistence.MemorySaveStore()) { null }
+
+    private val blueprintNoted = HashSet<Long>()
+
+    /** Finished buildings whose blueprint was waiting for them; the player applies it from the Blueprints screen or the facility. */
+    fun blueprintsReady(): List<app.many.economytycoon.blueprint.ReadyApply> = blueprints.readyPending()
+
+    private fun checkBlueprints(tickValue: Long) {
+        if (blueprints.pending.size == 0) return
+        val at = app.many.economytycoon.core.Tick(tickValue)
+        for (p in blueprints.expirePending()) {
+            blueprintNoted.remove(p.id)
+            news.post(at, NewsKind.COMPANY, "Blueprint for ${p.facilityName} was dropped: the building never appeared.")
+        }
+        for (r in blueprints.readyPending()) {
+            if (blueprintNoted.add(r.pending.id)) news.post(at, NewsKind.COMPANY, "${r.pending.facilityName} is built. Open its facility screen to apply the blueprint.")
+        }
+    }
+
     private fun checkWatch(tickValue: Long) {
         val company = selectedCompany ?: return
         if (watch.size == 0) return
@@ -333,6 +354,7 @@ class GameSession(
         if (earned.isNotEmpty() || achievements.shouldSave()) { profileSink?.invoke(); achievements.markSaved() }
         for (company in playerCompanies()) for (o in objectives.newlyCompleted(company)) news.post(summary.tick, NewsKind.COMPANY, "Goal reached: ${o.title}")
         checkWatch(summary.tick.value)
+        checkBlueprints(summary.tick.value)
         runManagers(summary.tick.value)
         if (settings.autosave) autosave()
         if (settings.pauseOnCritical && speed != GameSpeed.PAUSED && criticalAlerts().isNotEmpty()) setSpeed(GameSpeed.PAUSED)
