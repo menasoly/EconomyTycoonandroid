@@ -36,6 +36,10 @@ import app.many.economytycoon.ui.compose.screens.ExportScreen
 import app.many.economytycoon.ui.compose.screens.GlossaryScreen
 import app.many.economytycoon.ui.compose.screens.EnergyGridScreen
 import app.many.economytycoon.ui.compose.screens.TourismScreen
+import app.many.economytycoon.ui.compose.screens.UrbanBudgetScreen
+import app.many.economytycoon.ui.compose.screens.UrbanCouncilScreen
+import app.many.economytycoon.ui.compose.screens.UrbanScreen
+import app.many.economytycoon.ui.compose.screens.UrbanTransitScreen
 import app.many.economytycoon.ui.compose.screens.MultiplayerScreen
 import app.many.economytycoon.ui.compose.screens.CarbonScreen
 import app.many.economytycoon.ui.compose.screens.GrantsScreen
@@ -204,6 +208,10 @@ private fun Router(ui: GameUi, host: AppHost) {
         Route.Government -> GovernmentScreen(ui)
         Route.Electricity -> EnergyGridScreen(ui, ui.session.energyGrids, ui.session.tick.value)
         Route.Tourism -> TourismScreen(ui, ui.session.tourism, ui.session.tick.value)
+        Route.Urban -> UrbanScreen(ui, remember(ui.revision / 5, ui.session.tick.value) { ui.session.urbanView() }) { city, kind -> ui.session.urbanOverlay(city, kind) }
+        Route.UrbanCouncil -> UrbanCouncilScreen(ui, remember(ui.revision / 5, ui.session.tick.value) { ui.session.urbanView() }, ui.session::issueUrban)
+        Route.UrbanTransit -> UrbanTransitScreen(ui, remember(ui.revision / 5, ui.session.tick.value) { ui.session.urbanView() }, ui.session::issueUrban)
+        Route.UrbanBudget -> UrbanBudgetScreen(ui, remember(ui.revision / 5, ui.session.tick.value) { ui.session.urbanView() }, ui.session::issueUrban)
         Route.Multiplayer -> ui.multiplayerSource.let { src ->
             if (src != null) MultiplayerScreen(ui, src)
             else ScreenFrame("Multiplayer", onBack = { ui.back() }) {
