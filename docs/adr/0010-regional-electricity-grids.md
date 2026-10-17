@@ -51,6 +51,6 @@ the batteries' charge and the open blackout, all of which are saved.
   runner from the day's heat demand.
 - Fuel is not consumed through production. This is a deliberate split between a physical model the grid owns and a
   goods market the economy owns; the wiring must buy the fuel or plants run free.
-- Adding the section changes the economy hash, so golden values are recomputed when it is wired in.
+- The snapshot section and the hash contribution exist only once grids have been established, so worlds and saves without grids keep their hashes and golden values.
 - Hourly resolution inside a tick is not available to other modules. If a later module needs hours, it reads
   `Grid.lastDay` (24 `HourProfile`s) rather than adding its own clock.
