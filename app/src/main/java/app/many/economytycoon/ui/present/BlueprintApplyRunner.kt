@@ -9,6 +9,7 @@ import app.many.economytycoon.core.CompanyId
 import app.many.economytycoon.core.FacilityId
 import app.many.economytycoon.core.LineId
 import app.many.economytycoon.core.Outcome
+import app.many.economytycoon.session.GameSession
 import app.many.economytycoon.simulation.Command
 
 data class RunResult(val results: List<StepResult>, val report: ApplyReport)
@@ -48,4 +49,10 @@ class BlueprintApplyRunner(
 
     private fun lines(facility: FacilityId): List<LineId> =
         view(facility)?.lines?.sortedWith(compareBy({ it.priority }, { it.id }))?.map { it.id }.orEmpty()
+}
+
+/** Applies a plan to an existing facility through the player's own commands, one at a time. */
+fun GameSession.applyBlueprint(plan: ApplyPlan, facility: FacilityId): RunResult {
+    val company = selectedCompany ?: return RunResult(emptyList(), ApplyReport.build(plan, emptyList()))
+    return BlueprintApplyRunner(company, { blueprints.host()?.view(it) }, { issueNow(it) }).run(plan, facility)
 }
