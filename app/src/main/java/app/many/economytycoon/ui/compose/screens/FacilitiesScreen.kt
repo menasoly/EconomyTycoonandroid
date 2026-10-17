@@ -46,6 +46,7 @@ fun FacilitiesScreen(ui: GameUi) {
             item { TileGrid(model.tiles) }
             item { PrimaryButton("Build something new", { ui.open(Route.Build(region)) }, Modifier.fillMaxWidth()) }
             item { SecondaryButton("Land", { ui.open(Route.Property) }, Modifier.fillMaxWidth()) }
+            item { SecondaryButton("Profit by facility", { ui.open(Route.FacilityProfit) }, Modifier.fillMaxWidth()) }
             item { LabeledField("Search", query, { query = it }) }
             item { ChoiceChips(FacilitySort.values().toList(), sort, { it.label }, { sort = it }) }
             item { SwitchRow("Only show problems", problemsOnly, { problemsOnly = it }, hint = "Blocked lines or worn-out buildings") }
