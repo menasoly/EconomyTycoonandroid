@@ -11,7 +11,7 @@ advisor for the player's bank. It does not post to the ledger, own companies or 
 rate; it reads monetary, sovereign, credit demand and savings conditions through narrow interfaces.
 
 Depends on: `core` (money, rate, ids of companies and countries, binary, hashing, random, results), `finance`
-(settlement intents, ledger owners, chart, credit rating). Nothing depends on it yet.
+(settlement intents, ledger owners, chart, credit rating). Used by `simulation` (`BankingRunner`, `MacroBankingInputs`), `persistence`, `session` and `ui`.
 
 ## Owned entities
 
@@ -81,3 +81,16 @@ callback becomes a command.
 Mirror the sources under `app/src/test/java/app/many/economytycoon/banking` and `ui/present`: rule tests, service and
 action tests, codec round trips and hash stability, daily/monthly rounds, and scenario tests (a run, a failure and
 resolution, a merger, a recession, supervision, save and restore in the middle of a crisis).
+
+## Integration
+
+* `simulation/BankingRunner` - `establish` (the system-only `Command.EstablishBanks`), `found` (`Command.FoundBank`, tag 118),
+  `decide` (`Command.BankDecision`, tag 119, carries any action except founding), the daily `step` in the financial
+  settlement phase after every other group of intents, and `normalise`, which maps unmodelled customers to the
+  households account and keeps keys unique. `EstablishBanks` has tag 117.
+* `simulation/MacroBankingInputs` - the adapter over the macro service, bonds, world and national accounts. Collateral
+  prices have no index of their own in the game, so the output gap stands in for them.
+* `Economy.banking` is hashed and saved (section `banking`) only once it is no longer pristine.
+* Session: `hasBanking`, `bankingOverview`, `bankDetail`, `bankAdvice`, `bankStress`, `hideBankAdvice`; news for important
+  bank events, alerts for the banks a company runs. Routes `banking`, `bank/<id>`, `bank-stress`, `found-bank`.
+* Not done: the computer-run companies do not found banks, and the agenda has no bank items.
